@@ -61,7 +61,7 @@ let controlDiv;
 let tabButtonDiv;
 
 // The relative path of the images folder currently being used.
-const IMG_PATH = './../img/'
+const IMG_PATH = './img/'
 let plotPath;
 let plotSelect; // Variable for plot selection.
 
