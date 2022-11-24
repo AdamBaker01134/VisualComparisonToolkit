@@ -1,0 +1,9 @@
+    Loader.prototype.setFilenames.call(this, files);
+function ThumbnailBar(x, y, w, h, id) {
+ThumbnailBar.prototype.calculateSize = function() {
+ThumbnailBar.prototype.constructor = ThumbnailBar;
+ThumbnailBar.prototype.draw = function() {
+ThumbnailBar.prototype.renderImage = function(idx) {
+ThumbnailBar.prototype.reset = function() {
+ThumbnailBar.prototype.setFilenames = function(files) {
+ThumbnailBar.prototype.updateParameters = function(x, y, w, h, doLoad) {

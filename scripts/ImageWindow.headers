@@ -1,0 +1,13 @@
+function ImageWindow(x, y, w, h, id) {
+ImageWindow.prototype.constructor = ImageWindow;
+ImageWindow.prototype.draw = function() {
+ImageWindow.prototype.getCurrentTimestamp = function() {
+ImageWindow.prototype.getFileIndex = function() {
+ImageWindow.prototype.getFilename = function() {
+ImageWindow.prototype.getImageIndex = function() {
+ImageWindow.prototype.getImageInfo = function() {
+ImageWindow.prototype.getTimestamp = function(idx) {
+ImageWindow.prototype.setImageIndex = function(idx) {
+ImageWindow.prototype.setNextLoad = function(idx) {
+ImageWindow.prototype.setTimestamps = function(stamps) {
+ImageWindow.prototype.updateParameters = function(x, y, w, h) {

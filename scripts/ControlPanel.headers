@@ -1,0 +1,19 @@
+ControlPanel.prototype._createCapSlider = function() {
+ControlPanel.prototype._createDistSlider = function() {
+ControlPanel.prototype._createModeSelect = function() {
+ControlPanel.prototype.disableDistance = function() {
+ControlPanel.prototype.getCapacity = function() {
+ControlPanel.prototype.getDistance = function() {
+ControlPanel.prototype.getMode = function() {
+ControlPanel.prototype.hide = function() {
+ControlPanel.prototype.parent = function(par) {
+ControlPanel.prototype.sendLoadOrder = function() {
+ControlPanel.prototype.setCapacitySliderValues = function(min, max, dft, step) {
+ControlPanel.prototype.setDistanceSliderValues = function(min, max, dft, step) {
+ControlPanel.prototype.setHeading = function(hdg) {
+ControlPanel.prototype.setModeSelect = function(mode) {
+ControlPanel.prototype.setParent = function(prt) {
+ControlPanel.prototype.show = function() {
+ControlPanel.prototype.updateCapacity = function() {
+ControlPanel.prototype.updateDistance = function() {
+function ControlPanel(id) {

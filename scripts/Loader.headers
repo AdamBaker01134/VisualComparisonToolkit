@@ -1,0 +1,18 @@
+function Loader(x, y, w, h, id) {
+Loader.prototype.assignToLoadOrder = function(x) {
+Loader.prototype.getCapacity = function() {
+Loader.prototype.getLoadMode = function() {
+Loader.prototype.isLoading = function() {
+Loader.prototype.isPaused = function() {
+Loader.prototype.isReadyToDisplay = function() {
+Loader.prototype.load = function(start = 0, end = -1, step = -1) {
+Loader.prototype.loadFinished = function(ldID, index) {
+Loader.prototype.loadNextImage = function(ldID) {
+Loader.prototype.pause = function() {
+Loader.prototype.resetToCapacity = function(cap = this.capacity) {
+Loader.prototype.resume = function() {
+Loader.prototype.setCapacity = function(cap) {
+Loader.prototype.setFilenames = function(files) {
+Loader.prototype.setImagePath = function(path) {
+Loader.prototype.setLoadMode = function(mode) {
+Loader.prototype.setOffset = function(offs) {

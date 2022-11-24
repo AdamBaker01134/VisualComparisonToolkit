@@ -1,0 +1,41 @@
+//TimelapseDisplay.prototype.load = function(start = 0, end = -1, step = -1) {
+function TimelapseDisplay(x, y, imgWidth, imgHeight, ID ) {
+TimelapseDisplay.prototype.addSegment = function(idx) {
+TimelapseDisplay.prototype.clearText = function() {
+TimelapseDisplay.prototype.decrementIndex = function() {
+TimelapseDisplay.prototype.draw = function() {
+TimelapseDisplay.prototype.drawThumbs = function() {
+TimelapseDisplay.prototype.getCapacity = function() {
+TimelapseDisplay.prototype.getCurrentTimestamp = function() {
+TimelapseDisplay.prototype.getFileIndex = function() {
+TimelapseDisplay.prototype.getFilename = function() {
+TimelapseDisplay.prototype.getID = function() {
+TimelapseDisplay.prototype.getImageIndex = function() {
+TimelapseDisplay.prototype.getImageInfo = function() {
+TimelapseDisplay.prototype.getLoadMode = function() {
+TimelapseDisplay.prototype.getTimestamp = function(idx) {
+TimelapseDisplay.prototype.hasMouseInFrame = function(mx = mouseX, my = mouseY) {
+TimelapseDisplay.prototype.hasMouseInScrollbar = function(mx, my) {
+TimelapseDisplay.prototype.incrementIndex = function() {
+TimelapseDisplay.prototype.isLoading = function() {
+TimelapseDisplay.prototype.isPaused = function() {
+TimelapseDisplay.prototype.isReady = function() {
+TimelapseDisplay.prototype.load = function(dist = -1, start = 0) {
+TimelapseDisplay.prototype.pause = function() {
+TimelapseDisplay.prototype.renderThumbnail = function(id) {
+TimelapseDisplay.prototype.reset = function() {
+TimelapseDisplay.prototype.resume = function() {
+TimelapseDisplay.prototype.setCapacity = function(cap) {
+TimelapseDisplay.prototype.setFilenames = function(files) {
+TimelapseDisplay.prototype.setImageIndex = function(idx) {
+TimelapseDisplay.prototype.setImagePath = function(imgPath) {
+TimelapseDisplay.prototype.setLoadMode = function(mode) {
+TimelapseDisplay.prototype.setNextLoadFromMouse = function(mx = mouseX) {
+TimelapseDisplay.prototype.setText = function(txt) {
+TimelapseDisplay.prototype.setTimestampDoNotWipeBackground = function() {
+TimelapseDisplay.prototype.setTimestampPosition = function(x, y) {
+TimelapseDisplay.prototype.setTimestamps = function(stamps) {
+TimelapseDisplay.prototype.setTimestampWipeBackground = function() {
+TimelapseDisplay.prototype.syncIndices = function() {
+TimelapseDisplay.prototype.updateIndexFromMouse = function(mx) {
+TimelapseDisplay.prototype.updateParameters = function(x, y, w, h) {

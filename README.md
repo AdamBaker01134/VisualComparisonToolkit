@@ -1,92 +1,83 @@
-# cmpt400-2022-23-timelapse-project
+# Organization and Dependencies
+This project makes use of the p5.js framework / library, as well as the p5.dom.js library.
+
+Currently classes are defined, for the most part, in their own file. (There a couple very small classes that are defined within the same file as the class that they are most related to). I made use of JavaScript 'prototypes' to simulate OOP style classes, though be careful because they don't currently behave like normal OOP classes (e.g. nothing is private).
+
+No special GUI design method (e.g. MVC) was used in structuring the classes. Instead, I designed classes around visual elements that would be rendered on the canvas. 
+
+# Classes
+Here's a breakdown of the classes I created.
+
+* __TimelapseDisplay__: Central class for each "tab", contains an ImageWindow, a Scrollbar, a Timestamp, and a ThumbnailBar.
+* __ImageWindow__: Place for displaying images.
+* __Scrollbar__: Scrollbar for selecting which image to display.
+* __ScrollbarSegment__: Contains info pertaining to each tick in the scrollbar. Class definition is inside Scrollbar.js file.
+* __ThumbnailBar__: For displaying thumbnails below the scrollbar.
+* __Timestamp__: To render timestamps corresponding to the image.
+* __Loader__: Controls image loading sequences. ImageWindow and ThumbnailBar are extensions.
+* __ControlPanel__: Generates DOM elements for controlling how images are loaded.
+* __Annotation__: Contains 'Annotation' class and global functions for controlling annotations.
+
+# Program entrypoint
+The central control file is currently called "canvas.js" - think of it as the main file in a C or Java program.
+
+# Scripts:
+There's a main image processing script that I put together. It is most easily used with timelapse images from a research plot. It may need some deconstructing in order to apply it to a database, if that's where this project ends up going.
+* Currently the script takes about 5-6 hours for a plot of around 80,000 to 100,000 images.
+* Biggest bottleneck is the image resizing.
+* No compression outside of simple resizing is currently being done on the images.
+
+Also available is a short little script I wrote which automatically generates lists of all the funtion headers in your JavaScript code (assuming no headers span multiple lines). I imagine an IDE would probably provide this functionality, and there's probably something better out there, but I just threw this together because it was quick and easy to use while working from the command line.
+
+# File system:
+
+Here's how images are served up:
+
+From the directory in which the server is running, there is an 'img' folder. Inside there is a folder for each 'plot' that is to be made available to the tool. The list of available plots is maintained in 'plots.txt' - this is done automatically by the image processing script, but can be done manually as well when necessary.
+
+Inside each folder, the tool looks for the following files / folders:
+
+* __full/__	--- Contains full sized images.
+* __half/__	--- Contains half sized images.
+* __quarter/__ --- Contrains quarter sized images.
+* __thumbs/__ --- Contains thumbnail sized images.
+* __summer-day-frames.txt__	--- Contains the list of filenames of images to serve up.
+* __summer-day-timestamps.txt__ --- Contains a list of timestamps corresponding to the images in 'summer-day-frames.txt'
+
+NOTE:	filenames should be the same inside each of the image source directories. That way, filenames inside 'summer-day-frames.txt' can be used regardless of which directory is being searched.
+
+Sample directory tree, from img/:
+	
+	img/
+		plots.txt
+		phenowheat_2016_1257/
+			full/
+				...image files
+			half/
+				...image files
+			quarter/
+				...image files
+			thumbs/
+				...image files
+			summer-day-frames.txt
+			summer-day-timestamps.txt
+		phenolentil_2016_1018/
+			full/
+				...image files
+			half/
+				...image files
+			quarter/
+				...image files
+			thumbs/
+				...image files
+			summer-day-frames.txt
+			summer-day-timestamps.txt
+
+In this case, the 'plots.txt' file would look like this:
+
+    phenowheat_2016_1257
+    phenolentil_2016_1018
+
+NOTE: Most of this work is done automatically by the image processing script.
 
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.cs.usask.ca/adb888/cmpt400-2022-23-timelapse-project.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.cs.usask.ca/adb888/cmpt400-2022-23-timelapse-project/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.

@@ -1,0 +1,20 @@
+Array.prototype.clear = function() {
+Array.prototype.fillWithFalse = function(cap = this.length) {
+Array.prototype.findFirst = function(callback, fromIndex = 0, thisArg) {
+Array.prototype.findLast = function(callback, fromIndex = this.length, thisArg) {
+Array.prototype.shuffle = function() {
+function createElementWithID(tag, content, id, className) {
+function doNothing() {
+function ensureArray(arr) {
+function ensureBoolean(bool) {
+function ensureInteger(num) {
+function ensureNonEmptyArray(arr) {
+function ensureNonEmptyString(str) {
+function ensureNumber(num) {
+function ensureString(str) {
+function ensureValidLoadMode(mode) {
+function hideElements(arr) {
+function loadError(e) {
+function showElements(arr) {
+p5.Element.prototype.hide = function() {
+p5.Element.prototype.show = function() {

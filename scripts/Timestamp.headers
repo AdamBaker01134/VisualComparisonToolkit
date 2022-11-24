@@ -1,0 +1,7 @@
+function Timestamp(x = 310, y = 0) {
+Timestamp.prototype.clearStamp = function() {
+Timestamp.prototype.draw = function() {
+Timestamp.prototype.setDoNotWipeBackground = function() {
+Timestamp.prototype.setStamp = function(stamp) {
+Timestamp.prototype.setWipeBackground = function() {
+Timestamp.prototype.updatePosition = function(x, y) {

@@ -1,0 +1,18 @@
+function Scrollbar(x, y, w, h) {
+function ScrollbarSegment(idx, gap) {
+Scrollbar.prototype.addSegment = function(idx) {
+Scrollbar.prototype.decrementIndex = function() {
+Scrollbar.prototype.draw = function() {
+Scrollbar.prototype.getCapacity = function() {
+Scrollbar.prototype.getIndex = function() {
+Scrollbar.prototype.getIndexFromMouse = function(mx = mouseX) {
+Scrollbar.prototype.hasMouseInScrollbar = function(mx = mouseX, my = mouseY) {
+Scrollbar.prototype.incrementIndex = function() {
+Scrollbar.prototype.render = function() {
+Scrollbar.prototype.renderLine = function(idx, pos) {
+Scrollbar.prototype.renderSegment = function(s) {
+Scrollbar.prototype.resetToCapacity = function(cap = 0) {
+Scrollbar.prototype.updateIndex = function(idx) {
+Scrollbar.prototype.updateIndexFromMouse = function(mx = mouseX) {
+Scrollbar.prototype.updateParameters = function(x, y, w, h) {
+ScrollbarSegment.prototype.updateSegment = function(gap) {

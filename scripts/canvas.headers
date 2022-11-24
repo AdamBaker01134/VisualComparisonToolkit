@@ -1,0 +1,37 @@
+function _attachLoadListeners() {
+function _attachUserEventListeners() {
+function _createControlPanels() {
+function _createHelpButton() {
+function _createImageInfoButton() {
+function _createP5Canvas() {
+function _createPlotSelection() {
+function _createTabButtons() {
+function _createTimelapseDisplays() {
+function _createViewModeToggleButton() {
+function addImageAndDisplay(e) {
+function addImageToFrame({ detail: { obj, idx } }) {
+function assignFocus(id) {
+function displayLoadFinished({ detail: { obj } }) {
+function giveLoadFocus(displayID) {
+function handleKeyDown(e) {
+function handleMouseMoved(evt, mx = mouseX) {
+function handleMousePressed(evt, mx = mouseX, my = mouseY) {
+function handleMouseReleased(evt) {
+function loadFirstDisplay() {
+function loadNextDisplay({ detail: { id, cap, dist, mode } }) {
+function loadTimestamps() {
+function mouseDragged() {}
+function mouseMoved() {}
+function mousePressed() {}
+function mouseReleased() {}
+function preload() {
+function redrawCurrentDisplay(id = displayFocus) {
+function redrawDisplay({ detail: { obj } }) {
+function resetDisplays() {
+function resumeLoadAsNecessary() {
+function setup() {
+function startNewPlot() {
+function toggleViewMode() {
+function touchEnded() {
+function touchMoved() {
+function touchStarted() {

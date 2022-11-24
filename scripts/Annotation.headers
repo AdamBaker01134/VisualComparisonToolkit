@@ -1,0 +1,9 @@
+function _createAnnotationPanel() {
+function Annotation(id, type, plot, filename, fileindex, timestamp) {
+function clearAnnotations() {
+function clearAnnotationSelect() {
+function loadFromAnnotation() {
+function parseAnnotationID() {
+function removeAnnotation() {
+function saveAnnotation() {
+function showAnnotations() {
