@@ -1,8 +1,9 @@
 import './App.css';
-import React from 'react';
+import { React, useState } from 'react';
 import { ReactP5Wrapper } from 'react-p5-wrapper';
 
 import AnnotationPanel from './Components/AnnotationPanel';
+import ControlPanel from './Components/ControlPanel';
 
 function sketch(p5) {
   p5.setup = () => p5.createCanvas(600, 600, p5.WEBGL);
@@ -20,6 +21,12 @@ function sketch(p5) {
 }
 
 function App() {
+  const [controlValues, setControlValues] = useState({
+    capacity: 129,
+    distance: 1,
+    mode: "fill",
+  });
+
   return (
     <div className="App">
       <header className="App-header">
@@ -27,7 +34,17 @@ function App() {
           <AnnotationPanel
             load={(fileindex) => console.log("Loading: " + fileindex)}
           />
-          <ReactP5Wrapper sketch={sketch}/>
+          <ReactP5Wrapper sketch={sketch} />
+          <ControlPanel
+            onSubmit={(capacity, distance, mode) => setControlValues({
+              capacity: capacity,
+              distance: distance,
+              mode: mode,
+            })}
+            capacity={controlValues.capacity}
+            distance={controlValues.distance}
+            mode={controlValues.mode}
+          />
         </>
       </header>
     </div>

@@ -4,8 +4,8 @@ const plotPlaceholder = "Plot Placeholder";
 
 const AnnotationPanel = (props) => {
 
-    const [ annotations, setAnnotations ] = useState(props.annotations || []);
-    const [ currAnnotation, setCurrAnnotation ] = useState(undefined);
+    const [annotations, setAnnotations] = useState(props.annotations || []);
+    const [currAnnotation, setCurrAnnotation] = useState(undefined);
 
     /**
      * Creates an annotation object for storing collections of annotation data.
@@ -73,7 +73,7 @@ const AnnotationPanel = (props) => {
 
         // Find a unique id.
         let id = 1;
-        while ( savedAnnotations.find(annotation => annotation.id === id)) id++;
+        while (savedAnnotations.find(annotation => annotation.id === id)) id++;
 
         // Build the annotation and add it.
         let newAnnotation = createAnnotationObj(id, type, plot, fileName, fileIndex, timestamp);
@@ -140,12 +140,12 @@ const AnnotationPanel = (props) => {
             localStorage.removeItem("annotations");
         }
     }, [annotations]);
-    
+
     return (
         <div className="annotation">
             <p>Saved annotations:</p>
             <select onChange={(e) => setCurrAnnotation(e.target.value)}>
-                {annotations.map((annotation, index) => 
+                {annotations.map((annotation, index) =>
                     <option value={annotation.name} key={index}>{annotation.name}</option>)}
             </select>
             <button onClick={loadFromAnnotation}>Load</button>
