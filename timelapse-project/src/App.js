@@ -1,5 +1,8 @@
 import './App.css';
+import React from 'react';
 import { ReactP5Wrapper } from 'react-p5-wrapper';
+
+import AnnotationPanel from './Components/AnnotationPanel';
 
 function sketch(p5) {
   p5.setup = () => p5.createCanvas(600, 600, p5.WEBGL);
@@ -21,6 +24,9 @@ function App() {
     <div className="App">
       <header className="App-header">
         <>
+          <AnnotationPanel
+            load={(fileindex) => console.log("Loading: " + fileindex)}
+          />
           <ReactP5Wrapper sketch={sketch}/>
         </>
       </header>
