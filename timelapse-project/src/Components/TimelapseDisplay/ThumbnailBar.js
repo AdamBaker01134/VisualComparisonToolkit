@@ -1,9 +1,9 @@
-import React from "react";
+// import React from "react";
 
-const ThumbnailBar = (props) => {
-    return (
-        <div>ThumbnailBar</div>
-    );
-}
+// const ThumbnailBar = (props) => {
+//     return (
+//         <div>ThumbnailBar</div>
+//     );
+// }
 
-export default ThumbnailBar;
+// export default ThumbnailBar;

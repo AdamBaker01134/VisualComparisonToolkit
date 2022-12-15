@@ -6,13 +6,14 @@ function App() {
 
   // const [ displays, setDisplays ] = useState(["test_timelapse1", "test_timelapse2"]);
 
-  const displays = ["test_timelapse1", "test_timelapse2"];
+  // const displays = ["test_timelapse1", "test_timelapse2"];
+  const displays = ["test_timelapse1"]
 
   return (
     <div className="App">
       <header className="App-header">
         {displays.map((displayFolder, idx) => {
-          return <TimelapseDisplay key={"TimelapseDisplay-" + idx} timelapseFolder={displayFolder} />
+          return <TimelapseDisplay key={"TimelapseDisplay-" + idx} timelapseFolder={"./test_img/"+displayFolder+"/"} loadType={"fill"} />
         })}
       </header>
     </div>
