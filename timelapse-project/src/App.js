@@ -9,11 +9,11 @@ const IMAGE_PATH = "./test_img";
 
 const App = () => {
 
-  const [plots, setPlots] = useState([]);
+  const [data, setData] = useState([]);
   const [loader] = useState(new Loader(CAPACITY, IMAGE_PATH));
 
   const onPlotInit = (dataset, frames, timestamps) => {
-    setPlots(
+    setData(
       prevState => [
         ...prevState,
         {
@@ -25,14 +25,16 @@ const App = () => {
     );
   }
 
-  const onNewDataset = (dataset) => loader.initDataset(dataset, onPlotInit, () => console.log("THERE WAS AN ERROR LOADING."));
+  const onNewDataset = (dataset) => {
+    loader.initDataset(dataset, onPlotInit, () => console.log("THERE WAS AN ERROR LOADING."))
+  };
 
   return (
     <div className="App">
       <header className="App-header">
         {
-          plots.map((plot, idx) => {
-            return <TimelapseDisplay key={"display-" + idx} plot={plot}/>
+          data.map((dataObj, idx) => {
+            return <TimelapseDisplay key={"display-" + idx} data={dataObj} loader={loader} />
           })
         }
         <EmptyDisplay onSubmit={onNewDataset} />

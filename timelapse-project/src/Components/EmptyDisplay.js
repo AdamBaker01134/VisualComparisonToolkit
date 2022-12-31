@@ -10,7 +10,7 @@ const EmptyDisplay = (props) => {
     }
 
     return <form onSubmit={submit}>
-        <label>Type Something</label>
+        <label>Input Dataset Directory:</label>
         <input type={"text"} onChange={(e) => setValue(e.target.value)} />
     </form>
 }

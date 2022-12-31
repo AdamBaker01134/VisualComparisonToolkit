@@ -1,12 +1,25 @@
-import React from 'react';
+import {React, useState, useEffect} from 'react';
+
+import ImageWindow from './ImageWindow';
 
 const TimelapseDisplay = (props) => {
 
-    console.log(props.plot);
+    const [imgIdx, setImgIdx] = useState(0);
+    const [images, setImages] = useState([]);
+
+    useEffect(() => {
+        props.loader.loadImages(
+            props.data.name,
+            props.data.frames,
+            loadedImages => setImages(loadedImages),
+            () => console.log("THERE WAS AN ERROR LOADING IMAGES"),
+        );
+        setImgIdx(0);
+    }, [props.data, props.loader]);
 
     return (
         <>
-            <div>Hello World!</div>
+            <ImageWindow image={images.length > 0 ? images[imgIdx] : null}></ImageWindow>
         </>
     );
 }

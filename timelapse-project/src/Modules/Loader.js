@@ -39,8 +39,26 @@ Loader.prototype.initDataset = function(dataset, callback=()=>{}, errCallback=()
     );
 }
 
-Loader.prototype.loadImages = function(frames) {
+Loader.prototype.loadImages = function(dataset, frames, callback=()=>{}, errCallback=()=>{}) {
+    let loadedImages = [];
 
+    const load = (frame) => {
+        _p5.loadImage(
+            this.imgPath + "/" + dataset + "/QTR/" + frame,
+            loadedImage => {
+                loadedImages.push(loadedImage);
+                if (loadedImages.length >= this.capacity || loadedImages.length >= frames.length) {
+                    callback(loadedImages);
+                } else {
+                    load(frames[loadedImages.length]);
+                }
+            },
+            errCallback,
+        )
+    }
+
+    debugger;
+    load(frames[loadedImages.length]);
 }
 
 export default Loader;
