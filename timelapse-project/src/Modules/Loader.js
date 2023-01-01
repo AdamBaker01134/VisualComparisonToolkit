@@ -57,7 +57,6 @@ Loader.prototype.loadImages = function(dataset, frames, callback=()=>{}, errCall
         )
     }
 
-    debugger;
     load(frames[loadedImages.length]);
 }
 

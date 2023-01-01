@@ -1,6 +1,6 @@
 import {React, useState, useEffect} from 'react';
 
-import ImageWindow from './ImageWindow';
+import Image from './Image';
 
 const TimelapseDisplay = (props) => {
 
@@ -19,7 +19,7 @@ const TimelapseDisplay = (props) => {
 
     return (
         <>
-            <ImageWindow image={images.length > 0 ? images[imgIdx] : null}></ImageWindow>
+            <Image image={images.length > 0 ? images[imgIdx] : null} />
         </>
     );
 }
