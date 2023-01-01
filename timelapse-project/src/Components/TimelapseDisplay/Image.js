@@ -4,24 +4,24 @@ import Sketch from 'react-p5';
 
 const Image = (props) => {
 
+    let x = 0, y =0;
+    let width = 500, height = 500;
+
     const setup = (p5, canvasParentRef) => {
-        p5.createCanvas(200, 200).parent(canvasParentRef);
+        p5.createCanvas(width, height).parent(canvasParentRef);
     }
 
     const draw = (p5) => {
         if (props.image) {
+            p5.noStroke();
+            p5.fill(255);
             p5.image(
                 props.image,
-                50,
-                50,
-                0,
-                0,
+                x,
+                y,
+                width,
+                height,
             );
-        } else {
-            p5.fill(188, 212, 230);
-            p5.rectMode(p5.CORNER);
-            p5.noStroke();
-            p5.rect(50, 50, 50, 50);
         }
     }
 

@@ -1,4 +1,4 @@
-import {React, useState, useEffect} from 'react';
+import { React, useState, useEffect } from 'react';
 
 import Image from './Image';
 
@@ -17,10 +17,17 @@ const TimelapseDisplay = (props) => {
         setImgIdx(0);
     }, [props.data, props.loader]);
 
+    const updateImageIndex = (e) => {
+        e.preventDefault();
+        setImgIdx(e.target.value);
+    }
+
     return (
-        <>
-            <Image image={images.length > 0 ? images[imgIdx] : null} />
-        </>
+        images.length > 0 ?
+            <>
+                <Image image={images[imgIdx]} />
+                <input type="range" value={imgIdx} onChange={updateImageIndex} max={images.length} />
+            </> : null
     );
 }
 
