@@ -7,6 +7,14 @@ import EmptyDisplay from './Components/EmptyDisplay';
 const CAPACITY = 100;
 const IMAGE_PATH = "./test_img";
 
+/*
+  TODO:
+    - Have a loading square appear when the loading in progress
+      - OR display loading instead of the input
+    - Add a remove button to be able to remove datasets
+    - Add master slider to control all the datasets at once
+*/
+
 const App = () => {
 
   const [dataCache, setDataCache] = useState([]);
@@ -61,7 +69,7 @@ const App = () => {
             return <TimelapseDisplay key={"display-" + idx} data={dataObj} />
           })
         }
-        <EmptyDisplay onSubmit={onNewDataset} disabled={loading} />
+        <EmptyDisplay onSubmit={onNewDataset} loading={loading} />
       </header>
     </div>
   );
