@@ -15,6 +15,7 @@
 body {
   margin: 0px;
   padding: 0px;
+  font-size: 12px;
 }
 
 canvas {
@@ -41,13 +42,19 @@ header {
   flex-direction: column;
 }
 
+.titleBar {
+  display: flex;
+  justify-content: space-between;
+  align-self: stretch;
+}
+
 .slider {
   width: 100%;
 }
 
 .emptyDisplay {
-  height: 500px;
-  width: 500px;
+  height: 350px;
+  width: 350px;
   background: #EDEDED;
   margin: 5px;
   padding: 5px;

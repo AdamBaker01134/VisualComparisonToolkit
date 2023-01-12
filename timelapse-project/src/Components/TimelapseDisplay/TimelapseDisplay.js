@@ -16,8 +16,12 @@ const TimelapseDisplay = (props) => {
     return (
         images.length > 0 ?
             <div className="display">
+                <div className="titleBar">
+                    <div className="title">{props.data.name}</div>
+                    <div className="timestamp">{props.data.timestamps[imgIdx]}</div>
+                </div>
                 <Image image={images[imgIdx]} />
-                <input className="slider" type="range" value={imgIdx} onChange={updateImageIndex} max={images.length} />
+                <input className="slider" type="range" value={imgIdx} onChange={updateImageIndex} max={images.length - 1} />
             </div> : null
     );
 }

@@ -5,7 +5,7 @@ import Sketch from 'react-p5';
 const Image = (props) => {
 
     let x = 0, y =0;
-    let width = 500, height = 500;
+    let width = 350, height = 350;
 
     const setup = (p5, canvasParentRef) => {
         p5.createCanvas(width, height).parent(canvasParentRef);

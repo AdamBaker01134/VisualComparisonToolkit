@@ -9,8 +9,6 @@ const IMAGE_PATH = "./test_img";
 
 /*
   TODO:
-    - Have a loading square appear when the loading in progress
-      - OR display loading instead of the input
     - Add a remove button to be able to remove datasets
     - Add master slider to control all the datasets at once
 */
