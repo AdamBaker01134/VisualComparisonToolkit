@@ -61,6 +61,12 @@ header {
   border: 1px solid red;
 }
 
+.loadErrMsg {
+  color: red;
+  text-align: center;
+  font-size: 10px;
+}
+
 /* Loader css take from https://www.codingthesmartway.com/how-to-implement-a-css-loader/ */
 .loader {
   border: 16px solid #f3f3f3;

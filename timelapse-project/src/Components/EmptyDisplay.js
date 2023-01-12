@@ -3,12 +3,10 @@ import { React, useState } from "react";
 const EmptyDisplay = (props) => {
 
     const [value, setValue] = useState("");
-    const [hasError, setHasError] = useState(false);
 
     const submit = (e) => {
         e.preventDefault();
         setValue("");
-        setHasError(false);
         props.onSubmit(value);
     }
 
@@ -19,11 +17,12 @@ const EmptyDisplay = (props) => {
             ) : (
                 <form onSubmit={submit}>
                     <label>Input Dataset Directory: </label>
-                    <input className={hasError ? "error" : "dataInput"}
+                    <input className={props.error ? "error" : "dataInput"}
                         type={"text"}
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                     />
+                    {props.error && <div className="loadErrMsg">Error loading dataset, please try again.</div>}
                 </form>
             )
         }

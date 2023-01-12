@@ -20,6 +20,7 @@ const App = () => {
   const [dataCache, setDataCache] = useState([]);
   const [loader] = useState(new Loader(CAPACITY, IMAGE_PATH));
   const [loading, setLoading] = useState(false);
+  const [inputError, setInputError] = useState(false);
 
   const onPlotInit = (dataset, frames, timestamps, images) => {
     setDataCache(
@@ -48,6 +49,7 @@ const App = () => {
 
   const onNewDataset = (dataset) => {
     let cacheHit = dataCache.find(data => data.name === dataset);
+    setInputError(false);
     setLoading(true);
     if (!!cacheHit) {
       onPlotInit(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
@@ -58,6 +60,7 @@ const App = () => {
 
   const loadError = (err) => {
     console.log("Error loading dataset..." );
+    setInputError(true);
     setLoading(false);
   }
 
@@ -69,7 +72,7 @@ const App = () => {
             return <TimelapseDisplay key={"display-" + idx} data={dataObj} />
           })
         }
-        <EmptyDisplay onSubmit={onNewDataset} loading={loading} />
+        <EmptyDisplay onSubmit={onNewDataset} loading={loading} error={inputError} />
       </header>
     </div>
   );
