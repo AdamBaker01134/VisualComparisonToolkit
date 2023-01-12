@@ -11,6 +11,7 @@ const App = () => {
 
   const [dataCache, setDataCache] = useState([]);
   const [loader] = useState(new Loader(CAPACITY, IMAGE_PATH));
+  const [loading, setLoading] = useState(false);
 
   const onPlotInit = (dataset, frames, timestamps, images) => {
     setDataCache(
@@ -25,6 +26,7 @@ const App = () => {
         }
       ]
     );
+    setLoading(false);
   }
 
   const loadImages = (dataset, frames, timestamps) => {
@@ -32,18 +34,24 @@ const App = () => {
       dataset,
       frames,
       loadedImages => onPlotInit(dataset, frames, timestamps, loadedImages),
-      () => console.log("THERE WAS AN ERROR LOADING IMAGES"),
+      loadError,
     );
   }
 
   const onNewDataset = (dataset) => {
     let cacheHit = dataCache.find(data => data.name === dataset);
+    setLoading(true);
     if (!!cacheHit) {
       onPlotInit(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
     } else {
-      loader.initDataset(dataset, loadImages, () => console.log("THERE WAS AN ERROR LOADING PLOT."));
+      loader.initDataset(dataset, loadImages, loadError);
     }
   };
+
+  const loadError = (err) => {
+    console.log("Error loading dataset..." );
+    setLoading(false);
+  }
 
   return (
     <div className="App">
@@ -53,7 +61,7 @@ const App = () => {
             return <TimelapseDisplay key={"display-" + idx} data={dataObj} />
           })
         }
-        <EmptyDisplay onSubmit={onNewDataset} />
+        <EmptyDisplay onSubmit={onNewDataset} disabled={loading} />
       </header>
     </div>
   );

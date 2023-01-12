@@ -15,7 +15,12 @@ const EmptyDisplay = (props) => {
     return <div className="emptyDisplay">
         <form onSubmit={submit}>
             <label>Input Dataset Directory: </label>
-            <input type={"text"} className={hasError ? "error" : "dataInput"} value={value} onChange={(e) => setValue(e.target.value)} />
+            <input className={hasError ? "error" : "dataInput"}
+                type={"text"}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                disabled={!!props.disabled}
+            />
         </form>
     </div>
 }
