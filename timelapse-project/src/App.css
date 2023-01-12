@@ -17,51 +17,6 @@ body {
   padding: 0px;
 }
 
-button {
-  margin: 5px 5px;
-  width: 180px;
-  height: 40px;
-  border: none;
-  padding: 0px;
-  text-align: center;
-  text-decoration: none;
-  color: black;
-  background: lightgrey;
-  display: inline-block;
-}
-
-button:disabled {
-  background: beige;
-  color: burlywood;
-}
-
-button:disabled:hover {
-  background: beige;
-  border: 0px;
-}
-
-button:hover {
-  border: 1px solid black;
-  background: #E9E9E9;
-}
-
-button.tab {
-  margin: 0px;
-  width: 33.33%;
-  display: inline-block;
-}
-
-button.tabSelected {
-  margin: 0px;
-  width: 33.33%;
-  display: inline-block;
-  background: forestgreen;
-}
-
-button.tabSelected:hover {
-  background: limegreen;
-}
-
 canvas {
   /* NOTE: Turning off double-tap zoom makes the page more responsive to user
          input on touch devices.
@@ -70,93 +25,41 @@ canvas {
   display: inline-block;
 }
 
-div {
-  display: block;
-  margin: 5px;
-  width: -moz-fit-content;
-  width: -webkit-fit-content;
-  width: fit-content;
-}
-
-div.annotation {
-  background: #EDEDED;
-}
-
-div.plotSelection {
-  display: inline-block;
-}
-
-div.tabselector {
-  margin: 0px;
-}
-
-div.controller {
-  display: inline-block;
-  background: lightgrey;
-}
-
-div.slideDiv {
-  background: whitesmoke;
-  width: -moz-available;
-  width: -webkit-fill-available;
-  width: available;
-}
-
-div.slideDiv#disabled > *{
-  opacity: 0.25;
-}
-
-footer{
-  background: dimgrey;
-  margin: 5px;
-  width: fit-content;
-  width: -moz-fit-content;
-  width: -webkit-fit-conent;
-}
-
 header {
+  display: flex;
+  height: auto;
+  flex-wrap: wrap;
+}
+
+.emptyDisplay {
+  height: 500px;
+  width: 500px;
   background: #EDEDED;
   margin: 5px;
-  width: -moz-fit-content;
-  width: -webkit-fit-content;
-  width: fit-content;
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
 }
 
-h2 {
+.emptyDisplay form {
+  align-self: center;
+}
+
+.emptyDisplay input.error {
+  border: 1px solid red;
+}
+
+.display {
+  background: #EDEDED;
   margin: 5px;
-}
-
-input[type="text"] {
-  margin: 0px 5px;
-  cursor: initial;
-}
-
-p {
-  display: inline-block;
-  margin: 0px;
-}
-
-p.slideText {
-  display: block;
   padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
-p.slideVal {
-  min-width: 40px;
-  text-align: right;
-  vertical-align: super;
-  padding: 5px;
+.slider {
+  width: 100%;
 }
-
-p.ctrErr {
-  display: block;
-  color: darkred;
-}
-
-select {
-  margin: 0px 0px 0px 5px;
-}
-
-
-
-
