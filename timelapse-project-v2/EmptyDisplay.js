@@ -11,7 +11,7 @@
  * @param {Array} datasets an array of found datasets from the datasets.txt file
  * @param {Function} onSelected callback function once dataset has been selected
  */
-function EmptyDisplay(parent, datasets=[], onSelected=()=>{}) {
+function EmptyDisplay(parent, datasets = [], onSelected = () => { }) {
 
     this.div = createDiv();
     this.div.class("emptyDisplay");
@@ -24,7 +24,7 @@ function EmptyDisplay(parent, datasets=[], onSelected=()=>{}) {
     this.select = createSelect();
     this.select.class("");
     this.select.option('---');
-    datasets.forEach( dataset => this.select.option(dataset) );
+    datasets.forEach(dataset => this.select.option(dataset));
     this.select.parent(this.content);
 
     this.button = createButton("Load");
@@ -32,11 +32,28 @@ function EmptyDisplay(parent, datasets=[], onSelected=()=>{}) {
     this.button.parent(this.content);
 }
 
-EmptyDisplay.prototype.toggleLoadState = function() {
-    this.content.toggleClass("loading");
-    this.content.toggleClass("input");
+/**
+ * Sets the empty displays load state to true or false.
+ * This essentially toggles the content divs "loading" class.
+ * @param {boolean} isLoading boolean value that is used to set the displays load state.
+ */
+EmptyDisplay.prototype.setLoadState = function (isLoading) {
+    if (isLoading) {
+        this.content.addClass("loading");
+    } else {
+        this.content.removeClass("loading");
+    }
 }
 
-EmptyDisplay.prototype.toggleErrorState = function() {
-    this.select.toggleClass("error");
+/**
+ * Sets the empty displays error state to true or false.
+ * This essentially toggles the select elements "error" class.
+ * @param {boolean} isErroring boolean value that is used to set the display error state.
+ */
+EmptyDisplay.prototype.setErrorState = function (isErroring) {
+    if (isErroring) {
+        this.select.addClass("error");
+    } else {
+        this.select.removeClass("error");
+    }
 }
