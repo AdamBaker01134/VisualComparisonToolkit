@@ -31,3 +31,4 @@ http.createServer(function (req, res) {
 
 }).listen(30500);
 
+console.log("Successfully started node js server. Listening on http://localhost:30500.")

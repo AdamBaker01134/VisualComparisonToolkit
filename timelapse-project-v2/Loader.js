@@ -28,6 +28,13 @@ Loader.prototype.loadDatasets = function (callback = () => { }, errCallback = ()
     );
 }
 
+/**
+ * Load the frames and timestamps from the summer-day-frames.txt and summer-day-timestamps.txt
+ * files, respectively.
+ * @param {string} dataset name of the dataset from which we will load the frames/timestamps
+ * @param {Function} callback callback function called once frames/timestamps have been loaded
+ * @param {Function} errCallback callback function called if there was an error loading frames/timestamps
+ */
 Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => { }, errCallback = () => { }) {
 
     let frames = null;
@@ -60,6 +67,13 @@ Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => {
     );
 }
 
+/**
+ * Load the dataset frames/images from the quarter directory.
+ * @param {string} dataset name of the dataset from which we will load the images
+ * @param {Array<string>} frames an array of strings that are the names of the images in the dataset
+ * @param {Function} callback callback function called once images have been loaded
+ * @param {Function} errCallback callback function called if there was an error loading images
+ */
 Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, errCallback = () => { }) {
     let loadedImages = [];
 
