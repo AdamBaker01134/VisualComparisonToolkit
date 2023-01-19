@@ -10,6 +10,8 @@ p5.disableFriendlyErrors = true;
 
 /* Constants */
 const MAX_IMAGES = 200;
+const DISPLAY_WIDTH = 350;
+const DISPLAY_HEIGHT = 350;
 
 /* Path variables */
 const IMG_PATH = "./img/";
@@ -42,7 +44,10 @@ function setup() {
     _createEmptyDisplay();
 }
 
-function _createP5Canvas() { }
+/* p5.js function that acts as the draw loop */
+function draw() {
+    displays.forEach(display => display.draw());
+}
 
 /**
  * Create an empty display object.
@@ -65,7 +70,8 @@ function _createTimelapseDisplay(dataset) {
     let cacheHit = displays.find((display) => display.name === dataset);
     if (!!cacheHit) {
         emptyDisplay.setLoadState(false);
-        _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
+        let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
+        displays.push(newDisplay);
         console.log(displays);
         return;
     }
@@ -83,7 +89,8 @@ function _createTimelapseDisplay(dataset) {
                 (images) => {
                     console.log(`Successfully loaded ${images.length} images in ${Math.floor(performance.now() - start)}ms.`);
                     emptyDisplay.setLoadState(false);
-                    _constructDisplayObject(dataset, frames, timestamps, images);
+                    let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
+                    displays.push(newDisplay);
                     console.log(displays);
                 },
                 (err) => {
@@ -111,13 +118,14 @@ function _createTimelapseDisplay(dataset) {
  * @param {Array<p5.Image>} images array of loaded p5 images
  */
 function _constructDisplayObject(dataset, frames, timestamps, images) {
-    let displayObj = {
-        name: dataset,
-        id: dataset + "-" + (displays.length + 1),
-        frames: frames,
-        timestamps: timestamps,
-        images: images,
-    };
-
-    displays.push(displayObj);
+    return new TimelapseDisplay(
+        dataset,
+        dataset + "-" + (displays.length + 1),
+        frames,
+        timestamps,
+        images,
+        displaysDiv,
+        DISPLAY_WIDTH,
+        DISPLAY_HEIGHT
+    );
 }
