@@ -1,5 +1,16 @@
 "use strict";
 
+/**
+ * 
+ * @param {string} name name of the dataset
+ * @param {string} id display id
+ * @param {Array<string>} frames array of strings, each representing a frame in the dataset
+ * @param {Array<string>} timestamps array of strings, each representing a timestamp in the dataset
+ * @param {Array<p5.Image>} images array of loaded p5 images
+ * @param {p5.Element} parent the intended parent element for the display
+ * @param {number} width width dimension of the display
+ * @param {number} height height dimension of the display
+ */
 function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height) {
     this.name = name;
     this.id = id;
@@ -9,27 +20,21 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
 
     this.width = width;
     this.height = height;
-
     this.imgIdx = 0;
 
-    this.displayDiv = createDiv();
-    this.displayDiv.class("display");
-    this.displayDiv.parent(parent);
+    this.display = createElementWithID("div", "", id, "display");
+    this.display.parent(parent);
 
     this.imageWindow = createGraphics(this.width, this.height);
-    this.imageWindow.parent(this.displayDiv);
+    this.imageWindow.parent(this.display);
     this.imageWindow.show();
 
     this.slider = createInput("", "range");
-    this.slider.value(this.imgIdx);
     this.slider.class("slider");
-    // this.slider.elt.value = 0;
-    this.slider.elt.onchange = (e) => {
-        this.imgIdx = parseInt(e.target.value);
-        console.log(this.imgIdx);
-    };
+    this.slider.input((e) => this.setIndex(parseInt(e.target.value)));
     this.slider.elt.max = this.images.length - 1;
-    this.slider.parent(this.displayDiv);
+    this.slider.elt.value = this.imgIdx;
+    this.slider.parent(this.display);
 }
 
 /** Getter function for the object's name attribute. */
@@ -42,6 +47,13 @@ TimelapseDisplay.prototype.getId = function () {
     return this.id;
 }
 
+// TimelapseDisplay.prototype.updateIndexFromOffset = function(offset) {
+//     this.imgIdx = newIndex;
+// }
+
+/**
+ * Draw function called in every draw loop.
+ */
 TimelapseDisplay.prototype.draw = function () {
     noStroke();
     rectMode(CORNER);

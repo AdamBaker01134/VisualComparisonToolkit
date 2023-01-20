@@ -42,6 +42,7 @@ function setup() {
     displaysDiv.class("displays");
     displaysDiv.parent(headerDiv);
     _createEmptyDisplay();
+    noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
 
 /* p5.js function that acts as the draw loop */
@@ -72,7 +73,6 @@ function _createTimelapseDisplay(dataset) {
         emptyDisplay.setLoadState(false);
         let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
         displays.push(newDisplay);
-        console.log(displays);
         return;
     }
 
@@ -91,7 +91,6 @@ function _createTimelapseDisplay(dataset) {
                     emptyDisplay.setLoadState(false);
                     let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
                     displays.push(newDisplay);
-                    console.log(displays);
                 },
                 (err) => {
                     console.log(`Error loading images for the ${dataset} dataset.`);
@@ -118,9 +117,18 @@ function _createTimelapseDisplay(dataset) {
  * @param {Array<p5.Image>} images array of loaded p5 images
  */
 function _constructDisplayObject(dataset, frames, timestamps, images) {
+
+    let displayCount = 1;
+    let duplicates = displays.filter((display) => display.name === dataset);
+    if (duplicates.length > 0) {
+        /* Find the duplicate with the highest id number. */
+        let values = duplicates.map((duplicate) => parseInt(duplicate.id.charAt(duplicate.id.length - 1)));
+        displayCount = Math.max(...values) + 1;
+    }
+
     return new TimelapseDisplay(
         dataset,
-        dataset + "-" + (displays.length + 1),
+        dataset + "-" + displayCount,
         frames,
         timestamps,
         images,

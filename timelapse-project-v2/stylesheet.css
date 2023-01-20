@@ -2,6 +2,7 @@ body {
     margin: 0px;
     padding: 0px;
     font-size: 12px;
+    background-color: #BEBEBE;
 }
 
 canvas {
@@ -12,7 +13,17 @@ canvas {
     display: inline-block;
 }
 
+.p5canvas {
+    background-color: #BEBEBE;
+}
+
 header {
+    display: flex;
+    height: auto;
+    flex-wrap: wrap;
+}
+
+.displays {
     display: flex;
     height: auto;
     flex-wrap: wrap;
