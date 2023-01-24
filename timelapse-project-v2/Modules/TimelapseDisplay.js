@@ -10,8 +10,9 @@
  * @param {p5.Element} parent the intended parent element for the display
  * @param {number} width width dimension of the display
  * @param {number} height height dimension of the display
+ * @param {number} offset offset of the master slider upon creation
  */
-function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height) {
+function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height, offset=0) {
     this.name = name;
     this.id = id;
     this.frames = frames;
@@ -21,6 +22,7 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.width = width;
     this.height = height;
     this.imgIdx = 0;
+    this.offset = offset;
 
     this.display = createElementWithID("div", "", id, "display");
     this.display.parent(parent);
@@ -47,9 +49,27 @@ TimelapseDisplay.prototype.getId = function () {
     return this.id;
 }
 
-// TimelapseDisplay.prototype.updateIndexFromOffset = function(offset) {
-//     this.imgIdx = newIndex;
-// }
+/** Setter function for the object's imgIdx attribute. */
+TimelapseDisplay.prototype.setIndex = function(newIndex) {
+    if (newIndex < 0) {
+        this.imgIdx = 0;
+    } else if (newIndex >= this.images.length) {
+        this.imgIdx = this.images.length - 1;
+    } else {
+        this.imgIdx = newIndex;
+    }
+    this.slider.value(this.imgIdx);
+}
+
+/**
+ * Update the image index using a slider offset.
+ * Used to give state mutability to master slider.
+ * @param {number} offset offset value to compare with the displays current offset value.
+ */
+TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {
+    this.setIndex(this.imgIdx + (offset - this.offset));
+    this.offset = offset;
+}
 
 /**
  * Draw function called in every draw loop.

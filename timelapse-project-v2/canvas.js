@@ -24,6 +24,7 @@ let displays = [];
 /* DOM variables */
 let headerDiv = null;
 let displaysDiv = null;
+let masterSlider = null;
 
 /* Custom objects */
 let loader = null;
@@ -41,7 +42,19 @@ function setup() {
     displaysDiv = createDiv();
     displaysDiv.class("displays");
     displaysDiv.parent(headerDiv);
+
     _createEmptyDisplay();
+
+    let masterSliderDiv = createDiv();
+    masterSliderDiv.class("masterSlider");
+    masterSliderDiv.parent(headerDiv);
+
+    masterSlider = createInput("", "range");
+    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
+    masterSlider.elt.max = MAX_IMAGES;
+    masterSlider.elt.value = 0;
+    masterSlider.parent(masterSliderDiv);
+
     noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
 
@@ -134,6 +147,16 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
         images,
         displaysDiv,
         DISPLAY_WIDTH,
-        DISPLAY_HEIGHT
+        DISPLAY_HEIGHT,
+        parseInt(masterSlider.elt.value),
     );
+}
+
+/**
+ * Update each of the timelapse displays with a new offset.
+ * To be utilized only by the master slider.
+ * @param {number} newOffset new offset for each of the displays
+ */
+function _updateDisplayOffsets(newOffset) {
+    displays.forEach(display => display.setIndexFromOffset(newOffset));
 }

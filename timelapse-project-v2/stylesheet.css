@@ -49,6 +49,21 @@ header {
     width: 100%;
 }
 
+.masterSlider {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    bottom: 20px;
+    width: 100%;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 20px;
+    background-color: #7A7A7A;
+}
+
+.masterSlider input {
+    width: inherit;
+}
+
 .emptyDisplay {
     height: 350px;
     width: 350px;
