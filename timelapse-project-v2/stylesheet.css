@@ -39,12 +39,6 @@ header {
     flex-direction: column;
 }
 
-.titleBar {
-    display: flex;
-    justify-content: space-between;
-    align-self: stretch;
-}
-
 .slider {
     width: 100%;
 }
@@ -58,6 +52,11 @@ header {
     margin: 20px;
     border-radius: 20px;
     background-color: #7A7A7A;
+    opacity: 50%;
+}
+
+.masterSlider:hover {
+    opacity: 100%;
 }
 
 .masterSlider input {

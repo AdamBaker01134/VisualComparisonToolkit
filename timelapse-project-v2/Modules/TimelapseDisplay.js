@@ -27,16 +27,43 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.display = createElementWithID("div", "", id, "display");
     this.display.parent(parent);
 
+    let density = window.pixelDensity();
+
+    /* Dataset name text p5 element */
+    this.nameText = createGraphics(this.width * density, 30 * density);
+    this.nameText.fill(0);
+    this.nameText.textAlign(LEFT);
+    this.nameText.textSize(24);
+    this.nameText.strokeWeight(1);
+    this.nameText.stroke(255);
+    this.nameText.text("/"+ this.name, 10, 22);
+
+    /* Current timestamp text p5 element */
+    this.timestamp = createGraphics(this.width * density, 30 * density);
+    this.timestamp.fill(0);
+    this.timestamp.textAlign(RIGHT);
+    this.timestamp.textSize(24);
+    this.timestamp.strokeWeight(1);
+    this.timestamp.stroke(255);
+
+    /* Title bar p5 element to contain dataset name and current timestamp */
+    this.titleBar = createGraphics(this.width, 30);
+    this.titleBar.parent(this.display);
+    this.titleBar.show();
+
+    /* Image window to contain currently displayed image */
     this.imageWindow = createGraphics(this.width, this.height);
     this.imageWindow.parent(this.display);
     this.imageWindow.show();
 
+    /* Timelapse display slider to control image index */
     this.slider = createInput("", "range");
     this.slider.class("slider");
     this.slider.input((e) => this.setIndex(parseInt(e.target.value)));
     this.slider.elt.max = this.images.length - 1;
-    this.slider.elt.value = this.imgIdx;
     this.slider.parent(this.display);
+
+    this.setIndex(0);
 }
 
 /** Getter function for the object's name attribute. */
@@ -59,6 +86,8 @@ TimelapseDisplay.prototype.setIndex = function(newIndex) {
         this.imgIdx = newIndex;
     }
     this.slider.value(this.imgIdx);
+    this.timestamp.clear();
+    this.timestamp.text(this.timestamps[this.imgIdx], this.width, 22);
 }
 
 /**
@@ -75,12 +104,13 @@ TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {
  * Draw function called in every draw loop.
  */
 TimelapseDisplay.prototype.draw = function () {
-    noStroke();
-    rectMode(CORNER);
-    fill(255);
-    rect(0, 0, this.width, this.height);
+    /* Draw titleBar */
+    this.titleBar.clear();
+    this.titleBar.image(this.nameText, 0, 0, this.width, 30);
+    this.titleBar.image(this.timestamp, this.width / 2, 0, this.width, 30);
 
     /* Draw imageWindow */
+    this.imageWindow.clear();
     this.imageWindow.noStroke();
     this.imageWindow.fill(255);
     this.imageWindow.image(this.images[this.imgIdx], 0, 0, this.width, this.height);
