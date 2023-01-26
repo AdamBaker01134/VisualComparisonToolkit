@@ -20,6 +20,7 @@ let plotPath = "";
 /* State data */
 let datasets = [];
 let displays = [];
+let displayCache = {};
 
 /* DOM variables */
 let headerDiv = null;
@@ -80,8 +81,8 @@ function _createTimelapseDisplay(dataset) {
     emptyDisplay.setErrorState(false);
     emptyDisplay.setLoadState(true);
 
-    /* Improve performance by checking cache array for display data that has already been loaded */
-    let cacheHit = displays.find((display) => display.name === dataset);
+    /* Improve performance by checking cache for display data that has already been loaded */
+    let cacheHit = displayCache[dataset];
     if (!!cacheHit) {
         emptyDisplay.setLoadState(false);
         let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
@@ -104,6 +105,7 @@ function _createTimelapseDisplay(dataset) {
                     emptyDisplay.setLoadState(false);
                     let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
                     displays.push(newDisplay);
+                    _cacheDisplay(dataset, frames, timestamps, images);
                 },
                 (err) => {
                     console.error(`Error loading images for the ${dataset} dataset.`);
@@ -132,7 +134,7 @@ function _createTimelapseDisplay(dataset) {
 function _constructDisplayObject(dataset, frames, timestamps, images) {
 
     let displayCount = 1;
-    let duplicates = displays.filter((display) => display.name === dataset);
+    let duplicates = displays.filter((display) => display.getName() === dataset);
     if (duplicates.length > 0) {
         /* Find the duplicate with the highest id number. */
         let values = duplicates.map((duplicate) => parseInt(duplicate.id.charAt(duplicate.id.length - 1)));
@@ -151,6 +153,22 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
         parseInt(masterSlider.elt.value),
         _removeDisplay,
     );
+}
+
+/**
+ * Add a new display to the displayCache. Cached item keyed by dataset name.
+ * @param {string} dataset name of the dataset
+ * @param {Array<string>} frames array of strings, each representing a frame in the dataset
+ * @param {Array<string>} timestamps array of strings, each representing a timestamp in the dataset
+ * @param {Array<p5.Image>} images array of loaded p5 images
+ */
+function _cacheDisplay(name, frames, timestamps, images) {
+    displayCache[name] = {
+        name: name,
+        frames: frames,
+        timestamps: timestamps,
+        images: images,
+    }
 }
 
 /**
