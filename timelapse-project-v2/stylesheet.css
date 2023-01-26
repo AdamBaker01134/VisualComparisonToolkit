@@ -39,6 +39,11 @@ header {
     flex-direction: column;
 }
 
+.removeButton {
+    margin-bottom: 5px;
+    align-self: flex-end;
+}
+
 .slider {
     width: 100%;
 }

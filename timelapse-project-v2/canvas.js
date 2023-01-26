@@ -106,7 +106,7 @@ function _createTimelapseDisplay(dataset) {
                     displays.push(newDisplay);
                 },
                 (err) => {
-                    console.log(`Error loading images for the ${dataset} dataset.`);
+                    console.error(`Error loading images for the ${dataset} dataset.`);
                     console.log(err);
                     emptyDisplay.setErrorState(true);
                     emptyDisplay.setLoadState(false);
@@ -114,7 +114,7 @@ function _createTimelapseDisplay(dataset) {
             );
         },
         (err) => {
-            console.log(`Error loading frames/timestamps for the ${dataset} dataset.`);
+            console.error(`Error loading frames/timestamps for the ${dataset} dataset.`);
             console.log(err);
             emptyDisplay.setErrorState(true);
             emptyDisplay.setLoadState(false);
@@ -149,6 +149,7 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
         DISPLAY_WIDTH,
         DISPLAY_HEIGHT,
         parseInt(masterSlider.elt.value),
+        _removeDisplay,
     );
 }
 
@@ -159,4 +160,21 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
  */
 function _updateDisplayOffsets(newOffset) {
     displays.forEach(display => display.setIndexFromOffset(newOffset));
+}
+
+/**
+ * Attempts to find a display within the displays array with the given array and remove it.
+ * @param {string} displayID id of display to be removed
+ */
+function _removeDisplay(displayID) {
+    console.log("Attempting to remove timelapse display with id: " + displayID);
+
+    let displayIdx = displays.findIndex(display => display.getId() === displayID);
+    if (displayIdx > -1) {
+        displays[displayIdx].remove();
+        displays.splice(displayIdx, 1); /* Remove display at index displayIdx */
+        console.log("Successfully removed timelapse display with id: " + displayID);
+    } else {
+        console.error("Removal Error: could not locate timelapse display with id" + displayID);
+    }
 }

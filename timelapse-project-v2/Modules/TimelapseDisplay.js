@@ -11,8 +11,9 @@
  * @param {number} width width dimension of the display
  * @param {number} height height dimension of the display
  * @param {number} offset offset of the master slider upon creation
+ * @param {Function} onRemove callback function to remove display when remove button is pressed
  */
-function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height, offset=0) {
+function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height, offset=0, onRemove=()=>{}) {
     this.name = name;
     this.id = id;
     this.frames = frames;
@@ -28,6 +29,12 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.display.parent(parent);
 
     let density = window.pixelDensity();
+
+    /* Display deletion button */
+    this.removeButton = createButton("Remove");
+    this.removeButton.parent(this.display);
+    this.removeButton.class("removeButton");
+    this.removeButton.mouseClicked(() => onRemove(this.id));
 
     /* Dataset name text p5 element */
     this.nameText = createGraphics(this.width * density, 30 * density);
@@ -114,4 +121,12 @@ TimelapseDisplay.prototype.draw = function () {
     this.imageWindow.noStroke();
     this.imageWindow.fill(255);
     this.imageWindow.image(this.images[this.imgIdx], 0, 0, this.width, this.height);
+}
+
+/**
+ * Removal function that deletes the display element from the DOM once the canvas has removed it
+ * from its state array.
+ */
+TimelapseDisplay.prototype.remove = function () {
+    this.display.remove();
 }
