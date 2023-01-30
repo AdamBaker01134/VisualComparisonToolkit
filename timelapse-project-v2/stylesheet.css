@@ -39,7 +39,7 @@ header {
     flex-direction: column;
 }
 
-.removeButton {
+.displayTopControls {
     margin-bottom: 5px;
     align-self: flex-end;
 }

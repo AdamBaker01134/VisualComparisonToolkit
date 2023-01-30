@@ -35,27 +35,27 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.removeButton = createButton("Remove");
     this.removeButton.parent(this.display);
     this.removeButton.id("removeButton");
-    this.removeButton.class("displayButton");
+    this.removeButton.class("displayTopControls");
     this.removeButton.mouseClicked(() => onRemove(this.id));
 
     /* Frame select */
     this.frameSelect = createSelect();
     this.frameSelect.id("frameSelect");
-    this.frameSelect.class("displaySelect");
+    this.frameSelect.class("displayTopControls");
     this.frameSelect.parent(this.display);
     this.frameSelect.option("---");
 
     /* Save frame button */
     this.saveFrameButton = createButton("Save Frame");
     this.saveFrameButton.id("saveFrameButton");
-    this.saveFrameButton.class("displayButton");
+    this.saveFrameButton.class("displayTopControls");
     this.saveFrameButton.parent(this.display);
     this.saveFrameButton.mouseClicked(this._saveCurrentFrame.bind(this));
 
     /* Load frame button */
     this.loadFrameButton = createButton("Load Frame");
     this.loadFrameButton.id("loadFrameButton");
-    this.loadFrameButton.class("displayButton");
+    this.loadFrameButton.class("displayTopControls");
     this.loadFrameButton.parent(this.display);
     this.loadFrameButton.mouseClicked(this._loadFrame.bind(this));
 
