@@ -43,14 +43,7 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.frameSelect.id("frameSelect");
     this.frameSelect.class("displaySelect");
     this.frameSelect.parent(this.display);
-    this.frameSelect.input((e) => {
-        console.log("Selected new saved frame: " + e.target.value);
-        let frameIndex = this.savedFrames.find((savedFrame) => e.target.value === savedFrame.timestamp)?.index;
-        if (!!frameIndex) {
-            this.setIndex(frameIndex);
-        }
-    });
-
+    this.frameSelect.option("---");
 
     /* Save frame button */
     this.saveFrameButton = createButton("Save Frame");
@@ -58,6 +51,13 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.saveFrameButton.class("displayButton");
     this.saveFrameButton.parent(this.display);
     this.saveFrameButton.mouseClicked(this._saveCurrentFrame.bind(this));
+
+    /* Load frame button */
+    this.loadFrameButton = createButton("Load Frame");
+    this.loadFrameButton.id("loadFrameButton");
+    this.loadFrameButton.class("displayButton");
+    this.loadFrameButton.parent(this.display);
+    this.loadFrameButton.mouseClicked(this._loadFrame.bind(this));
 
     /* Dataset name text p5 element */
     this.nameText = createGraphics(this.width * density, 30 * density);
@@ -171,5 +171,21 @@ TimelapseDisplay.prototype._saveCurrentFrame = function () {
     };
     this.savedFrames.push(currentFrameObj);
     this.frameSelect.option(currentFrameObj.timestamp);
+    this.frameSelect.value(currentFrameObj.timestamp);
     console.log("Saved current frame with timestamp [" + currentFrameObj.timestamp + "] and index [" + currentFrameObj.index + "].");
+}
+
+/**
+ * Load a saved frame using the currently selected timestamp as a reference.
+ */
+TimelapseDisplay.prototype._loadFrame = function () {
+    let timestamp = this.frameSelect.elt.value;
+    if (timestamp === "---") {
+        return;
+    }
+    console.log("Selected new saved frame: " + timestamp);
+    let frameIndex = this.savedFrames.find((savedFrame) => timestamp === savedFrame.timestamp)?.index;
+    if (frameIndex >= 0) {
+        this.setIndex(frameIndex);
+    }
 }
