@@ -24,6 +24,7 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.height = height;
     this.imgIdx = 0;
     this.offset = offset;
+    this.savedFrames = [];
 
     this.display = createElementWithID("div", "", id, "display");
     this.display.parent(parent);
@@ -33,8 +34,30 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     /* Display deletion button */
     this.removeButton = createButton("Remove");
     this.removeButton.parent(this.display);
-    this.removeButton.class("removeButton");
+    this.removeButton.id("removeButton");
+    this.removeButton.class("displayButton");
     this.removeButton.mouseClicked(() => onRemove(this.id));
+
+    /* Frame select */
+    this.frameSelect = createSelect();
+    this.frameSelect.id("frameSelect");
+    this.frameSelect.class("displaySelect");
+    this.frameSelect.parent(this.display);
+    this.frameSelect.input((e) => {
+        console.log("Selected new saved frame: " + e.target.value);
+        let frameIndex = this.savedFrames.find((savedFrame) => e.target.value === savedFrame.timestamp)?.index;
+        if (!!frameIndex) {
+            this.setIndex(frameIndex);
+        }
+    });
+
+
+    /* Save frame button */
+    this.saveFrameButton = createButton("Save Frame");
+    this.saveFrameButton.id("saveFrameButton");
+    this.saveFrameButton.class("displayButton");
+    this.saveFrameButton.parent(this.display);
+    this.saveFrameButton.mouseClicked(this._saveCurrentFrame.bind(this));
 
     /* Dataset name text p5 element */
     this.nameText = createGraphics(this.width * density, 30 * density);
@@ -129,4 +152,24 @@ TimelapseDisplay.prototype.draw = function () {
  */
 TimelapseDisplay.prototype.remove = function () {
     this.display.remove();
+}
+
+/**
+ * @private
+ * Saves the current frame of the display in an array and adds it to the saved frame select element.
+ */
+TimelapseDisplay.prototype._saveCurrentFrame = function () {
+    if (this.savedFrames.findIndex((savedFrame) => savedFrame.timestamp === this.timestamps[this.imgIdx]) >= 0) {
+        /* Frame has been previously saved. */
+        console.log("Current frame has already been previously saved.");
+        return;
+    }
+
+    let currentFrameObj = {
+        timestamp: this.timestamps[this.imgIdx],
+        index: this.imgIdx,
+    };
+    this.savedFrames.push(currentFrameObj);
+    this.frameSelect.option(currentFrameObj.timestamp);
+    console.log("Saved current frame with timestamp [" + currentFrameObj.timestamp + "] and index [" + currentFrameObj.index + "].");
 }
