@@ -34,30 +34,32 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     /* Display deletion button */
     this.removeButton = createButton("Remove");
     this.removeButton.parent(this.display);
-    this.removeButton.id("removeButton");
     this.removeButton.class("displayTopControls");
+    this.removeButton.id("removeButton");
     this.removeButton.mouseClicked(() => onRemove(this.id));
+
+    this.topControls = createDiv();
+    this.topControls.class("displayTopControls");
+    this.topControls.parent(this.display);
 
     /* Frame select */
     this.frameSelect = createSelect();
     this.frameSelect.id("frameSelect");
-    this.frameSelect.class("displayTopControls");
-    this.frameSelect.parent(this.display);
-    this.frameSelect.option("---");
-
-    /* Save frame button */
-    this.saveFrameButton = createButton("Save Frame");
-    this.saveFrameButton.id("saveFrameButton");
-    this.saveFrameButton.class("displayTopControls");
-    this.saveFrameButton.parent(this.display);
-    this.saveFrameButton.mouseClicked(this._saveCurrentFrame.bind(this));
+    this.frameSelect.parent(this.topControls);
+    this.frameSelect.option("Select Frame");
+    this.frameSelect.disable("Select Frame");
 
     /* Load frame button */
     this.loadFrameButton = createButton("Load Frame");
     this.loadFrameButton.id("loadFrameButton");
-    this.loadFrameButton.class("displayTopControls");
-    this.loadFrameButton.parent(this.display);
+    this.loadFrameButton.parent(this.topControls);
     this.loadFrameButton.mouseClicked(this._loadFrame.bind(this));
+
+    /* Save frame button */
+    this.saveFrameButton = createButton("Save Frame");
+    this.saveFrameButton.id("saveFrameButton");
+    this.saveFrameButton.parent(this.topControls);
+    this.saveFrameButton.mouseClicked(this._saveCurrentFrame.bind(this));
 
     /* Dataset name text p5 element */
     this.nameText = createGraphics(this.width * density, 30 * density);
@@ -180,9 +182,6 @@ TimelapseDisplay.prototype._saveCurrentFrame = function () {
  */
 TimelapseDisplay.prototype._loadFrame = function () {
     let timestamp = this.frameSelect.elt.value;
-    if (timestamp === "---") {
-        return;
-    }
     console.log("Selected new saved frame: " + timestamp);
     let frameIndex = this.savedFrames.find((savedFrame) => timestamp === savedFrame.timestamp)?.index;
     if (frameIndex >= 0) {
