@@ -45,16 +45,7 @@ function setup() {
     displaysDiv.parent(headerDiv);
 
     _createEmptyDisplay();
-
-    let masterSliderDiv = createDiv();
-    masterSliderDiv.class("masterSlider");
-    masterSliderDiv.parent(headerDiv);
-
-    masterSlider = createInput("", "range");
-    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
-    masterSlider.elt.max = MAX_IMAGES;
-    masterSlider.elt.value = 0;
-    masterSlider.parent(masterSliderDiv);
+    _constructGlobalControls();
 
     noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
@@ -156,6 +147,30 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
 }
 
 /**
+ * Construct DOM elements that act as Global controls for all displays.
+ * This includes:
+ *  - the master/global slider controlling indexing for all the displays
+ *  - the Set All button to set all displays to the current index of the global slider
+ *  - the inputs that control saving and loading positions in the global slider
+ */
+function _constructGlobalControls() {
+    let masterControls = createDiv();
+    masterControls.class("masterControls");
+    masterControls.parent(headerDiv);
+
+    let setAllButton = createButton("Set All");
+    setAllButton.id("setAll");
+    setAllButton.mouseClicked(() => _setAllDisplayIndexes(parseInt(masterSlider.elt.value)));
+    setAllButton.parent(masterControls);
+
+    masterSlider = createInput("", "range");
+    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
+    masterSlider.elt.max = MAX_IMAGES;
+    masterSlider.elt.value = 0;
+    masterSlider.parent(masterControls);
+}
+
+/**
  * Add a new display to the displayCache. Cached item keyed by dataset name.
  * @param {string} dataset name of the dataset
  * @param {Array<string>} frames array of strings, each representing a frame in the dataset
@@ -169,6 +184,18 @@ function _cacheDisplay(name, frames, timestamps, images) {
         timestamps: timestamps,
         images: images,
     }
+}
+
+/**
+ * Set the current index of each display to a specific index.
+ * @param {number} newIndex new index to set each display to
+ */
+function _setAllDisplayIndexes(newIndex) {
+    if (newIndex < 0 || newIndex > MAX_IMAGES || displays.length === 0) {
+        return;
+    }
+    displays.forEach(display => display.setIndex(newIndex));
+    console.log("Successfully set all display indexes to [" + newIndex + "].");
 }
 
 /**
