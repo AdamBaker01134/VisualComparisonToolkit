@@ -21,11 +21,13 @@ let plotPath = "";
 let datasets = [];
 let displays = [];
 let displayCache = {};
+let configs = {};
 
 /* DOM variables */
 let headerDiv = null;
 let displaysDiv = null;
 let masterSlider = null;
+let configSelect = null;
 
 /* Custom objects */
 let loader = null;
@@ -158,10 +160,25 @@ function _constructGlobalControls() {
     masterControls.class("masterControls");
     masterControls.parent(headerDiv);
 
-    let setAllButton = createButton("Set All");
-    setAllButton.id("setAll");
-    setAllButton.mouseClicked(() => _setAllDisplayIndexes(parseInt(masterSlider.elt.value)));
-    setAllButton.parent(masterControls);
+    // let setAllButton = createButton("Set All");
+    // setAllButton.id("setAll");
+    // setAllButton.mouseClicked(() => _setAllDisplayIndexes(parseInt(masterSlider.elt.value)));
+    // setAllButton.parent(masterControls);
+    configSelect = createSelect();
+    configSelect.id("configSelect");
+    configSelect.option("Select config");
+    configSelect.disable("Select config");
+    configSelect.parent(masterControls);
+
+    let loadConfig = createButton("Load Config");
+    loadConfig.id("loadConfig");
+    loadConfig.mouseClicked((e) => _loadConfiguration(configSelect.elt.value));
+    loadConfig.parent(masterControls);
+
+    let saveConfig = createButton("Save Config");
+    saveConfig.id("saveConfig");
+    saveConfig.mouseClicked(_saveCurrentConfiguration);
+    saveConfig.parent(masterControls);
 
     masterSlider = createInput("", "range");
     masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
@@ -186,17 +203,17 @@ function _cacheDisplay(name, frames, timestamps, images) {
     }
 }
 
-/**
- * Set the current index of each display to a specific index.
- * @param {number} newIndex new index to set each display to
- */
-function _setAllDisplayIndexes(newIndex) {
-    if (newIndex < 0 || newIndex > MAX_IMAGES || displays.length === 0) {
-        return;
-    }
-    displays.forEach(display => display.setIndex(newIndex));
-    console.log("Successfully set all display indexes to [" + newIndex + "].");
-}
+// /**
+//  * Set the current index of each display to a specific index.
+//  * @param {number} newIndex new index to set each display to
+//  */
+// function _setAllDisplayIndexes(newIndex) {
+//     if (newIndex < 0 || newIndex > MAX_IMAGES || displays.length === 0) {
+//         return;
+//     }
+//     displays.forEach(display => display.setIndex(newIndex));
+//     console.log("Successfully set all display indexes to [" + newIndex + "].");
+// }
 
 /**
  * Update each of the timelapse displays with a new offset.
@@ -221,5 +238,45 @@ function _removeDisplay(displayID) {
         console.log("Successfully removed timelapse display with id: " + displayID);
     } else {
         console.error("Removal Error: could not locate timelapse display with id" + displayID);
+    }
+}
+
+/**
+ * Save the current configuration of the system.
+ * (i.e. save the current index of each display in a JSON)
+ */
+function _saveCurrentConfiguration() {
+    let config = {};
+
+    displays.forEach(display => {
+        config[display.getId()] = { index: display.getIndex() };
+    });
+    config.masterIndex = masterSlider.elt.value;
+
+    let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
+    if (!!configName) {
+        configs[configName] = config;
+        configSelect.option(configName);
+        configSelect.value(configName);
+        console.log(`Successfully saved the [${configName}] configuration.`);
+    }
+}
+
+/**
+ * Load a saved configuration.
+ * @param {string} config name of the configuration we want to load.
+ */
+function _loadConfiguration(config) {
+    let configuration = configs[config];
+    if (!!configuration) {
+        let configDisplays = Object.keys(configuration);
+        let masterIndex = configuration.masterIndex;
+        configDisplays.filter(key => key !== "masterIndex").forEach(id => {
+            let display = displays.find((display) => display.getId() === id);
+            display.setIndex(configuration[id].index);
+            display.setOffset(masterIndex);
+        });
+        masterSlider.value(masterIndex);
+        console.log(`Succesfully loaded the [${config}] configuration.`)
     }
 }

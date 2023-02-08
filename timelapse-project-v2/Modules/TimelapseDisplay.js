@@ -108,6 +108,11 @@ TimelapseDisplay.prototype.getId = function () {
     return this.id;
 }
 
+/** Getter function for the object's imgIdx attribute. */
+TimelapseDisplay.prototype.getIndex = function () {
+    return this.imgIdx;
+}
+
 /** Setter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.setIndex = function(newIndex) {
     if (newIndex < 0) {
@@ -123,13 +128,21 @@ TimelapseDisplay.prototype.setIndex = function(newIndex) {
 }
 
 /**
+ * Sets the current offset from the master slider.
+ * @param {number} newOffset new offset to set
+ */
+TimelapseDisplay.prototype.setOffset = function(newOffset) {
+    this.offset = newOffset;
+}
+
+/**
  * Update the image index using a slider offset.
  * Used to give state mutability to master slider.
  * @param {number} offset offset value to compare with the displays current offset value.
  */
 TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {
     this.setIndex(this.imgIdx + (offset - this.offset));
-    this.offset = offset;
+    this.setOffset(offset);
 }
 
 /**
