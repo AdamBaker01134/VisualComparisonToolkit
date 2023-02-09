@@ -274,8 +274,8 @@ function _loadConfiguration(config) {
         configDisplays.filter(key => key !== "masterIndex").forEach(id => {
             let display = displays.find((display) => display.getId() === id);
             display.setIndex(configuration[id].index);
-            display.setOffset(masterIndex);
         });
+        displays.forEach(display => display.setOffset(masterIndex));
         masterSlider.value(masterIndex);
         console.log(`Succesfully loaded the [${config}] configuration.`)
     }
