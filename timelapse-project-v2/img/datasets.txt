@@ -1,7 +1,0 @@
-timelapse1
-2018_coast_agcanola_29
-2018_coast_agcanola_31
-2018_coast_agcanola_40
-2018_coast_peas_12
-2018_coast_peas_25
-erroneous_dataset
