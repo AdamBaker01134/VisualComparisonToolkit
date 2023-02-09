@@ -21,11 +21,13 @@ let plotPath = "";
 let datasets = [];
 let displays = [];
 let displayCache = {};
+let configs = {};
 
 /* DOM variables */
 let headerDiv = null;
 let displaysDiv = null;
 let masterSlider = null;
+let configSelect = null;
 
 /* Custom objects */
 let loader = null;
@@ -45,16 +47,7 @@ function setup() {
     displaysDiv.parent(headerDiv);
 
     _createEmptyDisplay();
-
-    let masterSliderDiv = createDiv();
-    masterSliderDiv.class("masterSlider");
-    masterSliderDiv.parent(headerDiv);
-
-    masterSlider = createInput("", "range");
-    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
-    masterSlider.elt.max = MAX_IMAGES;
-    masterSlider.elt.value = 0;
-    masterSlider.parent(masterSliderDiv);
+    _constructGlobalControls();
 
     noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
@@ -156,6 +149,45 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
 }
 
 /**
+ * Construct DOM elements that act as Global controls for all displays.
+ * This includes:
+ *  - the master/global slider controlling indexing for all the displays
+ *  - the Set All button to set all displays to the current index of the global slider
+ *  - the inputs that control saving and loading positions in the global slider
+ */
+function _constructGlobalControls() {
+    let masterControls = createDiv();
+    masterControls.class("masterControls");
+    masterControls.parent(headerDiv);
+
+    // let setAllButton = createButton("Set All");
+    // setAllButton.id("setAll");
+    // setAllButton.mouseClicked(() => _setAllDisplayIndexes(parseInt(masterSlider.elt.value)));
+    // setAllButton.parent(masterControls);
+    configSelect = createSelect();
+    configSelect.id("configSelect");
+    configSelect.option("Select config");
+    configSelect.disable("Select config");
+    configSelect.parent(masterControls);
+
+    let loadConfig = createButton("Load Config");
+    loadConfig.id("loadConfig");
+    loadConfig.mouseClicked((e) => _loadConfiguration(configSelect.elt.value));
+    loadConfig.parent(masterControls);
+
+    let saveConfig = createButton("Save Config");
+    saveConfig.id("saveConfig");
+    saveConfig.mouseClicked(_saveCurrentConfiguration);
+    saveConfig.parent(masterControls);
+
+    masterSlider = createInput("", "range");
+    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
+    masterSlider.elt.max = MAX_IMAGES;
+    masterSlider.elt.value = 0;
+    masterSlider.parent(masterControls);
+}
+
+/**
  * Add a new display to the displayCache. Cached item keyed by dataset name.
  * @param {string} dataset name of the dataset
  * @param {Array<string>} frames array of strings, each representing a frame in the dataset
@@ -170,6 +202,18 @@ function _cacheDisplay(name, frames, timestamps, images) {
         images: images,
     }
 }
+
+// /**
+//  * Set the current index of each display to a specific index.
+//  * @param {number} newIndex new index to set each display to
+//  */
+// function _setAllDisplayIndexes(newIndex) {
+//     if (newIndex < 0 || newIndex > MAX_IMAGES || displays.length === 0) {
+//         return;
+//     }
+//     displays.forEach(display => display.setIndex(newIndex));
+//     console.log("Successfully set all display indexes to [" + newIndex + "].");
+// }
 
 /**
  * Update each of the timelapse displays with a new offset.
@@ -194,5 +238,45 @@ function _removeDisplay(displayID) {
         console.log("Successfully removed timelapse display with id: " + displayID);
     } else {
         console.error("Removal Error: could not locate timelapse display with id" + displayID);
+    }
+}
+
+/**
+ * Save the current configuration of the system.
+ * (i.e. save the current index of each display in a JSON)
+ */
+function _saveCurrentConfiguration() {
+    let config = {};
+
+    displays.forEach(display => {
+        config[display.getId()] = { index: display.getIndex() };
+    });
+    config.masterIndex = masterSlider.elt.value;
+
+    let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
+    if (!!configName) {
+        configs[configName] = config;
+        configSelect.option(configName);
+        configSelect.value(configName);
+        console.log(`Successfully saved the [${configName}] configuration.`);
+    }
+}
+
+/**
+ * Load a saved configuration.
+ * @param {string} config name of the configuration we want to load.
+ */
+function _loadConfiguration(config) {
+    let configuration = configs[config];
+    if (!!configuration) {
+        let configDisplays = Object.keys(configuration);
+        let masterIndex = configuration.masterIndex;
+        configDisplays.filter(key => key !== "masterIndex").forEach(id => {
+            let display = displays.find((display) => display.getId() === id);
+            display.setIndex(configuration[id].index);
+        });
+        displays.forEach(display => display.setOffset(masterIndex));
+        masterSlider.value(masterIndex);
+        console.log(`Succesfully loaded the [${config}] configuration.`)
     }
 }

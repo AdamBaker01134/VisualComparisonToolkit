@@ -39,7 +39,7 @@ header {
     flex-direction: column;
 }
 
-.removeButton {
+.displayTopControls {
     margin-bottom: 5px;
     align-self: flex-end;
 }
@@ -48,7 +48,7 @@ header {
     width: 100%;
 }
 
-.masterSlider {
+.masterControls {
     position: -webkit-sticky; /* Safari */
     position: sticky;
     bottom: 20px;
@@ -60,11 +60,16 @@ header {
     opacity: 50%;
 }
 
-.masterSlider:hover {
+.masterControls:hover {
     opacity: 100%;
 }
 
-.masterSlider input {
+.masterControls button {
+    float: right;
+    margin-bottom: 5px;
+}
+
+.masterControls input {
     width: inherit;
 }
 
