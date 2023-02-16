@@ -95,7 +95,11 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.slider.elt.max = this.images.length - 1;
     this.slider.parent(this.display);
 
-    this.customSlider = new Scrollbar(this.width, 30, this.id, this.display, this.images.length);
+    this.scrollbar = new Scrollbar(this.width, 30, this.id, this.display, this.images.length);
+    for (let i = 0; i < this.images.length; i++) {
+        this.scrollbar.addSegment(i);
+    }
+    this.scrollbar.updateParameters(this.width, 30);
 
     this.setIndex(0);
 }
@@ -162,7 +166,7 @@ TimelapseDisplay.prototype.draw = function () {
     this.imageWindow.fill(255);
     this.imageWindow.image(this.images[this.imgIdx], 0, 0, this.width, this.height);
 
-    this.customSlider.draw();
+    this.scrollbar.draw();
 }
 
 /**

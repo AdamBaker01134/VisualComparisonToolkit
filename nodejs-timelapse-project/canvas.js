@@ -25,8 +25,10 @@ let configs = {};
 
 /* DOM variables */
 let headerDiv = null;
+let controlsDiv = null;
 let displaysDiv = null;
 let masterSlider = null;
+let masterScrollbar = null;
 let configSelect = null;
 
 /* Custom objects */
@@ -36,6 +38,7 @@ let emptyDisplay = null;
 /* p5.js function that is called to load things before setup is called */
 function preload() {
     headerDiv = createElementWithID("header", "", "setupHolder", "setup");
+    controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
     loader = new Loader(MAX_IMAGES, IMG_PATH);
     datasets = loader.loadDatasets();
 }
@@ -55,6 +58,7 @@ function setup() {
 /* p5.js function that acts as the draw loop */
 function draw() {
     displays.forEach(display => display.draw());
+    masterScrollbar.draw();
 }
 
 /**
@@ -158,7 +162,7 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
 function _constructGlobalControls() {
     let masterControls = createDiv();
     masterControls.class("masterControls");
-    masterControls.parent(headerDiv);
+    masterControls.parent(controlsDiv);
 
     // let setAllButton = createButton("Set All");
     // setAllButton.id("setAll");
@@ -185,6 +189,12 @@ function _constructGlobalControls() {
     masterSlider.elt.max = MAX_IMAGES;
     masterSlider.elt.value = 0;
     masterSlider.parent(masterControls);
+
+    masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterSlider", masterControls);
+    for (let i = 0; i < MAX_IMAGES; i++) {
+        masterScrollbar.addSegment(i);
+    }
+    masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
 }
 
 /**
