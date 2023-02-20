@@ -10,7 +10,7 @@
  * @param {p5.Element} parent the intended parent element for the display
  * @param {number} width width dimension of the display
  * @param {number} height height dimension of the display
- * @param {number} offset offset of the master slider upon creation
+ * @param {number} offset offset of the master scrollbar upon creation
  * @param {Function} onRemove callback function to remove display when remove button is pressed
  */
 function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height, offset=0, onRemove=()=>{}) {
@@ -88,13 +88,7 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.imageWindow.parent(this.display);
     this.imageWindow.show();
 
-    /* Timelapse display slider to control image index */
-    this.slider = createInput("", "range");
-    this.slider.class("slider");
-    this.slider.input((e) => this.setIndex(parseInt(e.target.value)));
-    this.slider.elt.max = this.images.length - 1;
-    this.slider.parent(this.display);
-
+    /* Timelapse display custom scrollbar to control image index */
     this.scrollbar = new Scrollbar(this.width, 30, this.id, this.display, this.images.length);
     for (let i = 0; i < this.images.length; i++) {
         this.scrollbar.addSegment(i);
@@ -128,13 +122,15 @@ TimelapseDisplay.prototype.setIndex = function(newIndex) {
     } else {
         this.imgIdx = newIndex;
     }
-    this.slider.value(this.imgIdx);
     this.timestamp.clear();
+    if (newIndex !== this.scrollbar.getIndex()) {
+        this.scrollbar.setIndex(newIndex);
+    }
     this.timestamp.text(this.timestamps[this.imgIdx], this.width, 22);
 }
 
 /**
- * Sets the current offset from the master slider.
+ * Sets the current offset from the master scrollbar.
  * @param {number} newOffset new offset to set
  */
 TimelapseDisplay.prototype.setOffset = function(newOffset) {
@@ -142,8 +138,8 @@ TimelapseDisplay.prototype.setOffset = function(newOffset) {
 }
 
 /**
- * Update the image index using a slider offset.
- * Used to give state mutability to master slider.
+ * Update the image index using a scrollbar offset.
+ * Used to give state mutability to master scrollbar.
  * @param {number} offset offset value to compare with the displays current offset value.
  */
 TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {

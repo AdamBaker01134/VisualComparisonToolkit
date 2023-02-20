@@ -44,10 +44,6 @@ header {
     align-self: flex-end;
 }
 
-.slider {
-    width: 100%;
-}
-
 .controls {
     position: -webkit-sticky; /* Safari */
     position: sticky;

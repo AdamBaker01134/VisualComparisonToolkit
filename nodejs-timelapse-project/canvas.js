@@ -29,7 +29,6 @@ let controlsActive = false;
 let headerDiv = null;
 let controlsDiv = null;
 let displaysDiv = null;
-let masterSlider = null;
 let masterScrollbar = null;
 let configSelect = null;
 
@@ -151,7 +150,7 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
         displaysDiv,
         DISPLAY_WIDTH,
         DISPLAY_HEIGHT,
-        parseInt(masterSlider.elt.value),
+        masterScrollbar.getIndex(),
         _removeDisplay,
     );
 }
@@ -159,19 +158,15 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
 /**
  * Construct DOM elements that act as Global controls for all displays.
  * This includes:
- *  - the master/global slider controlling indexing for all the displays
- *  - the Set All button to set all displays to the current index of the global slider
- *  - the inputs that control saving and loading positions in the global slider
+ *  - the master/global scrollbar controlling indexing for all the displays
+ *  - the Set All button to set all displays to the current index of the global scrollbar
+ *  - the inputs that control saving and loading positions in the global scrollbar
  */
 function _constructGlobalControls() {
     let masterControls = createDiv();
     masterControls.class("masterControls");
     masterControls.parent(controlsDiv);
 
-    // let setAllButton = createButton("Set All");
-    // setAllButton.id("setAll");
-    // setAllButton.mouseClicked(() => _setAllDisplayIndexes(parseInt(masterSlider.elt.value)));
-    // setAllButton.parent(masterControls);
     configSelect = createSelect();
     configSelect.id("configSelect");
     configSelect.option("Select config");
@@ -188,13 +183,7 @@ function _constructGlobalControls() {
     saveConfig.mouseClicked(_saveCurrentConfiguration);
     saveConfig.parent(masterControls);
 
-    masterSlider = createInput("", "range");
-    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
-    masterSlider.elt.max = MAX_IMAGES;
-    masterSlider.elt.value = 0;
-    masterSlider.parent(masterControls);
-
-    masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterSlider", masterControls);
+    masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterScrollbar", masterControls);
     for (let i = 0; i < MAX_IMAGES; i++) {
         masterScrollbar.addSegment(i);
     }
@@ -233,7 +222,7 @@ function _cacheDisplay(name, frames, timestamps, images) {
 
 /**
  * Update each of the timelapse displays with a new offset.
- * To be utilized only by the master slider.
+ * To be utilized only by the master scrollbar.
  * @param {number} newOffset new offset for each of the displays
  */
 function _updateDisplayOffsets(newOffset) {
@@ -267,7 +256,7 @@ function _saveCurrentConfiguration() {
     displays.forEach(display => {
         config[display.getId()] = { index: display.getIndex() };
     });
-    config.masterIndex = masterSlider.elt.value;
+    config.masterIndex = masterScrollbar.getIndex();
 
     let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
     if (!!configName) {
@@ -292,7 +281,7 @@ function _loadConfiguration(config) {
             display.setIndex(configuration[id].index);
         });
         displays.forEach(display => display.setOffset(masterIndex));
-        masterSlider.value(masterIndex);
+        masterScrollbar.setIndex(masterIndex);
         console.log(`Succesfully loaded the [${config}] configuration.`)
     }
 }
@@ -322,7 +311,10 @@ function handleMouseMoved(e, mx = mouseX) {
     // First check if the controls bar is active (overwrites other behaviour)
     if (controlsActive) {
         if (masterScrollbar.hasMouseInScrollbar()) {
-            masterScrollbar.setIndexFromMouse(mx);
+            let index = masterScrollbar.setIndexFromMouse(mx);
+            if (index >= 0) {
+                _updateDisplayOffsets(index);
+            }
         }
         return;
     }
