@@ -51,7 +51,7 @@ Scrollbar.prototype.addSegment = function (idx) {
     end = end < 0 ? this.segments.length : Math.ceil( (end + idx) / 2);
 
     // Fill in the clickables array inside the located range.
-    this.clickables.fill(idx, start, end);
+    this.clickables.fillWith(idx, start, end);
 
     // // Render the segment.
     // this.size < this.segments.length ? this.renderSegment(segment) : this.render();
@@ -118,7 +118,7 @@ Scrollbar.prototype.draw = function () {
 
     if (this.isReady) {
         let triangleSize = this.height / 6;
-        let trianglePos = this.lineGap * (0.5 + 100);
+        let trianglePos = this.lineGap * (0.5 + this.index);
 
         // Draw the position indicator triangle.
         this.scrollbar.noStroke();
@@ -199,12 +199,8 @@ Scrollbar.prototype.hasMouseInScrollbar = function (mx = mouseX, my = mouseY) {
     let x = this.getXOffset();
     let y = this.getYOffset();
 
-    if ((mx >= x && mx <= (x + this.width)) &&
-        (my >= y && my <= (y + this.height))) {
-            return true;
-    }
-
-    return false;
+    return (mx >= x && mx <= (x + this.width)) &&
+            (my >= y && my <= (y + this.height));
 }
 
 /**
@@ -301,11 +297,11 @@ Scrollbar.prototype.updateParameters = function (w, h) {
 // }
 
 Scrollbar.prototype.getXOffset = function () {
-    return this.scrollbar.elt.getBoundingClientRect().left;
+    return this.scrollbar.elt.getBoundingClientRect().x;
 }
 
 Scrollbar.prototype.getYOffset = function () {
-    return this.scrollbar.elt.getBoundingClientRect().top;
+    return this.scrollbar.elt.getBoundingClientRect().y;
 }
 
 

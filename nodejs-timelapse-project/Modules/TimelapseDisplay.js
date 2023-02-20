@@ -152,6 +152,31 @@ TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {
 }
 
 /**
+ * Set the index from the mouses position.
+ * @param {number} mx x coordinate of the cursor.
+ */
+TimelapseDisplay.prototype.setIndexFromMouse = function(mx = mouseX) {
+    this.scrollbar.setIndexFromMouse(mx);
+    this.syncIndices();
+}
+
+/**
+ * Sync the indices from the scrollbar with the scrollbar.
+ */
+TimelapseDisplay.prototype.syncIndices = function() {
+    this.imgIdx = this.scrollbar.getIndex();
+}
+
+/**
+ * Report whether the mouse is in this displays scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ */
+TimelapseDisplay.prototype.hasMouseInScrollbar = function(mx = mouseX, my = mouseY) {
+    return this.scrollbar.hasMouseInScrollbar();
+}
+
+/**
  * Draw function called in every draw loop.
  */
 TimelapseDisplay.prototype.draw = function () {

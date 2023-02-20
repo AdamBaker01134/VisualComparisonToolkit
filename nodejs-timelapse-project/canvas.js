@@ -22,6 +22,8 @@ let datasets = [];
 let displays = [];
 let displayCache = {};
 let configs = {};
+let mouseIsFocused = false;
+let controlsActive = false;
 
 /* DOM variables */
 let headerDiv = null;
@@ -51,6 +53,8 @@ function setup() {
 
     _createEmptyDisplay();
     _constructGlobalControls();
+
+    _attachUserEventListeners();
 
     noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
@@ -195,6 +199,8 @@ function _constructGlobalControls() {
         masterScrollbar.addSegment(i);
     }
     masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
+    masterControls.mouseOver(() => controlsActive = true);
+    masterControls.mouseOut(() => controlsActive = false);
 }
 
 /**
@@ -289,4 +295,61 @@ function _loadConfiguration(config) {
         masterSlider.value(masterIndex);
         console.log(`Succesfully loaded the [${config}] configuration.`)
     }
+}
+
+//// User Event Handling ////
+
+/**
+ * Attach following event listeners to the document:
+ *  - mousemove event
+ *  - mousedown event
+ *  - mouseup event
+ */
+function _attachUserEventListeners() {
+    document.addEventListener("mousemove", handleMouseMoved);
+    document.addEventListener("mousedown", handleMousePressed);
+    document.addEventListener("mouseup", handleMouseReleased);
+}
+
+/**
+ * Mouse moved event handler.
+ * @param {Event} e
+ * @param {number} mx x coordinate of the cursor
+ */
+function handleMouseMoved(e, mx = mouseX) {
+    if (!mouseIsFocused) return;
+
+    // First check if the controls bar is active (overwrites other behaviour)
+    if (controlsActive) {
+        if (masterScrollbar.hasMouseInScrollbar()) {
+            masterScrollbar.setIndexFromMouse(mx);
+        }
+        return;
+    }
+
+    // Then, check if display is focused
+    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+    if (focusedDisplay instanceof TimelapseDisplay) {
+        focusedDisplay.setIndexFromMouse(mx);
+    }
+}
+
+/**
+ * Mouse pressed event handler.
+ * @param {Event} e
+ * @param {number} mx x coordinate of the cursor
+ */
+function handleMousePressed(e, mx = mouseX) {
+    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+    if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
+        mouseIsFocused = true;
+        handleMouseMoved(e, mx);
+    }
+}
+
+/**
+ * Mouse released event handler.
+ */
+function handleMouseReleased() {
+    mouseIsFocused = false;
 }
