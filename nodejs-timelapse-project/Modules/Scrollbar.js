@@ -63,48 +63,6 @@ Scrollbar.prototype.addSegment = function (idx) {
     }
 }
 
-// /**
-//  * Move up to the next valid index.
-//  */
-// Scrollbar.prototype.incrementIndex = function () {
-//     let savedIndex = this.index;
-
-//     do {
-//         this.index++;
-//     } while (
-//         this.clickables[this.index] === this.clickables[this.index - 1] &&
-//         this.index < this.clickables.length - 1
-//     );
-//     this.index = this.clickables[this.index];
-
-//     // Make sure we got a valid index.
-//     if (this.index >= this.segments.length || !this.segments[this.index]) {
-//         this.index = savedIndex;
-//     }
-
-//     return this.index;
-// }
-
-// /**
-//  * Move down to the previous valid index.
-//  */
-// Scrollbar.prototype.decrementIndex = function () {
-//     let savedIndex = this.index;
-
-//     do {
-//         this.index--; 
-//     } while (
-//         this.clickables[this.index] === this.clickables[this.index + 1] &&
-//         this.index > 0
-//     );
-//     this.index = this.clickables[this.index];
-
-//     // Make sure we got a valid index
-//     if (this.index < 0 || !this.segments[this.index] ) this.index = savedIndex;
-
-//     return this.index;
-// }
-
 /**
  * Draw the scrollbar.
  */
@@ -261,41 +219,6 @@ Scrollbar.prototype.updateParameters = function (w, h) {
     });
 }
 
-// Scrollbar.prototype.updateMousePosition = function () {
-//     if (!this.active) return;
-//     // console.log("updateMousePosition activated at mouseX: " + mouseX);
-//     this.currentPos = mouseX - this.getXOffset();
-// }
-
-// Scrollbar.prototype.draw = function () {
-//     this.scrollbar.background("rgb(34, 154, 34)");
-
-//     this.scrollbar.stroke(0);
-//     this.scrollbar.strokeWeight(4);
-//     this.scrollbar.line(this.currentPos, 0, this.currentPos, 30);
-
-//     this.scrollbar.strokeWeight(1);
-//     this._drawSegments();
-// }
-
-// Scrollbar.prototype._drawSegments = function () {
-//     let gap = Math.floor(this.width / this.segments) + 0.1;
-
-//     for (let idx = 0; idx < this.segments; idx++) {
-//         switch (idx % 10) {
-//             case 0:
-//                 this.scrollbar.line(idx * gap, 0, idx * gap, 12);
-//                 break;
-//             case 5:
-//                 this.scrollbar.line(idx * gap, 0, idx * gap, 8);
-//                 break;
-//             default:
-//                 this.scrollbar.line(idx * gap, 0, idx * gap, 5);    
-//                 break
-//         }
-//     }
-// }
-
 Scrollbar.prototype.getXOffset = function () {
     return this.scrollbar.elt.getBoundingClientRect().x;
 }
@@ -303,7 +226,6 @@ Scrollbar.prototype.getXOffset = function () {
 Scrollbar.prototype.getYOffset = function () {
     return this.scrollbar.elt.getBoundingClientRect().y;
 }
-
 
 /**
  * Object representing a scrollbar's segment, containing relevant info for drawing.
