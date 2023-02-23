@@ -253,13 +253,17 @@ function _removeDisplay(displayID) {
 function _saveCurrentConfiguration() {
     let config = {};
 
-    displays.forEach(display => {
-        config[display.getId()] = { index: display.getIndex() };
-    });
-    config.masterIndex = masterScrollbar.getIndex();
-
     let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
     if (!!configName) {
+        displays.forEach(display => {
+            let displayIdx = display.getIndex();
+            config[display.getId()] = { index: displayIdx };
+            display.addConfigIndex(displayIdx);
+        });
+        let masterIdx = masterScrollbar.getIndex()
+        config.masterIndex = masterIdx;
+        masterScrollbar.addConfigIndex(masterIdx);
+
         configs[configName] = config;
         configSelect.option(configName);
         configSelect.value(configName);

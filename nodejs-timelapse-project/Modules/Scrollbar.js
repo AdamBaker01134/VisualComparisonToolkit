@@ -4,12 +4,12 @@
 
 "use strict";
 
-function Scrollbar(width, height, id, parent, onInput = () => { }) {
+function Scrollbar(width, height, id, parent, configIndices=[]) {
 
     this.width = width;
     this.height = height;
     this.id = id;
-    this.onInput = onInput;
+    this.configIndices = configIndices;
 
     this.isReady = false;       // Declares whether any segments have been loaded.
     this.segments = [];         // Array of ScrollbarSegments
@@ -23,10 +23,6 @@ function Scrollbar(width, height, id, parent, onInput = () => { }) {
     this.scrollbar.class("scrollbar");
     this.scrollbar.parent(parent);
     this.scrollbar.show();
-
-    // this.scrollbar.mousePressed(() => { this.active = true; this.updateMousePosition()});
-    // this.scrollbar.mouseReleased(() => this.active = false);
-    // this.scrollbar.mouseMoved(() => this.updateMousePosition());
 }
 
 /**
@@ -53,14 +49,19 @@ Scrollbar.prototype.addSegment = function (idx) {
     // Fill in the clickables array inside the located range.
     this.clickables.fillWith(idx, start, end);
 
-    // // Render the segment.
-    // this.size < this.segments.length ? this.renderSegment(segment) : this.render();
-
     if (!this.isReady) {
         // This is the first segment to load. Adjust the index as such.
         this.index = idx;
         this.isReady = true;
     }
+}
+
+/**
+ * Add a configuration index to the configIndices array.
+ * @param {number} idx new configuration index
+ */
+Scrollbar.prototype.addConfigIndex = function (idx) {
+    this.configIndices.push(idx);
 }
 
 /**
@@ -72,6 +73,12 @@ Scrollbar.prototype.draw = function () {
 
     this.segments.forEach((segment) => {
         this.renderLine(segment.idx, segment.line);
+    });
+
+    /* TODO: find a better way to calculate the configuration indice positions. */
+    this.configIndices.forEach((configIndex) => {
+        let pos = this.segments.find((segment) => segment.idx === configIndex).line;
+        if (pos) this.renderDot("#222222", pos);
     });
 
     if (this.isReady) {
@@ -89,8 +96,6 @@ Scrollbar.prototype.draw = function () {
             trianglePos + triangleSize,     // right x
             this.height - 0.5               // right y
         );
-
-        // this.scrollbar.triangle()
     }
 }
 
@@ -111,6 +116,16 @@ Scrollbar.prototype.renderLine = function (idx, pos) {
             this.scrollbar.line( pos, 0, pos, 5);
             break;
     }
+}
+
+/**
+ * Render a dot on the scrollbar.
+ * @param {string|number} colour colour of the dot
+ * @param {number} pos position of the dot in the scrollbar
+ */
+Scrollbar.prototype.renderDot = function (colour, pos) {
+    this.scrollbar.fill(colour);
+    this.scrollbar.circle( pos, 3, 5);
 }
 
 /**

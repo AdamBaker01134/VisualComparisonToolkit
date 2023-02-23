@@ -89,7 +89,7 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.imageWindow.show();
 
     /* Timelapse display custom scrollbar to control image index */
-    this.scrollbar = new Scrollbar(this.width, 30, this.id, this.display, this.images.length);
+    this.scrollbar = new Scrollbar(this.width, 30, this.id, this.display);
     for (let i = 0; i < this.images.length; i++) {
         this.scrollbar.addSegment(i);
     }
@@ -196,6 +196,14 @@ TimelapseDisplay.prototype.draw = function () {
  */
 TimelapseDisplay.prototype.remove = function () {
     this.display.remove();
+}
+
+/**
+ * Add a configuration index to the scrollbar.
+ * @param {number} idx new configuration index
+ */
+TimelapseDisplay.prototype.addConfigIndex = function (idx) {
+    this.scrollbar.addConfigIndex(idx);
 }
 
 /**
