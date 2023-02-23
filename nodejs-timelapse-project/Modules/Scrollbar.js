@@ -4,15 +4,15 @@
 
 "use strict";
 
-function Scrollbar(width, height, id, parent, configIndices=[]) {
+function Scrollbar(width, height, id, parent) {
 
     this.width = width;
     this.height = height;
     this.id = id;
-    this.configIndices = configIndices;
 
     this.isReady = false;       // Declares whether any segments have been loaded.
     this.segments = [];         // Array of ScrollbarSegments
+    this.dots = [];             // Array of ScrollbarDots
     this.clickables = [];       // Array to keep track of which index to jump to when clicked.
     this.size = 0;              // Number of items to be scrolled through.
     this.index = -1;            // Current position in the scrollbar.
@@ -59,9 +59,11 @@ Scrollbar.prototype.addSegment = function (idx) {
 /**
  * Add a configuration index to the configIndices array.
  * @param {number} idx new configuration index
+ * @param {number|string} colour colour of the dot
  */
-Scrollbar.prototype.addConfigIndex = function (idx) {
-    this.configIndices.push(idx);
+Scrollbar.prototype.addDot = function (idx, colour="#222222") {
+    let dot = new ScrollbarDot(idx, colour, this.lineGap);
+    this.dots.push(dot);
 }
 
 /**
@@ -71,14 +73,14 @@ Scrollbar.prototype.draw = function () {
     this.scrollbar.background("rgb(34, 154, 34)");
     this.scrollbar.stroke(25);
 
+    /* Render all line segments on the scrollbar. */
     this.segments.forEach((segment) => {
         this.renderLine(segment.idx, segment.line);
     });
 
-    /* TODO: find a better way to calculate the configuration indice positions. */
-    this.configIndices.forEach((configIndex) => {
-        let pos = this.segments.find((segment) => segment.idx === configIndex).line;
-        if (pos) this.renderDot("#222222", pos);
+    /* Render all dots on the scrollbar. */
+    this.dots.forEach((dot) => {
+        this.renderDot(dot.colour, dot.pos);
     });
 
     if (this.isReady) {
@@ -232,6 +234,10 @@ Scrollbar.prototype.updateParameters = function (w, h) {
     this.segments.forEach((segment) => {
         segment.updateSegment(this.lineGap);
     });
+
+    this.dots.forEach((dot) => {
+        dot.updatePosition(this.lineGap);
+    });
 }
 
 Scrollbar.prototype.getXOffset = function () {
@@ -261,4 +267,26 @@ ScrollbarSegment.prototype.updateSegment = function (gap) {
     this.left = gap * this.idx;
     this.width = gap + partial * 2;
     this.line = this.left + partial + gap / 2 - 0.5;
+}
+
+/**
+ * Object representing a scrollbar's dot, containing relevant info for drawing.
+ * @param {number} idx index of this current dot
+ * @param {number|string} colour colour of the dot
+ * @param {number} gap gap between line segments
+ */
+function ScrollbarDot(idx, colour, gap) {
+    this.idx = idx;
+    this.colour = colour;
+    this.diameter = 3;
+    this.updatePosition(gap);
+}
+
+/**
+ * Update the position of the scrollbar dot.
+ * @param {number} gap current line gap
+ */
+ScrollbarDot.prototype.updatePosition = function (gap) {
+    let partial = gap * 0.1;
+    this.pos = (gap * this.idx) + partial + gap / 2 - 0.5;
 }

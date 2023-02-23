@@ -202,8 +202,8 @@ TimelapseDisplay.prototype.remove = function () {
  * Add a configuration index to the scrollbar.
  * @param {number} idx new configuration index
  */
-TimelapseDisplay.prototype.addConfigIndex = function (idx) {
-    this.scrollbar.addConfigIndex(idx);
+TimelapseDisplay.prototype.addDot = function (idx) {
+    this.scrollbar.addDot(idx);
 }
 
 /**

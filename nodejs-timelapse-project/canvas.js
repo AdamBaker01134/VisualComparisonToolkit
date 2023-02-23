@@ -258,11 +258,11 @@ function _saveCurrentConfiguration() {
         displays.forEach(display => {
             let displayIdx = display.getIndex();
             config[display.getId()] = { index: displayIdx };
-            display.addConfigIndex(displayIdx);
+            display.addDot(displayIdx);
         });
         let masterIdx = masterScrollbar.getIndex()
         config.masterIndex = masterIdx;
-        masterScrollbar.addConfigIndex(masterIdx);
+        masterScrollbar.addDot(masterIdx);
 
         configs[configName] = config;
         configSelect.option(configName);
