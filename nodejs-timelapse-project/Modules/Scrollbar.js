@@ -80,7 +80,7 @@ Scrollbar.prototype.draw = function () {
 
     /* Render all dots on the scrollbar. */
     this.dots.forEach((dot) => {
-        this.renderDot(dot.colour, dot.pos);
+        this.renderDot(dot.colour, dot.pos, dot.diameter);
     });
 
     if (this.isReady) {
@@ -125,9 +125,9 @@ Scrollbar.prototype.renderLine = function (idx, pos) {
  * @param {string|number} colour colour of the dot
  * @param {number} pos position of the dot in the scrollbar
  */
-Scrollbar.prototype.renderDot = function (colour, pos) {
+Scrollbar.prototype.renderDot = function (colour, pos, diameter) {
     this.scrollbar.fill(colour);
-    this.scrollbar.circle( pos, 3, 5);
+    this.scrollbar.circle( pos, diameter / 2, diameter);
 }
 
 /**
@@ -278,7 +278,7 @@ ScrollbarSegment.prototype.updateSegment = function (gap) {
 function ScrollbarDot(idx, colour, gap) {
     this.idx = idx;
     this.colour = colour;
-    this.diameter = 3;
+    this.diameter = 5;
     this.updatePosition(gap);
 }
 

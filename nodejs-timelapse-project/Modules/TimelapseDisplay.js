@@ -199,11 +199,12 @@ TimelapseDisplay.prototype.remove = function () {
 }
 
 /**
- * Add a configuration index to the scrollbar.
+ * Add a dot to the scrollbar.
  * @param {number} idx new configuration index
+ * @param {number|string} colour colour of the dot
  */
-TimelapseDisplay.prototype.addDot = function (idx) {
-    this.scrollbar.addDot(idx);
+TimelapseDisplay.prototype.addDot = function (idx, colour) {
+    this.scrollbar.addDot(idx, colour);
 }
 
 /**

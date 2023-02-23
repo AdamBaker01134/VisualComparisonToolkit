@@ -255,14 +255,17 @@ function _saveCurrentConfiguration() {
 
     let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
     if (!!configName) {
+        let colourTint = 32 * Object.keys(configs).length;
+        let colour = `rgb(${colourTint},${colourTint},${colourTint})`;
+
         displays.forEach(display => {
             let displayIdx = display.getIndex();
             config[display.getId()] = { index: displayIdx };
-            display.addDot(displayIdx);
+            display.addDot(displayIdx, colour);
         });
         let masterIdx = masterScrollbar.getIndex()
         config.masterIndex = masterIdx;
-        masterScrollbar.addDot(masterIdx);
+        masterScrollbar.addDot(masterIdx, colour);
 
         configs[configName] = config;
         configSelect.option(configName);
