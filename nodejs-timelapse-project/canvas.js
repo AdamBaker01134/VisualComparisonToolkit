@@ -23,6 +23,7 @@ let displays = [];
 let displayCache = {};
 let configs = {};
 let mouseIsFocused = false;
+let mouseIsFocusedOnStartEnd = false;
 let controlsActive = false;
 
 /* DOM variables */
@@ -329,7 +330,7 @@ function handleMouseMoved(e, mx = mouseX) {
     // Then, check if display is focused
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (focusedDisplay instanceof TimelapseDisplay) {
-        focusedDisplay.handleMouseEvent(mx);
+        focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStartEnd);
     }
 }
 
@@ -342,6 +343,9 @@ function handleMousePressed(e, mx = mouseX) {
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
         mouseIsFocused = true;
+        if (focusedDisplay instanceof TimelapseDisplay) {
+            mouseIsFocusedOnStartEnd = focusedDisplay.hasMouseFocusedOnStartEnd();
+        }
         handleMouseMoved(e, mx);
     }
 }
@@ -351,4 +355,5 @@ function handleMousePressed(e, mx = mouseX) {
  */
 function handleMouseReleased() {
     mouseIsFocused = false;
+    mouseIsFocusedOnStartEnd = false;
 }

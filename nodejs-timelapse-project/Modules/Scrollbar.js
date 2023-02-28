@@ -197,7 +197,7 @@ Scrollbar.prototype.getIndexFromMouse = function (mx = mouseX) {
 }
 
 /**
- * Report whether the mouse is positions over this scrollbar.
+ * Report whether the mouse is positioned over this scrollbar.
  * @param {number} mx x coordinate of the cursor
  * @param {*} my y coordinate of the cursor
  * @returns {boolean}
@@ -211,6 +211,28 @@ Scrollbar.prototype.hasMouseInScrollbar = function (mx = mouseX, my = mouseY) {
 }
 
 /**
+ * Report whether the mouse is positioned over the start triangle.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {boolean}
+ */
+Scrollbar.prototype.hasMouseOnStart = function (mx = mouseX) {
+    let triangleSize = this.height / 6;
+    let startPos = (this.lineGap * (0.5 + this.start)) + this.getXOffset();
+    return mx >= startPos - triangleSize && mx <= startPos + triangleSize;
+}
+
+/**
+ * Report whether the mouse is positioned over the end triangle.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {boolean} 
+ */
+Scrollbar.prototype.hasMouseOnEnd = function (mx = mouseX) {
+    let triangleSize = this.height / 6;
+    let endPos = (this.lineGap * (0.5 + this.end)) + this.getXOffset();
+    return mx >= endPos - triangleSize && mx <= endPos + triangleSize;
+}
+
+/**
  * Set the index to the given value.
  * @param {number} idx new index value
  */
@@ -218,6 +240,13 @@ Scrollbar.prototype.setIndex = function (idx) {
     // Update the index and keep it within bounds.
     let saved = this.index;
     this.index = idx;
+
+    if (this.index < this.start) {
+        this.index = this.start;
+    } else if (this.index > this.end) {
+        this.index = this.end;
+    }
+
     if (this.index < 0) {
         this.index = 0;
     } else if (this.index >= this.segments.length) {
@@ -235,24 +264,20 @@ Scrollbar.prototype.setIndex = function (idx) {
 /**
  * Handle any mouse motion event in the scrollbar.
  * @param {number} mx current x coordinate of the cursor
+ * @param {boolean} onStartEnd true if this is an start/end marker event
  */
-Scrollbar.prototype.handleMouseEvent = function (mx = mouseX) {
+Scrollbar.prototype.handleMouseEvent = function (mx = mouseX, onStartEnd = false) {
     let triangleSize = this.height / 6;
     let indexPos = (this.lineGap * (0.5+ this.index)) + this.getXOffset();
-    let startPos = (this.lineGap * (0.5 + this.start)) + this.getXOffset();
-    let endPos = (this.lineGap * (0.5 + this.end)) + this.getXOffset();
-
     let inIndexTriangle = mx >= indexPos - triangleSize && mx <= indexPos + triangleSize;
-    let inStartTriangle = mx >= startPos - triangleSize && mx <= startPos + triangleSize;
-    let inEndTriangle = mx >= endPos - triangleSize && mx <= endPos + triangleSize;
 
-    if (inStartTriangle && !inIndexTriangle) {
+    if (this.hasMouseOnStart() && !inIndexTriangle) {
         /* If mouse is on start position and index is not at start position, update start position */
         this.setStartFromMouse(mx);
-    } else if (inEndTriangle && !inIndexTriangle) {
+    } else if (this.hasMouseOnEnd() && !inIndexTriangle) {
         /* If mouse is on end position and index is not at end position, update end position*/
         this.setEndFromMouse(mx);
-    } else {
+    } else if (!onStartEnd) {
         /* Else, update index */
         this.setIndexFromMouse(mx);
     }
