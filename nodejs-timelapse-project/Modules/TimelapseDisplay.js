@@ -164,6 +164,15 @@ TimelapseDisplay.prototype.syncIndices = function() {
 }
 
 /**
+ * Handle one of several mouse events, such as updating the index, the start position, or the end position. 
+ * @param {number} mx x coordinate of the cursor.
+ */
+TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX) {
+    this.scrollbar.handleMouseEvent(mx);
+    this.syncIndices();
+}
+
+/**
  * Report whether the mouse is in this displays scrollbar.
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor

@@ -16,6 +16,8 @@ function Scrollbar(width, height, id, parent) {
     this.clickables = [];       // Array to keep track of which index to jump to when clicked.
     this.size = 0;              // Number of items to be scrolled through.
     this.index = -1;            // Current position in the scrollbar.
+    this.start = -1;
+    this.end = -1;
     this.lineGap = this.width;  // Gap between lines in scrollbar.
 
     this.scrollbar = createGraphics(this.width, this.height);
@@ -40,11 +42,11 @@ Scrollbar.prototype.addSegment = function (idx) {
     // Once an image is loaded, locate the previous image and the next image
     // and assign the area between them to the current image using the
     // 'clickables' array.
-    let start = this.segments.findLast( (segment => segment), idx - 1);
-    start = start < 0 ? 0 : Math.ceil( (start + idx) / 2);
+    let start = this.segments.findLast((segment => segment), idx - 1);
+    start = start < 0 ? 0 : Math.ceil((start + idx) / 2);
 
-    let end  = this.segments.findFirst( (segment => segment), idx + 1);
-    end = end < 0 ? this.segments.length : Math.ceil( (end + idx) / 2);
+    let end = this.segments.findFirst((segment => segment), idx + 1);
+    end = end < 0 ? this.segments.length : Math.ceil((end + idx) / 2);
 
     // Fill in the clickables array inside the located range.
     this.clickables.fillWith(idx, start, end);
@@ -52,8 +54,10 @@ Scrollbar.prototype.addSegment = function (idx) {
     if (!this.isReady) {
         // This is the first segment to load. Adjust the index as such.
         this.index = idx;
+        this.start = 0;
         this.isReady = true;
     }
+    this.end = this.segments.length - 1;
 }
 
 /**
@@ -61,7 +65,7 @@ Scrollbar.prototype.addSegment = function (idx) {
  * @param {number} idx new configuration index
  * @param {number|string} colour colour of the dot
  */
-Scrollbar.prototype.addDot = function (idx, colour="#222222") {
+Scrollbar.prototype.addDot = function (idx, colour = "#222222") {
     let dot = new ScrollbarDot(idx, colour, this.lineGap);
     this.dots.push(dot);
 }
@@ -71,24 +75,42 @@ Scrollbar.prototype.addDot = function (idx, colour="#222222") {
  */
 Scrollbar.prototype.draw = function () {
     this.scrollbar.background("rgb(34, 154, 34)");
-    this.scrollbar.stroke(25);
-
-    /* Render all line segments on the scrollbar. */
-    this.segments.forEach((segment) => {
-        this.renderLine(segment.idx, segment.line);
-    });
-
-    /* Render all dots on the scrollbar. */
-    this.dots.forEach((dot) => {
-        this.renderDot(dot.colour, dot.pos, dot.diameter);
-    });
 
     if (this.isReady) {
+        let startPos = this.lineGap * (0.5 + this.start);
+        let endPos = this.lineGap * (0.5 + this.end);
+
+        // Draw the empty regions (i.e. not between the start and end positions).
+        this.scrollbar.noStroke();
+        this.scrollbar.fill(255);
+        this.scrollbar.rect(0, 0, startPos, this.height);
+        this.scrollbar.rect(endPos, 0, this.width, this.height);
+
         let triangleSize = this.height / 6;
         let trianglePos = this.lineGap * (0.5 + this.index);
 
+        this.scrollbar.stroke(25);
+        // Draw the start position triangle.
+        this.scrollbar.triangle(
+            startPos,
+            triangleSize,
+            startPos - triangleSize,
+            this.height - 0.5,
+            startPos + triangleSize,
+            this.height - 0.5
+        );
+
+        // Draw the end position triangle.
+        this.scrollbar.triangle(
+            endPos,
+            triangleSize,
+            endPos - triangleSize,
+            this.height - 0.5,
+            endPos + triangleSize,
+            this.height - 0.5
+        );
+
         // Draw the position indicator triangle.
-        this.scrollbar.noStroke();
         this.scrollbar.fill(0);
         this.scrollbar.triangle(
             trianglePos,                    // top x
@@ -99,6 +121,16 @@ Scrollbar.prototype.draw = function () {
             this.height - 0.5               // right y
         );
     }
+
+    /* Render all line segments on the scrollbar. */
+    this.segments.forEach((segment) => {
+        this.renderLine(segment.idx, segment.line);
+    });
+
+    /* Render all dots on the scrollbar. */
+    this.dots.forEach((dot) => {
+        this.renderDot(dot.colour, dot.pos, dot.diameter);
+    });
 }
 
 /**
@@ -109,13 +141,13 @@ Scrollbar.prototype.draw = function () {
 Scrollbar.prototype.renderLine = function (idx, pos) {
     switch (idx % 10) {
         case 0:
-            this.scrollbar.line( pos, 0, pos, 12);
+            this.scrollbar.line(pos, 0, pos, 12);
             break;
         case 5:
-            this.scrollbar.line( pos, 0, pos, 8);
+            this.scrollbar.line(pos, 0, pos, 8);
             break;
         default:
-            this.scrollbar.line( pos, 0, pos, 5);
+            this.scrollbar.line(pos, 0, pos, 5);
             break;
     }
 }
@@ -127,7 +159,7 @@ Scrollbar.prototype.renderLine = function (idx, pos) {
  */
 Scrollbar.prototype.renderDot = function (colour, pos, diameter) {
     this.scrollbar.fill(colour);
-    this.scrollbar.circle( pos, diameter / 2, diameter);
+    this.scrollbar.circle(pos, diameter / 2, diameter);
 }
 
 /**
@@ -175,7 +207,7 @@ Scrollbar.prototype.hasMouseInScrollbar = function (mx = mouseX, my = mouseY) {
     let y = this.getYOffset();
 
     return (mx >= x && mx <= (x + this.width)) &&
-            (my >= y && my <= (y + this.height));
+        (my >= y && my <= (y + this.height));
 }
 
 /**
@@ -201,16 +233,73 @@ Scrollbar.prototype.setIndex = function (idx) {
 }
 
 /**
- * Function to be called when this scrollbar is clicked on.
- * @param {*} mx x coordinate of the cursor
+ * Handle any mouse motion event in the scrollbar.
+ * @param {number} mx current x coordinate of the cursor
+ */
+Scrollbar.prototype.handleMouseEvent = function (mx = mouseX) {
+    let triangleSize = this.height / 6;
+    let indexPos = (this.lineGap * (0.5+ this.index)) + this.getXOffset();
+    let startPos = (this.lineGap * (0.5 + this.start)) + this.getXOffset();
+    let endPos = (this.lineGap * (0.5 + this.end)) + this.getXOffset();
+
+    let inIndexTriangle = mx >= indexPos - triangleSize && mx <= indexPos + triangleSize;
+    let inStartTriangle = mx >= startPos - triangleSize && mx <= startPos + triangleSize;
+    let inEndTriangle = mx >= endPos - triangleSize && mx <= endPos + triangleSize;
+
+    if (inStartTriangle && !inIndexTriangle) {
+        /* If mouse is on start position and index is not at start position, update start position */
+        this.setStartFromMouse(mx);
+    } else if (inEndTriangle && !inIndexTriangle) {
+        /* If mouse is on end position and index is not at end position, update end position*/
+        this.setEndFromMouse(mx);
+    } else {
+        /* Else, update index */
+        this.setIndexFromMouse(mx);
+    }
+}
+
+/**
+ * Scrollbar clicked event handler to update the scrollbar index.
+ * @param {number} mx x coordinate of the cursor
  * @returns {number} if no errors occur, return new index. if error occurs, return -1
  */
 Scrollbar.prototype.setIndexFromMouse = function (mx = mouseX) {
-    let x = this.getXOffset();
-    if (mx >= x && mx <= (x + this.width)) {
+    if (this.hasMouseInScrollbar()) {
         let idx = this.getIndexFromMouse(mx);
         if (idx !== this.index) {
             this.setIndex(this.clickables[idx]);
+        }
+        return idx;
+    }
+    return -1;
+}
+
+/**
+ * Scrollbar clicked event handler to update the scrollbar start position.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {number} if no errors occur, return new index. if error occurs, return -1
+ */
+Scrollbar.prototype.setStartFromMouse = function (mx = mouseX) {
+    if (this.hasMouseInScrollbar()) {
+        let idx = this.getIndexFromMouse(mx);
+        if (idx !== this.start) {
+            this.start = idx;
+        }
+        return idx;
+    }
+    return -1;
+}
+
+/**
+ * Scrollbar clicked event handler to update the scrollbar end position.
+ * @param {number} mx x coodinate of the cursor
+ * @returns if no errors occur, return new index. if error occurs, return -1
+ */
+Scrollbar.prototype.setEndFromMouse = function (mx = mouseX) {
+    if (this.hasMouseInScrollbar()) {
+        let idx = this.getIndexFromMouse(mx);
+        if (idx !== this.end) {
+            this.end = idx;
         }
         return idx;
     }

@@ -329,7 +329,7 @@ function handleMouseMoved(e, mx = mouseX) {
     // Then, check if display is focused
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (focusedDisplay instanceof TimelapseDisplay) {
-        focusedDisplay.setIndexFromMouse(mx);
+        focusedDisplay.handleMouseEvent(mx);
     }
 }
 
