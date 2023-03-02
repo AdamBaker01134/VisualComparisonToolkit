@@ -177,10 +177,11 @@ TimelapseDisplay.prototype.syncIndices = function() {
 /**
  * Handle one of several mouse events, such as updating the index, the start position, or the end position. 
  * @param {number} mx x coordinate of the cursor.
- * @param {boolean} onStartEnd true if this is an start/end marker event
+ * @param {boolean} movingStart true if this is a start marker event
+ * @param {boolean} movingEnd true if this is an end marker event
  */
-TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX, onStartEnd = false) {
-    this.scrollbar.handleMouseEvent(mx, onStartEnd);
+TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX, movingStart = false, movingEnd = false) {
+    this.scrollbar.handleMouseEvent(mx, movingStart, movingEnd);
     this.syncIndices();
 }
 
@@ -195,12 +196,21 @@ TimelapseDisplay.prototype.hasMouseInScrollbar = function(mx = mouseX, my = mous
 }
 
 /**
- * Report whether the mouse is on the start/end marker in the scrollbar.
+ * Report whether the mouse is on the start marker in the scrollbar.
  * @param {number} mx x coordinate of the cursor
  * @returns {boolean}
  */
-TimelapseDisplay.prototype.hasMouseFocusedOnStartEnd = function(mx = mouseX) {
-    return this.scrollbar.hasMouseOnStart() || this.scrollbar.hasMouseOnEnd();
+TimelapseDisplay.prototype.hasMouseFocusedOnStart = function(mx = mouseX) {
+    return this.scrollbar.hasMouseOnStart(mx);
+}
+
+/**
+ * Report whether the mouse is on the start marker in the scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {boolean}
+ */
+TimelapseDisplay.prototype.hasMouseFocusedOnEnd = function(mx = mouseX) {
+    return this.scrollbar.hasMouseOnEnd(mx);
 }
 
 /**

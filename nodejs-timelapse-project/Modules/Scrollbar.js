@@ -328,20 +328,21 @@ Scrollbar.prototype.setEnd = function (idx) {
 /**
  * Handle any mouse motion event in the scrollbar.
  * @param {number} mx current x coordinate of the cursor
- * @param {boolean} onStartEnd true if this is an start/end marker event
+ * @param {boolean} movingStart true if this is a start marker event
+ * @param {boolean} movingEnd true if this is an end marker event
  */
-Scrollbar.prototype.handleMouseEvent = function (mx = mouseX, onStartEnd = false) {
+Scrollbar.prototype.handleMouseEvent = function (mx = mouseX, movingStart = false, movingEnd = false) {
     let triangleSize = this.height / 6;
     let indexPos = (this.lineGap * (0.5+ this.index)) + this.getXOffset();
     let inIndexTriangle = mx >= indexPos - triangleSize && mx <= indexPos + triangleSize;
 
-    if (this.hasMouseOnStart() && !inIndexTriangle) {
+    if (movingStart && !inIndexTriangle) {
         /* If mouse is on start position and index is not at start position, update start position */
         this.setStartFromMouse(mx);
-    } else if (this.hasMouseOnEnd() && !inIndexTriangle) {
+    } else if (movingEnd && !inIndexTriangle) {
         /* If mouse is on end position and index is not at end position, update end position*/
         this.setEndFromMouse(mx);
-    } else if (!onStartEnd) {
+    } else if (!movingStart && !movingEnd) {
         /* Else, update index */
         this.setIndexFromMouse(mx);
     }
@@ -371,7 +372,7 @@ Scrollbar.prototype.setIndexFromMouse = function (mx = mouseX) {
 Scrollbar.prototype.setStartFromMouse = function (mx = mouseX) {
     if (this.hasMouseInScrollbar()) {
         let idx = this.getIndexFromMouse(mx);
-        if (idx !== this.start) {
+        if (idx !== this.start && this.index >= idx) {
             this.start = idx;
         }
         return idx;
@@ -387,7 +388,7 @@ Scrollbar.prototype.setStartFromMouse = function (mx = mouseX) {
 Scrollbar.prototype.setEndFromMouse = function (mx = mouseX) {
     if (this.hasMouseInScrollbar()) {
         let idx = this.getIndexFromMouse(mx);
-        if (idx !== this.end) {
+        if (idx !== this.end && this.index <= idx) {
             this.end = idx;
         }
         return idx;
