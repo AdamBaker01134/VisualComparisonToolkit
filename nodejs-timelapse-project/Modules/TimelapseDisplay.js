@@ -151,9 +151,10 @@ TimelapseDisplay.prototype.setOffset = function(newOffset) {
  * Update the image index using a scrollbar offset.
  * Used to give state mutability to master scrollbar.
  * @param {number} offset offset value to compare with the displays current offset value.
+ * @param {number} step ratio multiplier to increase the step of the set index
  */
-TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {
-    this.setIndex(this.imgIdx + (offset - this.offset));
+TimelapseDisplay.prototype.setIndexFromMaster = function(offset, step) {
+    this.setIndex((this.imgIdx + (offset - this.offset) * step));
     this.setOffset(offset);
 }
 

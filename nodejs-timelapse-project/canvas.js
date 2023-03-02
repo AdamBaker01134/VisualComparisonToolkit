@@ -228,8 +228,23 @@ function _cacheDisplay(name, frames, timestamps, images) {
  * To be utilized only by the master scrollbar.
  * @param {number} newOffset new offset for each of the displays
  */
-function _updateDisplayOffsets(newOffset) {
-    displays.forEach(display => display.setIndexFromOffset(newOffset));
+function _updateDisplaysWithMaster(newOffset) {
+    /* Calculate the start-end range of the master scrollbar. */
+    let masterStart = masterScrollbar.getStart();
+    let masterEnd = masterScrollbar.getEnd();
+    let masterRange = masterEnd - masterStart;
+    if (newOffset < masterStart || newOffset > masterEnd) {
+        return;
+    }
+    displays.forEach(display => {
+        /* Calculate the start-end range of each display. */
+        let start = display.getStart();
+        let end = display.getEnd();
+        let range = end - start;
+        /* Step the displays index by a factor of range/masterRange. */
+        let step = Math.round(range / masterRange); // floor to avoid stepping over end position
+        display.setIndexFromMaster(newOffset - masterStart, step);
+    });
 }
 
 /**
@@ -345,7 +360,7 @@ function handleMouseMoved(e, mx = mouseX) {
         if (masterScrollbar.hasMouseInScrollbar()) {
             let index = masterScrollbar.setIndexFromMouse(mx);
             if (index >= 0) {
-                _updateDisplayOffsets(index);
+                _updateDisplaysWithMaster(index);
             }
         }
         return;
