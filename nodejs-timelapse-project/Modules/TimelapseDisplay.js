@@ -125,7 +125,9 @@ TimelapseDisplay.prototype.getEnd = function () {
 
 /** Setter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.setIndex = function(newIndex) {
-    if (newIndex < 0) {
+    if (newIndex < this.scrollbar.getStart() || newIndex > this.scrollbar.getEnd()) {
+        return;
+    } else if (newIndex < 0) {
         this.imgIdx = 0;
     } else if (newIndex >= this.images.length) {
         this.imgIdx = this.images.length - 1;
