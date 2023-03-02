@@ -113,6 +113,16 @@ TimelapseDisplay.prototype.getIndex = function () {
     return this.imgIdx;
 }
 
+/** Getter function for the displays scrollbar start position. */
+TimelapseDisplay.prototype.getStart = function () {
+    return this.scrollbar.getStart();
+}
+
+/** Getter function for the displays scrollbar end position. */
+TimelapseDisplay.prototype.getEnd = function () {
+    return this.scrollbar.getEnd();
+}
+
 /** Setter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.setIndex = function(newIndex) {
     if (newIndex < 0) {

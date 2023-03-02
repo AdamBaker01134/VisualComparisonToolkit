@@ -177,6 +177,20 @@ Scrollbar.prototype.getIndex = function () {
 }
 
 /**
+ * Get the current start index of the scrollbar.
+ */
+Scrollbar.prototype.getStart = function () {
+    return this.start;
+}
+
+/**
+ * Get the current end index of the scrollbar.
+ */
+Scrollbar.prototype.getEnd = function () {
+    return this.end;
+}
+
+/**
  * Map the current or given mouse position to an index.
  * @param {number} mx x coordinate of the cursor
  */
@@ -259,6 +273,56 @@ Scrollbar.prototype.setIndex = function (idx) {
     }
 
     return this.index;
+}
+
+/**
+ * Set the start index to the given value.
+ * @param {number} idx new index value
+ */
+Scrollbar.prototype.setStart = function (idx) {
+    // Update the start and keep it within bounds.
+    let savedStart = this.start;
+    let savedIndex = this.index;
+    this.start = idx;
+
+    if (this.start < 0) {
+        this.start = 0;
+    } else if (this.start > this.index) {
+        this.index = this.start;
+    }
+
+    // Make sure the start index and regular index is valid.
+    if (!this.segments[this.start] || !this.segments[this.index]) {
+        this.start = savedStart;
+        this.index = savedIndex;
+    }
+
+    return this.start;
+}
+
+/**
+ * Set the end index to the given value.
+ * @param {number} idx new index value
+ */
+Scrollbar.prototype.setEnd = function (idx) {
+    // Update the end and keep it within bounds.
+    let savedIndex = this.index;
+    let savedEnd = this.end;
+    this.end = idx;
+
+    if (this.end < this.index) {
+        this.index = this.end;
+    } else if (this.end >= this.segments.length) {
+        this.end = this.segments.length - 1;
+    }
+
+    // Make sure the end index is valid.
+    if (!this.segments[this.end] || !this.segments[this.index]) {
+        this.end = savedEnd;
+        this.index = savedIndex
+    }
+
+    return this.end;
 }
 
 /**

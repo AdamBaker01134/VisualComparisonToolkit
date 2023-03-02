@@ -88,6 +88,7 @@ function _createTimelapseDisplay(dataset) {
         emptyDisplay.setLoadState(false);
         let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
         displays.push(newDisplay);
+        _syncMasterScrollbarMarkers();
         return;
     }
 
@@ -107,6 +108,7 @@ function _createTimelapseDisplay(dataset) {
                     let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
                     displays.push(newDisplay);
                     _cacheDisplay(dataset, frames, timestamps, images);
+                    _syncMasterScrollbarMarkers();
                 },
                 (err) => {
                     console.error(`Error loading images for the ${dataset} dataset.`);
@@ -231,6 +233,26 @@ function _updateDisplayOffsets(newOffset) {
 }
 
 /**
+ * Sync the master scrollbar's start, end, and index markers to the display with the smallest
+ * start-end range.
+ */
+function _syncMasterScrollbarMarkers() {
+    let start = -1;
+    let end = -1;
+    displays.forEach((display) => {
+        if ((start < 0 || end < 0) || ((end - start) > (display.getEnd() - display.getStart()))) {
+            start = display.getStart();
+            end = display.getEnd();
+        }
+    });
+
+    if (start >= 0 && end >= start) {
+        masterScrollbar.setStart(start);
+        masterScrollbar.setEnd(end);
+    }
+}
+
+/**
  * Attempts to find a display within the displays array with the given array and remove it.
  * @param {string} displayID id of display to be removed
  */
@@ -245,6 +267,8 @@ function _removeDisplay(displayID) {
     } else {
         console.error("Removal Error: could not locate timelapse display with id" + displayID);
     }
+
+    _syncMasterScrollbarMarkers();
 }
 
 /**
@@ -331,6 +355,9 @@ function handleMouseMoved(e, mx = mouseX) {
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (focusedDisplay instanceof TimelapseDisplay) {
         focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStartEnd);
+        if (mouseIsFocusedOnStartEnd) {
+            _syncMasterScrollbarMarkers();
+        }
     }
 }
 
