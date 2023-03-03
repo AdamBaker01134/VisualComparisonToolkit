@@ -166,14 +166,7 @@ TimelapseDisplay.prototype.setIndexFromMaster = function(offset, step) {
  */
 TimelapseDisplay.prototype.setIndexFromMouse = function(mx = mouseX) {
     this.scrollbar.setIndexFromMouse(mx);
-    this.syncIndices();
-}
-
-/**
- * Sync the indices from the scrollbar with the scrollbar.
- */
-TimelapseDisplay.prototype.syncIndices = function() {
-    this.imgIdx = this.scrollbar.getIndex();
+    this.setIndex(this.scrollbar.getIndex());
 }
 
 /**
@@ -184,7 +177,7 @@ TimelapseDisplay.prototype.syncIndices = function() {
  */
 TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX, movingStart = false, movingEnd = false) {
     this.scrollbar.handleMouseEvent(mx, movingStart, movingEnd);
-    this.syncIndices();
+    this.setIndex(this.scrollbar.getIndex());
 }
 
 /**
