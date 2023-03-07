@@ -139,6 +139,22 @@ Scrollbar.prototype.draw = function () {
  * @param {number} pos position of the line segment
  */
 Scrollbar.prototype.renderLine = function (idx, pos) {
+    /* Uncomment when using large number of MAX_IMAGES */
+    // switch (idx % 50) {
+    //     case 0:
+    //         this.scrollbar.line(pos, 0, pos, 12);
+    //         break;
+    //     case 25:
+    //         this.scrollbar.line(pos, 0, pos, 8);
+    //         break;
+    //     case 12:
+    //     case 38:
+    //         this.scrollbar.line(pos, 0, pos, 5);
+    //         break;
+    //     default:
+    //         this.scrollbar.line(pos, 0, pos, 2);
+    //         break;
+    // }
     switch (idx % 10) {
         case 0:
             this.scrollbar.line(pos, 0, pos, 12);
@@ -173,7 +189,8 @@ Scrollbar.prototype.getCapacity = function () {
  * Get the current index of the scrollbar.
  */
 Scrollbar.prototype.getIndex = function () {
-    return this.index;
+    /* Flooring index because, due to the step ratio multiplier, imgIdx may not be a round number */
+    return Math.floor(this.index);
 }
 
 /**
@@ -268,7 +285,7 @@ Scrollbar.prototype.setIndex = function (idx) {
     }
 
     // Make sure the index is valid.
-    if (!this.segments[this.index]) {
+    if (!this.segments[this.getIndex()]) {
         this.index = saved;
     }
 
@@ -292,7 +309,7 @@ Scrollbar.prototype.setStart = function (idx) {
     }
 
     // Make sure the start index and regular index is valid.
-    if (!this.segments[this.start] || !this.segments[this.index]) {
+    if (!this.segments[this.start] || !this.segments[this.getIndex()]) {
         this.start = savedStart;
         this.index = savedIndex;
     }
@@ -317,7 +334,7 @@ Scrollbar.prototype.setEnd = function (idx) {
     }
 
     // Make sure the end index is valid.
-    if (!this.segments[this.end] || !this.segments[this.index]) {
+    if (!this.segments[this.end] || !this.segments[this.getIndex()]) {
         this.end = savedEnd;
         this.index = savedIndex
     }

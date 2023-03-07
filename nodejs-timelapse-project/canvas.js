@@ -243,8 +243,8 @@ function _updateDisplaysWithMaster(newOffset) {
         let end = display.getEnd();
         let range = end - start;
         /* Step the displays index by a factor of range/masterRange. */
-        let step = Math.round(range / masterRange); // floor to avoid stepping over end position
-        display.setIndexFromMaster(newOffset - masterStart, step);
+        let stepRatio = range / masterRange;
+        display.setIndexFromMaster(newOffset - masterStart, stepRatio);
     });
 }
 

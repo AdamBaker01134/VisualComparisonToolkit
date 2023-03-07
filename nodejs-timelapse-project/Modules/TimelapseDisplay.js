@@ -110,7 +110,8 @@ TimelapseDisplay.prototype.getId = function () {
 
 /** Getter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.getIndex = function () {
-    return this.imgIdx;
+    /* Flooring index because, due to the step ratio multiplier, imgIdx may not be a round number */
+    return Math.floor(this.imgIdx);
 }
 
 /** Getter function for the displays scrollbar start position. */
@@ -138,7 +139,7 @@ TimelapseDisplay.prototype.setIndex = function(newIndex) {
     if (newIndex !== this.scrollbar.getIndex()) {
         this.scrollbar.setIndex(newIndex);
     }
-    this.timestamp.text(this.timestamps[this.imgIdx], this.width, 22);
+    this.timestamp.text(this.timestamps[this.getIndex()], this.width, 22);
 }
 
 /**
@@ -221,7 +222,7 @@ TimelapseDisplay.prototype.draw = function () {
     this.imageWindow.clear();
     this.imageWindow.noStroke();
     this.imageWindow.fill(255);
-    this.imageWindow.image(this.images[this.imgIdx], 0, 0, this.width, this.height);
+    this.imageWindow.image(this.images[this.getIndex()], 0, 0, this.width, this.height);
 
     this.scrollbar.draw();
 }
@@ -248,14 +249,14 @@ TimelapseDisplay.prototype.addDot = function (idx, colour) {
  * Saves the current frame of the display in an array and adds it to the saved frame select element.
  */
 TimelapseDisplay.prototype._saveCurrentFrame = function () {
-    if (this.savedFrames.findIndex((savedFrame) => savedFrame.timestamp === this.timestamps[this.imgIdx]) >= 0) {
+    if (this.savedFrames.findIndex((savedFrame) => savedFrame.timestamp === this.timestamps[this.getIndex()]) >= 0) {
         /* Frame has been previously saved. */
         console.log("Current frame has already been previously saved.");
         return;
     }
 
     let currentFrameObj = {
-        timestamp: this.timestamps[this.imgIdx],
+        timestamp: this.timestamps[this.getIndex()],
         index: this.imgIdx,
     };
     this.savedFrames.push(currentFrameObj);
