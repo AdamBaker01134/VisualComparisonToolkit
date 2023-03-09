@@ -210,6 +210,30 @@ TimelapseDisplay.prototype.hasMouseFocusedOnEnd = function(mx = mouseX) {
 }
 
 /**
+ * Report the dot that the mouse is positioned over in the scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {ScrollbarDot|null}
+ */
+TimelapseDisplay.prototype.getDotOnMouse = function(mx = mouseX) {
+    return this.scrollbar.getDotOnMouse(mx);
+}
+
+/**
+ * Set the dot at the given index in the scrollbar to be highlighted.
+ * @param {number} idx index of the dot in the scrollbar
+ */
+TimelapseDisplay.prototype.highlightDotAtIndex = function(idx) {
+    this.scrollbar.highlightDotAtIndex(idx);
+}
+
+/**
+ * Set all the dots in the scrollbar to be unhighlighted.
+ */
+TimelapseDisplay.prototype.unhighlightConfigs = function() {
+    this.scrollbar.unhighlightConfigs();
+}
+
+/**
  * Draw function called in every draw loop.
  */
 TimelapseDisplay.prototype.draw = function () {
@@ -237,11 +261,12 @@ TimelapseDisplay.prototype.remove = function () {
 
 /**
  * Add a dot to the scrollbar.
+ * @param {string} configName name of new configuration
  * @param {number} idx new configuration index
  * @param {number|string} colour colour of the dot
  */
-TimelapseDisplay.prototype.addDot = function (idx, colour) {
-    this.scrollbar.addDot(idx, colour);
+TimelapseDisplay.prototype.addDot = function (configName, idx, colour) {
+    this.scrollbar.addDot(configName, idx, colour);
 }
 
 /**

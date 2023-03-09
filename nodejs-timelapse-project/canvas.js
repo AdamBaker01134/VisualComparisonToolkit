@@ -26,6 +26,7 @@ let mouseIsFocused = false;
 let mouseIsFocusedOnStart = false;
 let mouseIsFocusedOnEnd = false;
 let controlsActive = false;
+let highlightedConfig = "";
 
 /* DOM variables */
 let headerDiv = null;
@@ -290,6 +291,15 @@ function _removeDisplay(displayID) {
 /**
  * Save the current configuration of the system.
  * (i.e. save the current index of each display in a JSON)
+ * Structure of configs JSON array:
+ *  [
+ *      configName: {
+ *          displayId: { index: displayIdx }
+ *          ...
+ *          masterIndex: masterIdx
+ *      },
+ *      ...
+ *  ]
  */
 function _saveCurrentConfiguration() {
     let config = {};
@@ -302,11 +312,11 @@ function _saveCurrentConfiguration() {
         displays.forEach(display => {
             let displayIdx = display.getIndex();
             config[display.getId()] = { index: displayIdx };
-            display.addDot(displayIdx, colour);
+            display.addDot(configName, displayIdx, colour);
         });
         let masterIdx = masterScrollbar.getIndex()
         config.masterIndex = masterIdx;
-        masterScrollbar.addDot(masterIdx, colour);
+        masterScrollbar.addDot(configName, masterIdx, colour);
 
         configs[configName] = config;
         configSelect.option(configName);
@@ -334,6 +344,33 @@ function _loadConfiguration(config) {
     }
 }
 
+/**
+ * Highlight a saved configuration.
+ * @param {string} config name of the configuration we want to highlight.
+ */
+function _highlightConfiguration(config) {
+    let configuration = configs[config];
+    if (!!configuration) {
+        let configDisplays = Object.keys(configuration);
+        let masterIndex = configuration.masterIndex;
+        configDisplays.filter(key => key !== "masterIndex").forEach(id => {
+            let display = displays.find((display) => display.getId() === id);
+            display.highlightDotAtIndex(configuration[id].index);
+        });
+        masterScrollbar.highlightDotAtIndex(masterIndex);
+        highlightedConfig = config;
+    }
+}
+
+/**
+ * Unhighlight all dots in each display.
+ */
+function _unhighlightConfigurations() {
+    displays.forEach((display) => display.unhighlightConfigs());
+    masterScrollbar.unhighlightConfigs();
+    highlightedConfig = "";
+}
+
 //// User Event Handling ////
 
 /**
@@ -354,7 +391,24 @@ function _attachUserEventListeners() {
  * @param {number} mx x coordinate of the cursor
  */
 function handleMouseMoved(e, mx = mouseX) {
-    if (!mouseIsFocused) return;
+    if (!mouseIsFocused) {
+        // If the mouse is not focused in a display/scrollbar, check for highlighting configs
+        let hoverDot = null;
+        for (let i = 0; i <= displays.length; i++) {
+            // Check if hovering over display/master scrollbar configs
+            if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
+                 i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
+        }
+        if (hoverDot !== null) {
+            // If hovering over a dot in any display/scrollbar, highlight all configs
+            let configName = hoverDot.configName;
+            _highlightConfiguration(configName);
+        } else if (highlightedConfig !== "") {
+            // If moved out of the dot, unhighlight all displays/scrollbar dots
+            _unhighlightConfigurations();
+        }
+        return;
+    };
 
     // First check if the controls bar is active (overwrites other behaviour)
     if (controlsActive) {
@@ -386,6 +440,9 @@ function handleMousePressed(e, mx = mouseX) {
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
         mouseIsFocused = true;
+        if (highlightedConfig !== "") {
+            _loadConfiguration(highlightedConfig);
+        }
         if (focusedDisplay instanceof TimelapseDisplay) {
             mouseIsFocusedOnStart = focusedDisplay.hasMouseFocusedOnStart(mx);
             mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx)

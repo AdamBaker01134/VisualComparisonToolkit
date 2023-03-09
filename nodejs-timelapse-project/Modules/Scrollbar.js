@@ -61,12 +61,13 @@ Scrollbar.prototype.addSegment = function (idx) {
 }
 
 /**
- * Add a configuration index to the configIndices array.
+ * Add a ScrollbarDot to the dots array representing a new configuration.
+ * @param {string} configName name of new configuration
  * @param {number} idx new configuration index
  * @param {number|string} colour colour of the dot
  */
-Scrollbar.prototype.addDot = function (idx, colour = "#222222") {
-    let dot = new ScrollbarDot(idx, colour, this.lineGap);
+Scrollbar.prototype.addDot = function (configName, idx, colour = "#222222") {
+    let dot = new ScrollbarDot(configName, idx, colour, this.lineGap);
     this.dots.push(dot);
 }
 
@@ -129,6 +130,12 @@ Scrollbar.prototype.draw = function () {
 
     /* Render all dots on the scrollbar. */
     this.dots.forEach((dot) => {
+        if (dot.highlighted) {
+            // Highlight the dot with yellow
+            this.scrollbar.stroke(255, 204, 0);
+        } else {
+            this.scrollbar.stroke(25);
+        }
         this.renderDot(dot.colour, dot.pos, dot.diameter);
     });
 }
@@ -261,6 +268,41 @@ Scrollbar.prototype.hasMouseOnEnd = function (mx = mouseX) {
     let triangleSize = this.height / 6;
     let endPos = (this.lineGap * (0.5 + this.end)) + this.getXOffset();
     return mx >= endPos - triangleSize && mx <= endPos + triangleSize;
+}
+
+/**
+ * Report the dot that the mouse is positioned over.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {ScrollbarDot|null} dot that the mouse is on, or null if not on a dot
+ */
+Scrollbar.prototype.getDotOnMouse = function (mx = mouseX) {
+    if (!this.hasMouseInScrollbar()) {
+        return null;
+    }
+    for (let i = 0; i < this.dots.length; i++) {
+        let dot = this.dots[i];
+        let pos = dot.pos + this.getXOffset();
+        let radius = dot.diameter / 2;
+        if (pos - radius <= mx && pos + radius >= mx) {
+            return dot;
+        }
+    }
+    return null;
+}
+
+/**
+ * Set the dot at the given index to be highlighted.
+ * @param {number} idx index of the dot in the scrollbar
+ */
+Scrollbar.prototype.highlightDotAtIndex = function (idx) {
+    this.dots.find((dot) => dot.idx === idx)?.highlight();
+}
+
+/**
+ * Set each dot in the scrollbar to be unhighlighted.
+ */
+Scrollbar.prototype.unhighlightConfigs = function () {
+    this.dots.forEach((dot) => dot.unhighlight());
 }
 
 /**
@@ -467,15 +509,18 @@ ScrollbarSegment.prototype.updateSegment = function (gap) {
 
 /**
  * Object representing a scrollbar's dot, containing relevant info for drawing.
+ * @param {string} configName name of the configuration for this dot
  * @param {number} idx index of this current dot
  * @param {number|string} colour colour of the dot
  * @param {number} gap gap between line segments
  */
-function ScrollbarDot(idx, colour, gap) {
+function ScrollbarDot(configName, idx, colour, gap) {
+    this.configName = configName;
     this.idx = idx;
     this.colour = colour;
-    this.diameter = 5;
+    this.diameter = 8;
     this.updatePosition(gap);
+    this.unhighlight();
 }
 
 /**
@@ -485,4 +530,14 @@ function ScrollbarDot(idx, colour, gap) {
 ScrollbarDot.prototype.updatePosition = function (gap) {
     let partial = gap * 0.1;
     this.pos = (gap * this.idx) + partial + gap / 2 - 0.5;
+}
+
+/* Setter function for ScrollbarDot that sets the highlighted attribute to true. */
+ScrollbarDot.prototype.highlight = function () {
+    this.highlighted = true;
+}
+
+/* Setter function for ScrollbarDot that sets the hightlighted attribute to false. */
+ScrollbarDot.prototype.unhighlight = function () {
+    this.highlighted = false;
 }
