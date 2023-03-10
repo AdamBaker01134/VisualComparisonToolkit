@@ -143,6 +143,22 @@ TimelapseDisplay.prototype.setIndex = function(newIndex) {
 }
 
 /**
+ * Set the start position in the scrollbar.
+ * @param {number} newStart new start position in the scrollbar
+ */
+TimelapseDisplay.prototype.setStart = function(newStart) {
+    this.scrollbar.setStart(newStart);
+}
+
+/**
+ * Set the end position in the scrollbar.
+ * @param {number} newEnd new end position in the scrollbar
+ */
+TimelapseDisplay.prototype.setEnd = function(newEnd) {
+    this.scrollbar.setEnd(newEnd);
+}
+
+/**
  * Sets the current offset from the master scrollbar.
  * @param {number} newOffset new offset to set
  */

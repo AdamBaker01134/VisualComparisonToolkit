@@ -294,15 +294,24 @@ function _removeDisplay(displayID) {
  * Structure of configs JSON array:
  *  [
  *      configName: {
- *          displayId: { index: displayIdx }
- *          ...
- *          masterIndex: masterIdx
+ *          displays: {
+ *              displayId: { 
+ *                  index: displayIdx,
+ *                  start: startPos,
+ *                  end: endPos,
+ *              }
+ *              ...
+ *          }
+ *          masterControls: { index: masterIdx }
  *      },
  *      ...
  *  ]
  */
 function _saveCurrentConfiguration() {
-    let config = {};
+    let config = {
+        displays: {},
+        masterControls: {},
+    };
 
     let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
     if (!!configName) {
@@ -311,11 +320,17 @@ function _saveCurrentConfiguration() {
 
         displays.forEach(display => {
             let displayIdx = display.getIndex();
-            config[display.getId()] = { index: displayIdx };
+            let startPos = display.getStart();
+            let endPos = display.getEnd();
+            config.displays[display.getId()] = { 
+                index: displayIdx,
+                start: startPos,
+                end: endPos, 
+            };
             display.addDot(configName, displayIdx, colour);
         });
-        let masterIdx = masterScrollbar.getIndex()
-        config.masterIndex = masterIdx;
+        let masterIdx = masterScrollbar.getIndex();
+        config.masterControls = { index: masterIdx };
         masterScrollbar.addDot(configName, masterIdx, colour);
 
         configs[configName] = config;
@@ -332,14 +347,17 @@ function _saveCurrentConfiguration() {
 function _loadConfiguration(config) {
     let configuration = configs[config];
     if (!!configuration) {
-        let configDisplays = Object.keys(configuration);
-        let masterIndex = configuration.masterIndex;
-        configDisplays.filter(key => key !== "masterIndex").forEach(id => {
+        let configDisplays = Object.keys(configuration.displays);
+        configDisplays.forEach(id => {
             let display = displays.find((display) => display.getId() === id);
-            display.setIndex(configuration[id].index);
+            /* IMPORTANT: Must set start/end positions before the index! */
+            display.setStart(configuration.displays[id].start);
+            display.setEnd(configuration.displays[id].end);
+            display.setIndex(configuration.displays[id].index);
         });
-        displays.forEach(display => display.setOffset(masterIndex));
-        masterScrollbar.setIndex(masterIndex);
+        /* IMPORTANT: Likewise, must sync master scrollbar markers before setting index! */
+        _syncMasterScrollbarMarkers();
+        masterScrollbar.setIndex(configuration.masterControls.index);
         console.log(`Succesfully loaded the [${config}] configuration.`)
     }
 }
@@ -351,13 +369,12 @@ function _loadConfiguration(config) {
 function _highlightConfiguration(config) {
     let configuration = configs[config];
     if (!!configuration) {
-        let configDisplays = Object.keys(configuration);
-        let masterIndex = configuration.masterIndex;
-        configDisplays.filter(key => key !== "masterIndex").forEach(id => {
+        let configDisplays = Object.keys(configuration.displays);
+        configDisplays.forEach(id => {
             let display = displays.find((display) => display.getId() === id);
-            display.highlightDotAtIndex(configuration[id].index);
+            display.highlightDotAtIndex(configuration.displays[id].index);
         });
-        masterScrollbar.highlightDotAtIndex(masterIndex);
+        masterScrollbar.highlightDotAtIndex(configuration.masterControls.index);
         highlightedConfig = config;
     }
 }
@@ -440,12 +457,13 @@ function handleMousePressed(e, mx = mouseX) {
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
         mouseIsFocused = true;
-        if (highlightedConfig !== "") {
-            _loadConfiguration(highlightedConfig);
-        }
         if (focusedDisplay instanceof TimelapseDisplay) {
             mouseIsFocusedOnStart = focusedDisplay.hasMouseFocusedOnStart(mx);
-            mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx)
+            mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx);
+        }
+        if (!(mouseIsFocusedOnStart || mouseIsFocusedOnEnd) && highlightedConfig !== "") {
+            /* Giving start/end positions mouse priority over configurations. */
+            _loadConfiguration(highlightedConfig);
         }
         handleMouseMoved(e, mx);
     }
