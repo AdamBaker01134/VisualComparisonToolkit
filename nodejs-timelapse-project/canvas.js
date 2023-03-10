@@ -34,6 +34,7 @@ let controlsDiv = null;
 let displaysDiv = null;
 let masterScrollbar = null;
 let configSelect = null;
+let normalizeControl = null;
 
 /* Custom objects */
 let loader = null;
@@ -178,6 +179,10 @@ function _constructGlobalControls() {
     configSelect.disable("Select config");
     configSelect.parent(masterControls);
 
+    normalizeControl = createCheckbox("Normalize", true);
+    normalizeControl.id("normalizeControl");
+    normalizeControl.parent(masterControls);
+
     let loadConfig = createButton("Load Config");
     loadConfig.id("loadConfig");
     loadConfig.mouseClicked((e) => _loadConfiguration(configSelect.elt.value));
@@ -244,7 +249,10 @@ function _updateDisplaysWithMaster(newOffset) {
         let end = display.getEnd();
         let range = end - start;
         /* Step the displays index by a factor of range/masterRange. */
-        let stepRatio = range / masterRange;
+        let stepRatio = 1;
+        if (normalizeControl.checked()) {
+            stepRatio = range / masterRange;
+        }
         display.setIndexFromMaster(newOffset - masterStart, stepRatio);
     });
 }
