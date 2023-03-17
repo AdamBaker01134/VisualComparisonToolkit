@@ -44,6 +44,11 @@ header {
     align-self: flex-end;
 }
 
+.displayTopControls #lockCheckbox {
+    display: inline-block;
+    margin-right: 25px;
+}
+
 .controls {
     position: -webkit-sticky; /* Safari */
     position: sticky;
