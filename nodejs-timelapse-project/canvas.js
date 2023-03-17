@@ -9,7 +9,7 @@
 p5.disableFriendlyErrors = true;
 
 /* Constants */
-const MAX_IMAGES = 200;
+const MAX_IMAGES = 1000;
 const DISPLAY_WIDTH = 350;
 const DISPLAY_HEIGHT = 350;
 
