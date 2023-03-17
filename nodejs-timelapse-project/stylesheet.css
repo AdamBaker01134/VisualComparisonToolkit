@@ -44,15 +44,15 @@ header {
     align-self: flex-end;
 }
 
-.slider {
-    width: 100%;
-}
-
-.masterControls {
+.controls {
     position: -webkit-sticky; /* Safari */
     position: sticky;
     bottom: 20px;
-    width: 100%;
+}
+
+.masterControls {
+    width: 1050px; /* Must be 3x the display height*/
+    height: fit-content;
     padding: 20px;
     margin: 20px;
     border-radius: 20px;
@@ -64,6 +64,10 @@ header {
     opacity: 100%;
 }
 
+.masterControls * {
+    display: inline-block;
+}
+
 .masterControls button {
     float: right;
     margin-bottom: 5px;
@@ -71,6 +75,10 @@ header {
 
 .masterControls input {
     width: inherit;
+}
+
+.masterControls span {
+    font: initial;
 }
 
 .emptyDisplay {

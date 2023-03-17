@@ -10,7 +10,7 @@
  * @param {p5.Element} parent the intended parent element for the display
  * @param {number} width width dimension of the display
  * @param {number} height height dimension of the display
- * @param {number} offset offset of the master slider upon creation
+ * @param {number} offset offset of the master scrollbar upon creation
  * @param {Function} onRemove callback function to remove display when remove button is pressed
  */
 function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, height, offset=0, onRemove=()=>{}) {
@@ -88,12 +88,12 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.imageWindow.parent(this.display);
     this.imageWindow.show();
 
-    /* Timelapse display slider to control image index */
-    this.slider = createInput("", "range");
-    this.slider.class("slider");
-    this.slider.input((e) => this.setIndex(parseInt(e.target.value)));
-    this.slider.elt.max = this.images.length - 1;
-    this.slider.parent(this.display);
+    /* Timelapse display custom scrollbar to control image index */
+    this.scrollbar = new Scrollbar(this.width, 30, this.id, this.display);
+    for (let i = 0; i < this.images.length; i++) {
+        this.scrollbar.addSegment(i);
+    }
+    this.scrollbar.updateParameters(this.width, 30);
 
     this.setIndex(0);
 }
@@ -110,25 +110,56 @@ TimelapseDisplay.prototype.getId = function () {
 
 /** Getter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.getIndex = function () {
-    return this.imgIdx;
+    /* Flooring index because, due to the step ratio multiplier, imgIdx may not be a round number */
+    return Math.floor(this.imgIdx);
+}
+
+/** Getter function for the displays scrollbar start position. */
+TimelapseDisplay.prototype.getStart = function () {
+    return this.scrollbar.getStart();
+}
+
+/** Getter function for the displays scrollbar end position. */
+TimelapseDisplay.prototype.getEnd = function () {
+    return this.scrollbar.getEnd();
 }
 
 /** Setter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.setIndex = function(newIndex) {
-    if (newIndex < 0) {
+    if (newIndex < this.scrollbar.getStart() || newIndex > this.scrollbar.getEnd()) {
+        return;
+    } else if (newIndex < 0) {
         this.imgIdx = 0;
     } else if (newIndex >= this.images.length) {
         this.imgIdx = this.images.length - 1;
     } else {
         this.imgIdx = newIndex;
     }
-    this.slider.value(this.imgIdx);
     this.timestamp.clear();
-    this.timestamp.text(this.timestamps[this.imgIdx], this.width, 22);
+    if (newIndex !== this.scrollbar.getIndex()) {
+        this.scrollbar.setIndex(newIndex);
+    }
+    this.timestamp.text(this.timestamps[this.getIndex()], this.width, 22);
 }
 
 /**
- * Sets the current offset from the master slider.
+ * Set the start position in the scrollbar.
+ * @param {number} newStart new start position in the scrollbar
+ */
+TimelapseDisplay.prototype.setStart = function(newStart) {
+    this.scrollbar.setStart(newStart);
+}
+
+/**
+ * Set the end position in the scrollbar.
+ * @param {number} newEnd new end position in the scrollbar
+ */
+TimelapseDisplay.prototype.setEnd = function(newEnd) {
+    this.scrollbar.setEnd(newEnd);
+}
+
+/**
+ * Sets the current offset from the master scrollbar.
  * @param {number} newOffset new offset to set
  */
 TimelapseDisplay.prototype.setOffset = function(newOffset) {
@@ -136,13 +167,86 @@ TimelapseDisplay.prototype.setOffset = function(newOffset) {
 }
 
 /**
- * Update the image index using a slider offset.
- * Used to give state mutability to master slider.
+ * Update the image index using a scrollbar offset.
+ * Used to give state mutability to master scrollbar.
  * @param {number} offset offset value to compare with the displays current offset value.
+ * @param {number} step ratio multiplier to increase the step of the set index
  */
-TimelapseDisplay.prototype.setIndexFromOffset = function(offset) {
-    this.setIndex(this.imgIdx + (offset - this.offset));
+TimelapseDisplay.prototype.setIndexFromMaster = function(offset, step) {
+    this.setIndex((this.imgIdx + (offset - this.offset) * step));
     this.setOffset(offset);
+}
+
+/**
+ * Set the index from the mouses position.
+ * @param {number} mx x coordinate of the cursor.
+ */
+TimelapseDisplay.prototype.setIndexFromMouse = function(mx = mouseX) {
+    this.scrollbar.setIndexFromMouse(mx);
+    this.setIndex(this.scrollbar.getIndex());
+}
+
+/**
+ * Handle one of several mouse events, such as updating the index, the start position, or the end position. 
+ * @param {number} mx x coordinate of the cursor.
+ * @param {boolean} movingStart true if this is a start marker event
+ * @param {boolean} movingEnd true if this is an end marker event
+ */
+TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX, movingStart = false, movingEnd = false) {
+    this.scrollbar.handleMouseEvent(mx, movingStart, movingEnd);
+    this.setIndex(this.scrollbar.getIndex());
+}
+
+/**
+ * Report whether the mouse is in this displays scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {boolean}
+ */
+TimelapseDisplay.prototype.hasMouseInScrollbar = function(mx = mouseX, my = mouseY) {
+    return this.scrollbar.hasMouseInScrollbar();
+}
+
+/**
+ * Report whether the mouse is on the start marker in the scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {boolean}
+ */
+TimelapseDisplay.prototype.hasMouseFocusedOnStart = function(mx = mouseX) {
+    return this.scrollbar.hasMouseOnStart(mx);
+}
+
+/**
+ * Report whether the mouse is on the start marker in the scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {boolean}
+ */
+TimelapseDisplay.prototype.hasMouseFocusedOnEnd = function(mx = mouseX) {
+    return this.scrollbar.hasMouseOnEnd(mx);
+}
+
+/**
+ * Report the dot that the mouse is positioned over in the scrollbar.
+ * @param {number} mx x coordinate of the cursor
+ * @returns {ScrollbarDot|null}
+ */
+TimelapseDisplay.prototype.getDotOnMouse = function(mx = mouseX) {
+    return this.scrollbar.getDotOnMouse(mx);
+}
+
+/**
+ * Set the dot at the given index in the scrollbar to be highlighted.
+ * @param {number} idx index of the dot in the scrollbar
+ */
+TimelapseDisplay.prototype.highlightDotAtIndex = function(idx) {
+    this.scrollbar.highlightDotAtIndex(idx);
+}
+
+/**
+ * Set all the dots in the scrollbar to be unhighlighted.
+ */
+TimelapseDisplay.prototype.unhighlightConfigs = function() {
+    this.scrollbar.unhighlightConfigs();
 }
 
 /**
@@ -158,7 +262,9 @@ TimelapseDisplay.prototype.draw = function () {
     this.imageWindow.clear();
     this.imageWindow.noStroke();
     this.imageWindow.fill(255);
-    this.imageWindow.image(this.images[this.imgIdx], 0, 0, this.width, this.height);
+    this.imageWindow.image(this.images[this.getIndex()], 0, 0, this.width, this.height);
+
+    this.scrollbar.draw();
 }
 
 /**
@@ -170,18 +276,28 @@ TimelapseDisplay.prototype.remove = function () {
 }
 
 /**
+ * Add a dot to the scrollbar.
+ * @param {string} configName name of new configuration
+ * @param {number} idx new configuration index
+ * @param {number|string} colour colour of the dot
+ */
+TimelapseDisplay.prototype.addDot = function (configName, idx, colour) {
+    this.scrollbar.addDot(configName, idx, colour);
+}
+
+/**
  * @private
  * Saves the current frame of the display in an array and adds it to the saved frame select element.
  */
 TimelapseDisplay.prototype._saveCurrentFrame = function () {
-    if (this.savedFrames.findIndex((savedFrame) => savedFrame.timestamp === this.timestamps[this.imgIdx]) >= 0) {
+    if (this.savedFrames.findIndex((savedFrame) => savedFrame.timestamp === this.timestamps[this.getIndex()]) >= 0) {
         /* Frame has been previously saved. */
         console.log("Current frame has already been previously saved.");
         return;
     }
 
     let currentFrameObj = {
-        timestamp: this.timestamps[this.imgIdx],
+        timestamp: this.timestamps[this.getIndex()],
         index: this.imgIdx,
     };
     this.savedFrames.push(currentFrameObj);

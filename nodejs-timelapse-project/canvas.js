@@ -22,12 +22,19 @@ let datasets = [];
 let displays = [];
 let displayCache = {};
 let configs = {};
+let mouseIsFocused = false;
+let mouseIsFocusedOnStart = false;
+let mouseIsFocusedOnEnd = false;
+let controlsActive = false;
+let highlightedConfig = "";
 
 /* DOM variables */
 let headerDiv = null;
+let controlsDiv = null;
 let displaysDiv = null;
-let masterSlider = null;
+let masterScrollbar = null;
 let configSelect = null;
+let normalizeControl = null;
 
 /* Custom objects */
 let loader = null;
@@ -36,6 +43,7 @@ let emptyDisplay = null;
 /* p5.js function that is called to load things before setup is called */
 function preload() {
     headerDiv = createElementWithID("header", "", "setupHolder", "setup");
+    controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
     loader = new Loader(MAX_IMAGES, IMG_PATH);
     datasets = loader.loadDatasets();
 }
@@ -49,12 +57,15 @@ function setup() {
     _createEmptyDisplay();
     _constructGlobalControls();
 
+    _attachUserEventListeners();
+
     noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
 
 /* p5.js function that acts as the draw loop */
 function draw() {
     displays.forEach(display => display.draw());
+    masterScrollbar.draw();
 }
 
 /**
@@ -80,6 +91,7 @@ function _createTimelapseDisplay(dataset) {
         emptyDisplay.setLoadState(false);
         let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
         displays.push(newDisplay);
+        _syncMasterScrollbarMarkers();
         return;
     }
 
@@ -99,6 +111,7 @@ function _createTimelapseDisplay(dataset) {
                     let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
                     displays.push(newDisplay);
                     _cacheDisplay(dataset, frames, timestamps, images);
+                    _syncMasterScrollbarMarkers();
                 },
                 (err) => {
                     console.error(`Error loading images for the ${dataset} dataset.`);
@@ -143,7 +156,7 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
         displaysDiv,
         DISPLAY_WIDTH,
         DISPLAY_HEIGHT,
-        parseInt(masterSlider.elt.value),
+        masterScrollbar.getIndex(),
         _removeDisplay,
     );
 }
@@ -151,24 +164,24 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
 /**
  * Construct DOM elements that act as Global controls for all displays.
  * This includes:
- *  - the master/global slider controlling indexing for all the displays
- *  - the Set All button to set all displays to the current index of the global slider
- *  - the inputs that control saving and loading positions in the global slider
+ *  - the master/global scrollbar controlling indexing for all the displays
+ *  - the Set All button to set all displays to the current index of the global scrollbar
+ *  - the inputs that control saving and loading positions in the global scrollbar
  */
 function _constructGlobalControls() {
     let masterControls = createDiv();
     masterControls.class("masterControls");
-    masterControls.parent(headerDiv);
+    masterControls.parent(controlsDiv);
 
-    // let setAllButton = createButton("Set All");
-    // setAllButton.id("setAll");
-    // setAllButton.mouseClicked(() => _setAllDisplayIndexes(parseInt(masterSlider.elt.value)));
-    // setAllButton.parent(masterControls);
     configSelect = createSelect();
     configSelect.id("configSelect");
     configSelect.option("Select config");
     configSelect.disable("Select config");
     configSelect.parent(masterControls);
+
+    normalizeControl = createCheckbox("Normalize", true);
+    normalizeControl.id("normalizeControl");
+    normalizeControl.parent(masterControls);
 
     let loadConfig = createButton("Load Config");
     loadConfig.id("loadConfig");
@@ -180,11 +193,13 @@ function _constructGlobalControls() {
     saveConfig.mouseClicked(_saveCurrentConfiguration);
     saveConfig.parent(masterControls);
 
-    masterSlider = createInput("", "range");
-    masterSlider.input((e) => _updateDisplayOffsets(parseInt(e.target.value)));
-    masterSlider.elt.max = MAX_IMAGES;
-    masterSlider.elt.value = 0;
-    masterSlider.parent(masterControls);
+    masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterScrollbar", masterControls);
+    for (let i = 0; i < MAX_IMAGES; i++) {
+        masterScrollbar.addSegment(i);
+    }
+    masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
+    masterControls.mouseOver(() => controlsActive = true);
+    masterControls.mouseOut(() => controlsActive = false);
 }
 
 /**
@@ -217,11 +232,49 @@ function _cacheDisplay(name, frames, timestamps, images) {
 
 /**
  * Update each of the timelapse displays with a new offset.
- * To be utilized only by the master slider.
+ * To be utilized only by the master scrollbar.
  * @param {number} newOffset new offset for each of the displays
  */
-function _updateDisplayOffsets(newOffset) {
-    displays.forEach(display => display.setIndexFromOffset(newOffset));
+function _updateDisplaysWithMaster(newOffset) {
+    /* Calculate the start-end range of the master scrollbar. */
+    let masterStart = masterScrollbar.getStart();
+    let masterEnd = masterScrollbar.getEnd();
+    let masterRange = masterEnd - masterStart;
+    if (newOffset < masterStart || newOffset > masterEnd) {
+        return;
+    }
+    displays.forEach(display => {
+        /* Calculate the start-end range of each display. */
+        let start = display.getStart();
+        let end = display.getEnd();
+        let range = end - start;
+        /* Step the displays index by a factor of range/masterRange. */
+        let stepRatio = 1;
+        if (normalizeControl.checked()) {
+            stepRatio = range / masterRange;
+        }
+        display.setIndexFromMaster(newOffset - masterStart, stepRatio);
+    });
+}
+
+/**
+ * Sync the master scrollbar's start, end, and index markers to the display with the smallest
+ * start-end range.
+ */
+function _syncMasterScrollbarMarkers() {
+    let start = -1;
+    let end = -1;
+    displays.forEach((display) => {
+        if ((start < 0 || end < 0) || ((end - start) > (display.getEnd() - display.getStart()))) {
+            start = display.getStart();
+            end = display.getEnd();
+        }
+    });
+
+    if (start >= 0 && end >= start) {
+        masterScrollbar.setStart(start);
+        masterScrollbar.setEnd(end);
+    }
 }
 
 /**
@@ -239,22 +292,55 @@ function _removeDisplay(displayID) {
     } else {
         console.error("Removal Error: could not locate timelapse display with id" + displayID);
     }
+
+    _syncMasterScrollbarMarkers();
 }
 
 /**
  * Save the current configuration of the system.
  * (i.e. save the current index of each display in a JSON)
+ * Structure of configs JSON array:
+ *  [
+ *      configName: {
+ *          displays: {
+ *              displayId: { 
+ *                  index: displayIdx,
+ *                  start: startPos,
+ *                  end: endPos,
+ *              }
+ *              ...
+ *          }
+ *          masterControls: { index: masterIdx }
+ *      },
+ *      ...
+ *  ]
  */
 function _saveCurrentConfiguration() {
-    let config = {};
-
-    displays.forEach(display => {
-        config[display.getId()] = { index: display.getIndex() };
-    });
-    config.masterIndex = masterSlider.elt.value;
+    let config = {
+        displays: {},
+        masterControls: {},
+    };
 
     let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
     if (!!configName) {
+        let colourTint = 32 * Object.keys(configs).length;
+        let colour = `rgb(${colourTint},${colourTint},${colourTint})`;
+
+        displays.forEach(display => {
+            let displayIdx = display.getIndex();
+            let startPos = display.getStart();
+            let endPos = display.getEnd();
+            config.displays[display.getId()] = { 
+                index: displayIdx,
+                start: startPos,
+                end: endPos, 
+            };
+            display.addDot(configName, displayIdx, colour);
+        });
+        let masterIdx = masterScrollbar.getIndex();
+        config.masterControls = { index: masterIdx };
+        masterScrollbar.addDot(configName, masterIdx, colour);
+
         configs[configName] = config;
         configSelect.option(configName);
         configSelect.value(configName);
@@ -269,14 +355,133 @@ function _saveCurrentConfiguration() {
 function _loadConfiguration(config) {
     let configuration = configs[config];
     if (!!configuration) {
-        let configDisplays = Object.keys(configuration);
-        let masterIndex = configuration.masterIndex;
-        configDisplays.filter(key => key !== "masterIndex").forEach(id => {
+        let configDisplays = Object.keys(configuration.displays);
+        configDisplays.forEach(id => {
             let display = displays.find((display) => display.getId() === id);
-            display.setIndex(configuration[id].index);
+            /* IMPORTANT: Must set start/end positions before the index! */
+            display.setStart(configuration.displays[id].start);
+            display.setEnd(configuration.displays[id].end);
+            display.setIndex(configuration.displays[id].index);
         });
-        displays.forEach(display => display.setOffset(masterIndex));
-        masterSlider.value(masterIndex);
+        /* IMPORTANT: Likewise, must sync master scrollbar markers before setting index! */
+        _syncMasterScrollbarMarkers();
+        masterScrollbar.setIndex(configuration.masterControls.index);
         console.log(`Succesfully loaded the [${config}] configuration.`)
     }
+}
+
+/**
+ * Highlight a saved configuration.
+ * @param {string} config name of the configuration we want to highlight.
+ */
+function _highlightConfiguration(config) {
+    let configuration = configs[config];
+    if (!!configuration) {
+        let configDisplays = Object.keys(configuration.displays);
+        configDisplays.forEach(id => {
+            let display = displays.find((display) => display.getId() === id);
+            display.highlightDotAtIndex(configuration.displays[id].index);
+        });
+        masterScrollbar.highlightDotAtIndex(configuration.masterControls.index);
+        highlightedConfig = config;
+    }
+}
+
+/**
+ * Unhighlight all dots in each display.
+ */
+function _unhighlightConfigurations() {
+    displays.forEach((display) => display.unhighlightConfigs());
+    masterScrollbar.unhighlightConfigs();
+    highlightedConfig = "";
+}
+
+//// User Event Handling ////
+
+/**
+ * Attach following event listeners to the document:
+ *  - mousemove event
+ *  - mousedown event
+ *  - mouseup event
+ */
+function _attachUserEventListeners() {
+    document.addEventListener("mousemove", handleMouseMoved);
+    document.addEventListener("mousedown", handleMousePressed);
+    document.addEventListener("mouseup", handleMouseReleased);
+}
+
+/**
+ * Mouse moved event handler.
+ * @param {Event} e
+ * @param {number} mx x coordinate of the cursor
+ */
+function handleMouseMoved(e, mx = mouseX) {
+    if (!mouseIsFocused) {
+        // If the mouse is not focused in a display/scrollbar, check for highlighting configs
+        let hoverDot = null;
+        for (let i = 0; i <= displays.length; i++) {
+            // Check if hovering over display/master scrollbar configs
+            if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
+                 i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
+        }
+        if (hoverDot !== null) {
+            // If hovering over a dot in any display/scrollbar, highlight all configs
+            let configName = hoverDot.configName;
+            _highlightConfiguration(configName);
+        } else if (highlightedConfig !== "") {
+            // If moved out of the dot, unhighlight all displays/scrollbar dots
+            _unhighlightConfigurations();
+        }
+        return;
+    };
+
+    // First check if the controls bar is active (overwrites other behaviour)
+    if (controlsActive) {
+        if (masterScrollbar.hasMouseInScrollbar()) {
+            let index = masterScrollbar.setIndexFromMouse(mx);
+            if (index >= 0) {
+                _updateDisplaysWithMaster(index);
+            }
+        }
+        return;
+    }
+
+    // Then, check if display is focused
+    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+    if (focusedDisplay instanceof TimelapseDisplay) {
+        focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStart, mouseIsFocusedOnEnd);
+        if (mouseIsFocusedOnStart || mouseIsFocusedOnEnd) {
+            _syncMasterScrollbarMarkers();
+        }
+    }
+}
+
+/**
+ * Mouse pressed event handler.
+ * @param {Event} e
+ * @param {number} mx x coordinate of the cursor
+ */
+function handleMousePressed(e, mx = mouseX) {
+    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+    if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
+        mouseIsFocused = true;
+        if (focusedDisplay instanceof TimelapseDisplay) {
+            mouseIsFocusedOnStart = focusedDisplay.hasMouseFocusedOnStart(mx);
+            mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx);
+        }
+        if (!(mouseIsFocusedOnStart || mouseIsFocusedOnEnd) && highlightedConfig !== "") {
+            /* Giving start/end positions mouse priority over configurations. */
+            _loadConfiguration(highlightedConfig);
+        }
+        handleMouseMoved(e, mx);
+    }
+}
+
+/**
+ * Mouse released event handler.
+ */
+function handleMouseReleased() {
+    mouseIsFocused = false;
+    mouseIsFocusedOnStart = false;
+    mouseIsFocusedOnEnd = false;
 }
