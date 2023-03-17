@@ -48,7 +48,7 @@ Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => {
 
     // Load image frames
     loadStrings(
-        this.imgPath + "/" + dataset + "/summer-day-frames.txt",
+        this.imgPath + dataset + "/summer-day-frames.txt",
         loadedFrames => {
             frames = loadedFrames;
             ret();
@@ -58,7 +58,7 @@ Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => {
 
     // Load image timestamps
     loadStrings(
-        this.imgPath + "/" + dataset + "/summer-day-timestamps.txt",
+        this.imgPath + dataset + "/summer-day-timestamps.txt",
         loadedTimestamps => {
             timestamps = loadedTimestamps;
             ret();
@@ -76,21 +76,15 @@ Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => {
  */
 Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, errCallback = () => { }) {
     let loadedImages = [];
+    let numLoaded = 0;
 
-    const load = (frame) => {
-        loadImage(
-            this.imgPath + "/" + dataset + "/quarter/" + frame,
-            loadedImage => {
-                loadedImages.push(loadedImage);
-                if (loadedImages.length >= this.capacity || loadedImages.length >= frames.length) {
-                    callback(loadedImages);
-                } else {
-                    load(frames[loadedImages.length]);
-                }
+    for (let i = 0; i < this.capacity; i++) {
+        loadedImages.push(loadImage(
+            this.imgPath + dataset + "/eighth/" + frames[i],
+            img => {
+                if (numLoaded++ >= this.capacity - 1) callback(loadedImages);
             },
-            errCallback,
-        )
+            (err) => { errCallback(err) }
+        ));
     }
-
-    load(frames[loadedImages.length]);
 }
