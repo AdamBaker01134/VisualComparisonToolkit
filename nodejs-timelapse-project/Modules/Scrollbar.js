@@ -146,31 +146,25 @@ Scrollbar.prototype.draw = function () {
  * @param {number} pos position of the line segment
  */
 Scrollbar.prototype.renderLine = function (idx, pos) {
-    /* Uncomment when using large number of MAX_IMAGES */
-    // switch (idx % 50) {
-    //     case 0:
-    //         this.scrollbar.line(pos, 0, pos, 12);
-    //         break;
-    //     case 25:
-    //         this.scrollbar.line(pos, 0, pos, 8);
-    //         break;
-    //     case 12:
-    //     case 38:
-    //         this.scrollbar.line(pos, 0, pos, 5);
-    //         break;
-    //     default:
-    //         this.scrollbar.line(pos, 0, pos, 2);
-    //         break;
-    // }
-    switch (idx % 10) {
+    switch (idx % 50) {
         case 0:
+            this.scrollbar.line(pos, 0, pos, 16);
+            break;
+        case 25:
             this.scrollbar.line(pos, 0, pos, 12);
             break;
-        case 5:
+        case 12:
+        case 38:
             this.scrollbar.line(pos, 0, pos, 8);
             break;
-        default:
+        case 6:
+        case 18:
+        case 32:
+        case 44:
             this.scrollbar.line(pos, 0, pos, 5);
+            break;
+        default:
+            this.scrollbar.line(pos, 0, pos, 1);
             break;
     }
 }
