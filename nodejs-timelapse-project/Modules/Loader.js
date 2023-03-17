@@ -68,7 +68,7 @@ Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => {
 }
 
 /**
- * Load the dataset frames/images from the quarter directory.
+ * Load the dataset frames/images from the /eighth directory.
  * @param {string} dataset name of the dataset from which we will load the images
  * @param {Array<string>} frames an array of strings that are the names of the images in the dataset
  * @param {Function} callback callback function called once images have been loaded
