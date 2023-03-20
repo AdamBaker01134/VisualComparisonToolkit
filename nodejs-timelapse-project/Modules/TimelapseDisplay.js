@@ -42,6 +42,10 @@ function TimelapseDisplay(name, id, frames, timestamps, images, parent, width, h
     this.topControls.class("displayTopControls");
     this.topControls.parent(this.display);
 
+    this.lockCheckbox = createCheckbox("Lock", false);
+    this.lockCheckbox.id("lockCheckbox");
+    this.lockCheckbox.parent(this.topControls);
+
     /* Frame select */
     this.frameSelect = createSelect();
     this.frameSelect.id("frameSelect");
@@ -126,7 +130,7 @@ TimelapseDisplay.prototype.getEnd = function () {
 
 /** Setter function for the object's imgIdx attribute. */
 TimelapseDisplay.prototype.setIndex = function(newIndex) {
-    if (newIndex < this.scrollbar.getStart() || newIndex > this.scrollbar.getEnd()) {
+    if (newIndex < this.scrollbar.getStart() || newIndex > this.scrollbar.getEnd() || this.lockCheckbox.checked()) {
         return;
     } else if (newIndex < 0) {
         this.imgIdx = 0;
@@ -182,6 +186,7 @@ TimelapseDisplay.prototype.setIndexFromMaster = function(offset, step) {
  * @param {number} mx x coordinate of the cursor.
  */
 TimelapseDisplay.prototype.setIndexFromMouse = function(mx = mouseX) {
+    if (this.lockCheckbox.checked()) return;
     this.scrollbar.setIndexFromMouse(mx);
     this.setIndex(this.scrollbar.getIndex());
 }
@@ -193,6 +198,7 @@ TimelapseDisplay.prototype.setIndexFromMouse = function(mx = mouseX) {
  * @param {boolean} movingEnd true if this is an end marker event
  */
 TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX, movingStart = false, movingEnd = false) {
+    if (this.lockCheckbox.checked()) return;
     this.scrollbar.handleMouseEvent(mx, movingStart, movingEnd);
     this.setIndex(this.scrollbar.getIndex());
 }
