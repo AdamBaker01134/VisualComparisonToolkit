@@ -472,8 +472,9 @@ function handleMousePressed(e, mx = mouseX) {
         if (!(mouseIsFocusedOnStart || mouseIsFocusedOnEnd) && highlightedConfig !== "") {
             /* Giving start/end positions mouse priority over configurations. */
             _loadConfiguration(highlightedConfig);
+        } else {
+            handleMouseMoved(e, mx);
         }
-        handleMouseMoved(e, mx);
     }
 }
 
