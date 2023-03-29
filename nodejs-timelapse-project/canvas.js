@@ -20,6 +20,7 @@ let plotPath = "";
 /* State data */
 let datasets = [];
 let displays = [];
+let selectedDisplays = [];
 let displayCache = {};
 let configs = {};
 let mouseIsFocused = false;
@@ -297,6 +298,28 @@ function _removeDisplay(displayID) {
 }
 
 /**
+ * Add selected display to the array of 2 selected displays.
+ * Remove oldest selected display if 2 displays already selected.
+ * @param {TimelapseDisplay} display display to select
+ */
+function _selectDisplay(display) {
+    /* If display is already selected, unselect it and return */
+    let selectedIdx = selectedDisplays.findIndex((selectedDisplay) => selectedDisplay.getId() === display.getId());
+    if (selectedIdx >= 0) {
+        selectedDisplays.splice(selectedIdx, 1);
+        display.toggleSelected();
+        return;
+    }
+    /* Reduce the selected displays to 1 or less */
+    while (selectedDisplays.length >= 2) {
+        selectedDisplays[0].toggleSelected();
+        selectedDisplays.shift();
+    }
+    selectedDisplays.push(display);
+    display.toggleSelected();
+}
+
+/**
  * Save the current configuration of the system.
  * (i.e. save the current index of each display in a JSON)
  * Structure of configs JSON array:
@@ -462,6 +485,7 @@ function handleMouseMoved(e, mx = mouseX) {
  * @param {number} mx x coordinate of the cursor
  */
 function handleMousePressed(e, mx = mouseX) {
+    /* Handle mouse over scrollbar events */
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
         mouseIsFocused = true;
@@ -475,6 +499,12 @@ function handleMousePressed(e, mx = mouseX) {
         } else {
             handleMouseMoved(e, mx);
         }
+        return;
+    }
+    /* Handle mouse over image events */
+    focusedDisplay = displays.find((display) => display.hasMouseOnImage());
+    if (focusedDisplay instanceof TimelapseDisplay) {
+        _selectDisplay(focusedDisplay);
     }
 }
 

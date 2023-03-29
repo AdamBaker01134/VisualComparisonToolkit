@@ -39,6 +39,10 @@ header {
     flex-direction: column;
 }
 
+.display.selected {
+    border: solid #34db55;
+}
+
 .displayTopControls {
     margin-bottom: 5px;
     align-self: flex-end;
