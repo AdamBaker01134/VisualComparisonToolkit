@@ -12,12 +12,17 @@ p5.disableFriendlyErrors = true;
 const MAX_IMAGES = 1000;
 const DISPLAY_WIDTH = 350;
 const DISPLAY_HEIGHT = 350;
+const VIEW_TYPES = {
+    displays: "displays",
+    overlay: "overlay",
+}
 
 /* Path variables */
 const IMG_PATH = "./img/";
 let plotPath = "";
 
 /* State data */
+let currentView = VIEW_TYPES.displays;
 let datasets = [];
 let displays = [];
 let selectedDisplays = [];
@@ -34,6 +39,7 @@ let headerDiv = null;
 let overlayButton = null;
 let bodyDiv = null;
 let controlsDiv = null;
+let overlayDiv = null;
 let displaysDiv = null;
 let masterScrollbar = null;
 let configSelect = null;
@@ -48,6 +54,8 @@ function preload() {
     headerDiv = createElementWithID("header", "", "headerContainer", "container");
     bodyDiv = createElementWithID("div", "", "displayContainer", "container");
     controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
+    overlayDiv = createElementWithID("div", "Temporary Content", "overlayContainer", "container");
+    overlayDiv.addClass("hidden");
     loader = new Loader(MAX_IMAGES, IMG_PATH);
     datasets = loader.loadDatasets();
 }
@@ -445,16 +453,39 @@ function _unhighlightConfigurations() {
 
 //// Switching Views ////
 
+/**
+ * Hide all currentView-specific elements in the DOM.
+ */
 function _clearView() {
-
+    if (currentView === VIEW_TYPES.displays) {
+        bodyDiv.addClass("hidden");
+        controlsDiv.addClass("hidden");
+    } else if (currentView === VIEW_TYPES.overlay) {
+        overlayDiv.addClass("hidden");
+    }
 }
 
+/**
+ * Set the currently displayed view to the displays view.
+ */
 function _loadDisplaysView() {
+    if (currentView === VIEW_TYPES.displays) return;
+    _clearView();
     console.log("Loading displays view...");
+    bodyDiv.removeClass("hidden");
+    controlsDiv.removeClass("hidden");
+    currentView = VIEW_TYPES.displays;
 }
 
+/**
+ * Set the currently displayed view to the overlay view.
+ */
 function _loadOverlayView() {
+    if (currentView === VIEW_TYPES.overlay) return;
+    _clearView();
     console.log("Loading overlay view...");
+    overlayDiv.removeClass("hidden");
+    currentView = VIEW_TYPES.overlay;
 }
 
 //// User Event Handling ////
