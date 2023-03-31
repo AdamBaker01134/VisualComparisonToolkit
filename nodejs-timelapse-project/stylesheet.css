@@ -17,10 +17,14 @@ canvas {
     background-color: #BEBEBE;
 }
 
-header {
+.container {
     display: flex;
     height: auto;
     flex-wrap: wrap;
+}
+
+header * {
+    width: 50%;
 }
 
 .displays {

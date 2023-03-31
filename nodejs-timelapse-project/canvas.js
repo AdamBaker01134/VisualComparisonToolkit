@@ -31,6 +31,8 @@ let highlightedConfig = "";
 
 /* DOM variables */
 let headerDiv = null;
+let overlayButton = null;
+let bodyDiv = null;
 let controlsDiv = null;
 let displaysDiv = null;
 let masterScrollbar = null;
@@ -43,7 +45,8 @@ let emptyDisplay = null;
 
 /* p5.js function that is called to load things before setup is called */
 function preload() {
-    headerDiv = createElementWithID("header", "", "setupHolder", "setup");
+    headerDiv = createElementWithID("header", "", "headerContainer", "container");
+    bodyDiv = createElementWithID("div", "", "displayContainer", "container");
     controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
     loader = new Loader(MAX_IMAGES, IMG_PATH);
     datasets = loader.loadDatasets();
@@ -53,8 +56,9 @@ function preload() {
 function setup() {
     displaysDiv = createDiv();
     displaysDiv.class("displays");
-    displaysDiv.parent(headerDiv);
+    displaysDiv.parent(bodyDiv);
 
+    _setupHeader();
     _createEmptyDisplay();
     _constructGlobalControls();
 
@@ -70,11 +74,24 @@ function draw() {
 }
 
 /**
+ * Populate the header DOM object with essential elements and functionality.
+ */
+function _setupHeader() {
+    let displayButton = createButton("Displays");
+    overlayButton = createButton("Overlay (0/2)");
+    displayButton.mouseClicked(_loadDisplaysView);
+    overlayButton.mouseClicked(_loadOverlayView);
+    overlayButton.elt.disabled = true;
+    displayButton.parent(headerDiv);
+    overlayButton.parent(headerDiv);
+}
+
+/**
  * Create an empty display object.
  * The header div and datasets array must both be initialized before this happens.
  */
 function _createEmptyDisplay() {
-    emptyDisplay = new EmptyDisplay(headerDiv, datasets, _createTimelapseDisplay);
+    emptyDisplay = new EmptyDisplay(bodyDiv, datasets, _createTimelapseDisplay);
 }
 
 /**
@@ -308,15 +325,22 @@ function _selectDisplay(display) {
     if (selectedIdx >= 0) {
         selectedDisplays.splice(selectedIdx, 1);
         display.toggleSelected();
-        return;
+    } else {
+        /* Reduce the selected displays to 1 or less */
+        while (selectedDisplays.length >= 2) {
+            selectedDisplays[0].toggleSelected();
+            selectedDisplays.shift();
+        }
+        selectedDisplays.push(display);
+        display.toggleSelected();
     }
-    /* Reduce the selected displays to 1 or less */
-    while (selectedDisplays.length >= 2) {
-        selectedDisplays[0].toggleSelected();
-        selectedDisplays.shift();
+    /* Edit HTML values of header overlay button */
+    if (selectedDisplays.length === 2) {
+        overlayButton.elt.disabled = false;
+    } else {
+        overlayButton.elt.disabled = true;
     }
-    selectedDisplays.push(display);
-    display.toggleSelected();
+    overlayButton.elt.innerText = `Overlay (${selectedDisplays.length}/2)`;
 }
 
 /**
@@ -353,10 +377,10 @@ function _saveCurrentConfiguration() {
             let displayIdx = display.getIndex();
             let startPos = display.getStart();
             let endPos = display.getEnd();
-            config.displays[display.getId()] = { 
+            config.displays[display.getId()] = {
                 index: displayIdx,
                 start: startPos,
-                end: endPos, 
+                end: endPos,
             };
             display.addDot(configName, displayIdx, colour);
         });
@@ -419,6 +443,20 @@ function _unhighlightConfigurations() {
     highlightedConfig = "";
 }
 
+//// Switching Views ////
+
+function _clearView() {
+
+}
+
+function _loadDisplaysView() {
+    console.log("Loading displays view...");
+}
+
+function _loadOverlayView() {
+    console.log("Loading overlay view...");
+}
+
 //// User Event Handling ////
 
 /**
@@ -445,7 +483,7 @@ function handleMouseMoved(e, mx = mouseX) {
         for (let i = 0; i <= displays.length; i++) {
             // Check if hovering over display/master scrollbar configs
             if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
-                 i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
+                i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
         }
         if (hoverDot !== null) {
             // If hovering over a dot in any display/scrollbar, highlight all configs
