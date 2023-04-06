@@ -78,11 +78,13 @@ Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, e
     let loadedImages = [];
     let numLoaded = 0;
 
-    for (let i = 0; i < this.capacity; i++) {
+    let total = Math.min(this.capacity, frames.length);
+
+    for (let i = 0; i < total; i++) {
         loadedImages.push(loadImage(
             this.imgPath + dataset + "/eighth/" + frames[i],
             img => {
-                if (numLoaded++ >= this.capacity - 1) callback(loadedImages);
+                if (numLoaded++ >= total - 1) callback(loadedImages);
             },
             (err) => { errCallback(err) }
         ));
