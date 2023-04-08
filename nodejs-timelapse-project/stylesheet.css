@@ -114,6 +114,17 @@ header * {
     border: 1px solid red;
 }
 
+#opacityContainer {
+    display: flex;
+    width: 100%;
+    font-size: medium;
+    flex-wrap: wrap-reverse;
+}
+
+#opacityContainer input {
+    width: 100%;
+}
+
 .hidden {
     display: none !important;
 }

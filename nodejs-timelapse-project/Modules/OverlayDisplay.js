@@ -19,6 +19,8 @@ function OverlayDisplay(id, images, mono_images, parent, width, height) {
     this.imgIdx = 0;
     this.monoIdx = 0;
 
+    this.opacity = "128";
+
     this.display = createElementWithID("div", "", id, "display");
     this.display.parent(parent);
 
@@ -33,6 +35,27 @@ function OverlayDisplay(id, images, mono_images, parent, width, height) {
         this.scrollbar.addSegment(i);
     }
     this.scrollbar.updateParameters(this.width, 30);
+
+    /* Opacity elements container */
+    let opacityContainer = createElementWithID("div", "", "opacityContainer");
+    opacityContainer.parent(this.display);
+
+    /* Label indicating the opacity percentage */
+    this.opacityLabel = createElementWithID("label", `Opacity Level: ${Math.round(parseInt(this.opacity) / 255 * 100)}%`);
+    this.opacityLabel.elt.htmlFor = "opacitySlider";
+    this.opacityLabel.parent(opacityContainer);
+
+    /* Slider for adjusting the opacity of the top image layer */
+    this.opacitySlider = createInput(null, "range");
+    this.opacitySlider.id("opacitySlider");
+    this.opacitySlider.elt.min = "1";
+    this.opacitySlider.elt.max = "255";
+    this.opacitySlider.value(this.opacity);
+    this.opacitySlider.input(e => {
+        this.opacity = e.target.value;
+        this.opacityLabel.elt.innerText = `Opacity Level: ${Math.round(parseInt(this.opacity) / 255 * 100)}%`;
+    });
+    this.opacitySlider.parent(opacityContainer);
 }
 
 /** Getter function for the object's id attribute. */
@@ -112,7 +135,7 @@ OverlayDisplay.prototype.draw = function () {
     this.imageWindow.image(this.mono_images[Math.floor(this.getMonoIndex())], 0, 0, this.width, this.height);
 
     /* Draw top image layer with opacity changes */
-    this.imageWindow.tint(255, 50);
+    this.imageWindow.tint(255, parseInt(this.opacity));
     this.imageWindow.image(this.images[this.getIndex()], 0, 0, this.width, this.height);
 
     this.scrollbar.draw();
