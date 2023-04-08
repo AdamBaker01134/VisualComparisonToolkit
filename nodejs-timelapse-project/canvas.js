@@ -349,6 +349,10 @@ function _removeDisplay(displayID) {
 
     let displayIdx = displays.findIndex(display => display.getId() === displayID);
     if (displayIdx > -1) {
+        let selectedIdx = selectedDisplays.findIndex(selectedDisplay => selectedDisplay.getId() === displayID);
+        if (selectedIdx > -1) {
+            selectedDisplays.splice(selectedIdx, 1); /* Remove selected display at index selectedIdx */
+        }
         displays[displayIdx].remove();
         displays.splice(displayIdx, 1); /* Remove display at index displayIdx */
         console.log("Successfully removed timelapse display with id: " + displayID);
