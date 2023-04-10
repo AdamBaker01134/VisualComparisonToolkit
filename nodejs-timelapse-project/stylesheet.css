@@ -17,10 +17,14 @@ canvas {
     background-color: #BEBEBE;
 }
 
-header {
+.container {
     display: flex;
     height: auto;
     flex-wrap: wrap;
+}
+
+header * {
+    width: 50%;
 }
 
 .displays {
@@ -37,6 +41,10 @@ header {
     display: flex;
     align-items: center;
     flex-direction: column;
+}
+
+.display.selected {
+    border: solid #34db55;
 }
 
 .displayTopControls {
@@ -104,6 +112,21 @@ header {
 
 .emptyDisplay select.error {
     border: 1px solid red;
+}
+
+#opacityContainer {
+    display: flex;
+    width: 100%;
+    font-size: medium;
+    flex-wrap: wrap-reverse;
+}
+
+#opacityContainer input {
+    width: 100%;
+}
+
+.hidden {
+    display: none !important;
 }
 
 /* .loadErrMsg {

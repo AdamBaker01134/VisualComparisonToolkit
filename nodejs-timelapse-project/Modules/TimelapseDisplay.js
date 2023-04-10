@@ -204,6 +204,18 @@ TimelapseDisplay.prototype.handleMouseEvent = function(mx = mouseX, movingStart 
 }
 
 /**
+ * Report whether the mouse is in the displays image window.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {boolean}
+ */
+TimelapseDisplay.prototype.hasMouseOnImage = function(mx = mouseX, my = mouseY) {
+    let x = this.imageWindow.elt.getBoundingClientRect().x;
+    let y = this.imageWindow.elt.getBoundingClientRect().y;
+    return (x <= mx && x + this.width >= mx) && (y <= my && y + this.height >= my);
+}
+
+/**
  * Report whether the mouse is in this displays scrollbar.
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
@@ -289,6 +301,13 @@ TimelapseDisplay.prototype.remove = function () {
  */
 TimelapseDisplay.prototype.addDot = function (configName, idx, colour) {
     this.scrollbar.addDot(configName, idx, colour);
+}
+
+/**
+ * Toggles the selected state of the display.
+ */
+TimelapseDisplay.prototype.toggleSelected = function () {
+    this.display.toggleClass("selected");
 }
 
 /**

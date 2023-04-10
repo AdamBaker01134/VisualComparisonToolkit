@@ -73,18 +73,32 @@ Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => {
  * @param {Array<string>} frames an array of strings that are the names of the images in the dataset
  * @param {Function} callback callback function called once images have been loaded
  * @param {Function} errCallback callback function called if there was an error loading images
+ * @param {string=} opt_dir [OPTIONAL] alternative load directory
  */
-Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, errCallback = () => { }) {
+Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, errCallback = () => { }, opt_dir = "/eighth/") {
     let loadedImages = [];
     let numLoaded = 0;
 
-    for (let i = 0; i < this.capacity; i++) {
+    let total = Math.min(this.capacity, frames.length);
+
+    for (let i = 0; i < total; i++) {
         loadedImages.push(loadImage(
-            this.imgPath + dataset + "/eighth/" + frames[i],
+            this.imgPath + dataset + opt_dir + frames[i],
             img => {
-                if (numLoaded++ >= this.capacity - 1) callback(loadedImages);
+                if (numLoaded++ >= total - 1) callback(loadedImages);
             },
             (err) => { errCallback(err) }
         ));
     }
+}
+
+/**
+ * Load the dataset monochrome images from the /mono directory.
+ * @param {string} dataset name of the dataset from which we will load the monochrome images in the dataset
+ * @param {Array<string>} frames an array of strings that are the names of the monochrome images in the dataset
+ * @param {Function} callback callback function called once images have been loaded 
+ * @param {Function} errCallback callback function called if there was an error loading images 
+ */
+Loader.prototype.loadMonochromes = function (dataset, frames, callback = () => { }, errCallback = () => {}) {
+    this.loadImages(dataset, frames, callback, errCallback, "/mono/");
 }

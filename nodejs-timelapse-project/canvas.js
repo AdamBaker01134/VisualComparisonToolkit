@@ -12,14 +12,23 @@ p5.disableFriendlyErrors = true;
 const MAX_IMAGES = 1000;
 const DISPLAY_WIDTH = 350;
 const DISPLAY_HEIGHT = 350;
+const OVERLAY_WIDTH = 700;
+const OVERLAY_HEIGHT = 700;
+const VIEW_TYPES = {
+    displays: "displays",
+    overlay: "overlay",
+}
 
 /* Path variables */
 const IMG_PATH = "./img/";
 let plotPath = "";
 
 /* State data */
+let currentView = VIEW_TYPES.displays;
 let datasets = [];
 let displays = [];
+let overlays = [];
+let selectedDisplays = [];
 let displayCache = {};
 let configs = {};
 let mouseIsFocused = false;
@@ -30,7 +39,10 @@ let highlightedConfig = "";
 
 /* DOM variables */
 let headerDiv = null;
+let overlayButton = null;
+let bodyDiv = null;
 let controlsDiv = null;
+let overlayDiv = null;
 let displaysDiv = null;
 let masterScrollbar = null;
 let configSelect = null;
@@ -42,8 +54,11 @@ let emptyDisplay = null;
 
 /* p5.js function that is called to load things before setup is called */
 function preload() {
-    headerDiv = createElementWithID("header", "", "setupHolder", "setup");
+    headerDiv = createElementWithID("header", "", "headerContainer", "container");
+    bodyDiv = createElementWithID("div", "", "displayContainer", "container");
     controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
+    overlayDiv = createElementWithID("div", "", "overlayContainer", "container");
+    overlayDiv.addClass("hidden");
     loader = new Loader(MAX_IMAGES, IMG_PATH);
     datasets = loader.loadDatasets();
 }
@@ -52,8 +67,9 @@ function preload() {
 function setup() {
     displaysDiv = createDiv();
     displaysDiv.class("displays");
-    displaysDiv.parent(headerDiv);
+    displaysDiv.parent(bodyDiv);
 
+    _setupHeader();
     _createEmptyDisplay();
     _constructGlobalControls();
 
@@ -64,8 +80,25 @@ function setup() {
 
 /* p5.js function that acts as the draw loop */
 function draw() {
-    displays.forEach(display => display.draw());
-    masterScrollbar.draw();
+    if (currentView === VIEW_TYPES.displays) {
+        displays.forEach(display => display.draw());
+        masterScrollbar.draw();
+    } else if (currentView === VIEW_TYPES.overlay) {
+        overlays.forEach(overlay => overlay.draw());
+    }
+}
+
+/**
+ * Populate the header DOM object with essential elements and functionality.
+ */
+function _setupHeader() {
+    let displayButton = createButton("Displays");
+    overlayButton = createButton("Overlay (0/2)");
+    displayButton.mouseClicked(_loadDisplaysView);
+    overlayButton.mouseClicked(_loadOverlayView);
+    overlayButton.elt.disabled = true;
+    displayButton.parent(headerDiv);
+    overlayButton.parent(headerDiv);
 }
 
 /**
@@ -73,7 +106,7 @@ function draw() {
  * The header div and datasets array must both be initialized before this happens.
  */
 function _createEmptyDisplay() {
-    emptyDisplay = new EmptyDisplay(headerDiv, datasets, _createTimelapseDisplay);
+    emptyDisplay = new EmptyDisplay(bodyDiv, datasets, _createTimelapseDisplay);
 }
 
 /**
@@ -126,6 +159,36 @@ function _createTimelapseDisplay(dataset) {
             console.log(err);
             emptyDisplay.setErrorState(true);
             emptyDisplay.setLoadState(false);
+        },
+    );
+}
+
+/**
+ * Reconstructs an overlay object that will be displayed as an OverlayDisplay.
+ */
+function _reconstructOverlayDisplay() {
+    overlays = [];
+    let display1 = displayCache[selectedDisplays[0].getName()];
+    let display2 = displayCache[selectedDisplays[1].getName()];
+    const start = performance.now();
+    /* Load monochrome images for one of the two selected displays. */
+    loader.loadMonochromes(
+        display2.name,
+        display2.frames,
+        (monochromes) => {
+            console.log(`Successfully loaded ${monochromes.length} monochrome images in ${Math.floor(performance.now() - start)}ms.`);
+            overlays.push(new OverlayDisplay(
+                `overlay-${display1.name}-${display2.name}`,
+                display1.images,
+                monochromes,
+                overlayDiv,
+                OVERLAY_WIDTH,
+                OVERLAY_HEIGHT,
+            ));
+        },
+        (err) => {
+            console.error(`Error loading monochrome images for the ${display2.name} dataset.`);
+            console.log(err);
         },
     );
 }
@@ -286,6 +349,10 @@ function _removeDisplay(displayID) {
 
     let displayIdx = displays.findIndex(display => display.getId() === displayID);
     if (displayIdx > -1) {
+        let selectedIdx = selectedDisplays.findIndex(selectedDisplay => selectedDisplay.getId() === displayID);
+        if (selectedIdx > -1) {
+            selectedDisplays.splice(selectedIdx, 1); /* Remove selected display at index selectedIdx */
+        }
         displays[displayIdx].remove();
         displays.splice(displayIdx, 1); /* Remove display at index displayIdx */
         console.log("Successfully removed timelapse display with id: " + displayID);
@@ -294,6 +361,35 @@ function _removeDisplay(displayID) {
     }
 
     _syncMasterScrollbarMarkers();
+}
+
+/**
+ * Add selected display to the array of 2 selected displays.
+ * Remove oldest selected display if 2 displays already selected.
+ * @param {TimelapseDisplay} display display to select
+ */
+function _selectDisplay(display) {
+    /* If display is already selected, unselect it and return */
+    let selectedIdx = selectedDisplays.findIndex((selectedDisplay) => selectedDisplay.getId() === display.getId());
+    if (selectedIdx >= 0) {
+        selectedDisplays.splice(selectedIdx, 1);
+        display.toggleSelected();
+    } else {
+        /* Reduce the selected displays to 1 or less */
+        while (selectedDisplays.length >= 2) {
+            selectedDisplays[0].toggleSelected();
+            selectedDisplays.shift();
+        }
+        selectedDisplays.push(display);
+        display.toggleSelected();
+    }
+    /* Edit HTML values of header overlay button */
+    if (selectedDisplays.length === 2) {
+        overlayButton.elt.disabled = false;
+    } else {
+        overlayButton.elt.disabled = true;
+    }
+    overlayButton.elt.innerText = `Overlay (${selectedDisplays.length}/2)`;
 }
 
 /**
@@ -330,10 +426,10 @@ function _saveCurrentConfiguration() {
             let displayIdx = display.getIndex();
             let startPos = display.getStart();
             let endPos = display.getEnd();
-            config.displays[display.getId()] = { 
+            config.displays[display.getId()] = {
                 index: displayIdx,
                 start: startPos,
-                end: endPos, 
+                end: endPos,
             };
             display.addDot(configName, displayIdx, colour);
         });
@@ -396,6 +492,45 @@ function _unhighlightConfigurations() {
     highlightedConfig = "";
 }
 
+//// Switching Views ////
+
+/**
+ * Hide all currentView-specific elements in the DOM.
+ */
+function _clearView() {
+    if (currentView === VIEW_TYPES.displays) {
+        bodyDiv.addClass("hidden");
+        controlsDiv.addClass("hidden");
+    } else if (currentView === VIEW_TYPES.overlay) {
+        overlayDiv.addClass("hidden");
+        overlayDiv.elt.innerHTML = "";
+    }
+}
+
+/**
+ * Set the currently displayed view to the displays view.
+ */
+function _loadDisplaysView() {
+    if (currentView === VIEW_TYPES.displays) return;
+    _clearView();
+    console.log("Loading displays view...");
+    bodyDiv.removeClass("hidden");
+    controlsDiv.removeClass("hidden");
+    currentView = VIEW_TYPES.displays;
+}
+
+/**
+ * Set the currently displayed view to the overlay view.
+ */
+function _loadOverlayView() {
+    if (currentView === VIEW_TYPES.overlay) return;
+    _clearView();
+    console.log("Loading overlay view...");
+    overlayDiv.removeClass("hidden");
+    currentView = VIEW_TYPES.overlay;
+    _reconstructOverlayDisplay();
+}
+
 //// User Event Handling ////
 
 /**
@@ -416,42 +551,52 @@ function _attachUserEventListeners() {
  * @param {number} mx x coordinate of the cursor
  */
 function handleMouseMoved(e, mx = mouseX) {
-    if (!mouseIsFocused) {
-        // If the mouse is not focused in a display/scrollbar, check for highlighting configs
-        let hoverDot = null;
-        for (let i = 0; i <= displays.length; i++) {
-            // Check if hovering over display/master scrollbar configs
-            if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
-                 i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
-        }
-        if (hoverDot !== null) {
-            // If hovering over a dot in any display/scrollbar, highlight all configs
-            let configName = hoverDot.configName;
-            _highlightConfiguration(configName);
-        } else if (highlightedConfig !== "") {
-            // If moved out of the dot, unhighlight all displays/scrollbar dots
-            _unhighlightConfigurations();
-        }
-        return;
-    };
+    if (currentView === VIEW_TYPES.displays) {
+        if (!mouseIsFocused) {
+            // If the mouse is not focused in a display/scrollbar, check for highlighting configs
+            let hoverDot = null;
+            for (let i = 0; i <= displays.length; i++) {
+                // Check if hovering over display/master scrollbar configs
+                if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
+                    i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
+            }
+            if (hoverDot !== null) {
+                // If hovering over a dot in any display/scrollbar, highlight all configs
+                let configName = hoverDot.configName;
+                _highlightConfiguration(configName);
+            } else if (highlightedConfig !== "") {
+                // If moved out of the dot, unhighlight all displays/scrollbar dots
+                _unhighlightConfigurations();
+            }
+            return;
+        };
 
-    // First check if the controls bar is active (overwrites other behaviour)
-    if (controlsActive) {
-        if (masterScrollbar.hasMouseInScrollbar()) {
-            let index = masterScrollbar.setIndexFromMouse(mx);
-            if (index >= 0) {
-                _updateDisplaysWithMaster(index);
+        // First check if the controls bar is active (overwrites other behaviour)
+        if (controlsActive) {
+            if (masterScrollbar.hasMouseInScrollbar()) {
+                let index = masterScrollbar.setIndexFromMouse(mx);
+                if (index >= 0) {
+                    _updateDisplaysWithMaster(index);
+                }
+            }
+            return;
+        }
+
+        // Then, check if display is focused
+        let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+        if (focusedDisplay instanceof TimelapseDisplay) {
+            focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStart, mouseIsFocusedOnEnd);
+            if (mouseIsFocusedOnStart || mouseIsFocusedOnEnd) {
+                _syncMasterScrollbarMarkers();
             }
         }
-        return;
-    }
-
-    // Then, check if display is focused
-    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
-    if (focusedDisplay instanceof TimelapseDisplay) {
-        focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStart, mouseIsFocusedOnEnd);
-        if (mouseIsFocusedOnStart || mouseIsFocusedOnEnd) {
-            _syncMasterScrollbarMarkers();
+    } else if (currentView === VIEW_TYPES.overlay) {
+        if (mouseIsFocused) {
+            // Check if overlay scrollbar is focused
+            let focusedDisplay = overlays.find((overlay) => overlay.hasMouseInScrollbar());
+            if (focusedDisplay instanceof OverlayDisplay) {
+                focusedDisplay.setIndexFromMouse(mx);
+            }
         }
     }
 }
@@ -462,6 +607,13 @@ function handleMouseMoved(e, mx = mouseX) {
  * @param {number} mx x coordinate of the cursor
  */
 function handleMousePressed(e, mx = mouseX) {
+    if (currentView === VIEW_TYPES.overlay) {
+        /* Handle overlay mouse pressed events */
+        mouseIsFocused = overlays[0].hasMouseInScrollbar();
+        handleMouseMoved(e, mx);
+        return;
+    }
+    /* Handle mouse over scrollbar events */
     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
     if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
         mouseIsFocused = true;
@@ -475,6 +627,12 @@ function handleMousePressed(e, mx = mouseX) {
         } else {
             handleMouseMoved(e, mx);
         }
+        return;
+    }
+    /* Handle mouse over image events */
+    focusedDisplay = displays.find((display) => display.hasMouseOnImage());
+    if (focusedDisplay instanceof TimelapseDisplay) {
+        _selectDisplay(focusedDisplay);
     }
 }
 
