@@ -117,17 +117,17 @@ function _createEmptyDisplay() {
 function _createTimelapseDisplay(dataset, directory) {
     if (dataset === "---") return;
     emptyDisplay.setErrorState(false);
-    emptyDisplay.setLoadState(true);
 
     /* Improve performance by checking cache for display data that has already been loaded */
     let cacheHit = displayCache[dataset];
     if (!!cacheHit && cacheHit.directory === directory) {
-        emptyDisplay.setLoadState(false);
         let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
         displays.push(newDisplay);
         _syncMasterScrollbarMarkers();
         return;
     }
+
+    let tempDisplay = new TempDisplay(displaysDiv, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
     const start = performance.now();
     /* Load frames and timestamps simultaneously. After that, load images. */
@@ -141,7 +141,7 @@ function _createTimelapseDisplay(dataset, directory) {
                 frames,
                 (images) => {
                     console.log(`Successfully loaded ${images.length} images in ${Math.floor(performance.now() - start)}ms.`);
-                    emptyDisplay.setLoadState(false);
+                    tempDisplay.remove();
                     let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
                     displays.push(newDisplay);
                     _cacheDisplay(dataset, directory, frames, timestamps, images);
@@ -150,8 +150,8 @@ function _createTimelapseDisplay(dataset, directory) {
                 (err) => {
                     console.error(`Error loading images for the ${dataset} dataset.`);
                     console.log(err);
+                    tempDisplay.remove();
                     emptyDisplay.setErrorState(true);
-                    emptyDisplay.setLoadState(false);
                 },
                 directory,
             );
@@ -159,8 +159,8 @@ function _createTimelapseDisplay(dataset, directory) {
         (err) => {
             console.error(`Error loading frames/timestamps for the ${dataset} dataset.`);
             console.log(err);
+            tempDisplay.remove();
             emptyDisplay.setErrorState(true);
-            emptyDisplay.setLoadState(false);
         },
     );
 }
@@ -172,6 +172,9 @@ function _reconstructOverlayDisplay() {
     overlays = [];
     let display1 = displayCache[selectedDisplays[0].getName()];
     let display2 = displayCache[selectedDisplays[1].getName()];
+
+    let tempDisplay = new TempDisplay(overlayDiv, OVERLAY_WIDTH, OVERLAY_HEIGHT);
+
     const start = performance.now();
     /* Load monochrome images for one of the two selected displays. */
     loader.loadMonochromes(
@@ -179,6 +182,7 @@ function _reconstructOverlayDisplay() {
         display2.frames,
         (monochromes) => {
             console.log(`Successfully loaded ${monochromes.length} monochrome images in ${Math.floor(performance.now() - start)}ms.`);
+            tempDisplay.remove();
             overlays.push(new OverlayDisplay(
                 `overlay-${display1.name}-${display2.name}`,
                 display1.images,
@@ -191,6 +195,7 @@ function _reconstructOverlayDisplay() {
         (err) => {
             console.error(`Error loading monochrome images for the ${display2.name} dataset.`);
             console.log(err);
+            tempDisplay.remove();
         },
     );
 }
