@@ -112,15 +112,16 @@ function _createEmptyDisplay() {
 /**
  * Loads and constructs a dataset object that will be displayed as a TimelapseDisplay.
  * @param {string} dataset name of the dataset that we want to add. If '---', function will return.
+ * @param {string} directory name of the directory to look for images
  */
-function _createTimelapseDisplay(dataset) {
+function _createTimelapseDisplay(dataset, directory) {
     if (dataset === "---") return;
     emptyDisplay.setErrorState(false);
     emptyDisplay.setLoadState(true);
 
     /* Improve performance by checking cache for display data that has already been loaded */
     let cacheHit = displayCache[dataset];
-    if (!!cacheHit) {
+    if (!!cacheHit && cacheHit.directory === directory) {
         emptyDisplay.setLoadState(false);
         let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
         displays.push(newDisplay);
@@ -143,7 +144,7 @@ function _createTimelapseDisplay(dataset) {
                     emptyDisplay.setLoadState(false);
                     let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
                     displays.push(newDisplay);
-                    _cacheDisplay(dataset, frames, timestamps, images);
+                    _cacheDisplay(dataset, directory, frames, timestamps, images);
                     _syncMasterScrollbarMarkers();
                 },
                 (err) => {
@@ -151,7 +152,8 @@ function _createTimelapseDisplay(dataset) {
                     console.log(err);
                     emptyDisplay.setErrorState(true);
                     emptyDisplay.setLoadState(false);
-                }
+                },
+                directory,
             );
         },
         (err) => {
@@ -268,13 +270,15 @@ function _constructGlobalControls() {
 /**
  * Add a new display to the displayCache. Cached item keyed by dataset name.
  * @param {string} dataset name of the dataset
+ * @param {string} directory name of the image directory
  * @param {Array<string>} frames array of strings, each representing a frame in the dataset
  * @param {Array<string>} timestamps array of strings, each representing a timestamp in the dataset
  * @param {Array<p5.Image>} images array of loaded p5 images
  */
-function _cacheDisplay(name, frames, timestamps, images) {
+function _cacheDisplay(name, directory, frames, timestamps, images) {
     displayCache[name] = {
         name: name,
+        directory: directory,
         frames: frames,
         timestamps: timestamps,
         images: images,

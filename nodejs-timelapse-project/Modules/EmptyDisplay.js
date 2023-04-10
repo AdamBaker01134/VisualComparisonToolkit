@@ -27,11 +27,18 @@ function EmptyDisplay(parent, datasets = [], onSelected = () => { }) {
     datasets.forEach(dataset => this.select.option(dataset));
     this.select.parent(this.content);
 
+    this.selectDir = createSelect();
+    this.selectDir.option("/eighth/");
+    this.selectDir.option("/quarter/");
+    this.selectDir.option("/half/");
+    this.selectDir.option("/full/");
+    this.selectDir.parent(this.content);
+
     this.button = createButton("Load");
     this.button.mousePressed((e) => {
         /* Need to stop the event from doing anything in the global onMousePressed event handler */
         e.stopPropagation();
-        onSelected(this.select.value());
+        onSelected(this.select.value(), this.selectDir.value());
     });
     this.button.parent(this.content);
 }
