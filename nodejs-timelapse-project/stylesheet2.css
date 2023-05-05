@@ -1,0 +1,27 @@
+/* New css */
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+header {
+    display: flex;
+    background-color: #BEBEBE;
+    border-bottom: 1px solid grey;
+    justify-content: space-evenly;
+}
+
+.vLine {
+    border-left: 1px solid grey;
+}
+
+.headerContainer {
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.hidden {
+    display: none !important;
+}

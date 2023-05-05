@@ -8,97 +8,105 @@
    Try commenting out this line when debugging. */
 p5.disableFriendlyErrors = true;
 
+let model;
+
 /* Constants */
 const MAX_IMAGES = 1000;
-const DISPLAY_WIDTH = 350;
-const DISPLAY_HEIGHT = 350;
-const OVERLAY_WIDTH = 700;
-const OVERLAY_HEIGHT = 700;
-const VIEW_TYPES = {
-    displays: "displays",
-    overlay: "overlay",
-}
+// const DISPLAY_WIDTH = 350;
+// const DISPLAY_HEIGHT = 350;
+// const OVERLAY_WIDTH = 700;
+// const OVERLAY_HEIGHT = 700;
+// const VIEW_TYPES = {
+//     displays: "displays",
+//     overlay: "overlay",
+// }
 
 /* Path variables */
-const IMG_PATH = "./img/";
-let plotPath = "";
+// const IMG_PATH = "./img/";
+// let plotPath = "";
 
 /* State data */
-let currentView = VIEW_TYPES.displays;
-let datasets = [];
-let displays = [];
-let overlays = [];
-let selectedDisplays = [];
-let displayCache = {};
-let configs = {};
-let mouseIsFocused = false;
-let mouseIsFocusedOnStart = false;
-let mouseIsFocusedOnEnd = false;
-let controlsActive = false;
-let highlightedConfig = "";
+// let currentView = VIEW_TYPES.displays;
+// let displays = [];
+// let overlays = [];
+// let selectedDisplays = [];
+// let displayCache = {};
+// let configs = {};
+// let mouseIsFocused = false;
+// let mouseIsFocusedOnStart = false;
+// let mouseIsFocusedOnEnd = false;
+// let controlsActive = false;
+// let highlightedConfig = "";
 
 /* DOM variables */
-let headerDiv = null;
-let overlayButton = null;
-let bodyDiv = null;
-let controlsDiv = null;
-let overlayDiv = null;
-let displaysDiv = null;
-let masterScrollbar = null;
-let configSelect = null;
-let normalizeControl = null;
+// let headerDiv = null;
+// let overlayButton = null;
+// let bodyDiv = null;
+// let controlsDiv = null;
+// let overlayDiv = null;
+// let displaysDiv = null;
+// let masterScrollbar = null;
+// let configSelect = null;
+// let normalizeControl = null;
 
 /* Custom objects */
-let loader = null;
-let emptyDisplay = null;
+// let loader = null;
+// let emptyDisplay = null;
 
 /* p5.js function that is called to load things before setup is called */
 function preload() {
-    headerDiv = createElementWithID("header", "", "headerContainer", "container");
-    bodyDiv = createElementWithID("div", "", "displayContainer", "container");
-    controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
-    overlayDiv = createElementWithID("div", "", "overlayContainer", "container");
-    overlayDiv.addClass("hidden");
-    loader = new Loader(MAX_IMAGES, IMG_PATH);
-    datasets = loader.loadDatasets();
+    // headerDiv = createElementWithID("header", "", "headerContainer", "container");
+    // bodyDiv = createElementWithID("div", "", "displayContainer", "container");
+    // controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
+    // overlayDiv = createElementWithID("div", "", "overlayContainer", "container");
+    // overlayDiv.addClass("hidden");
+    model = new Model();
+    model.loadDatasets();
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
-    displaysDiv = createDiv();
-    displaysDiv.class("displays");
-    displaysDiv.parent(bodyDiv);
+    // displaysDiv = createDiv();
+    // displaysDiv.class("displays");
+    // displaysDiv.parent(bodyDiv);
 
     _setupHeader();
-    _createEmptyDisplay();
-    _constructGlobalControls();
+    // _createEmptyDisplay();
+    // _constructGlobalControls();
 
-    _attachUserEventListeners();
+    // _attachUserEventListeners();
 
-    noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
+    // noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
 }
 
 /* p5.js function that acts as the draw loop */
 function draw() {
-    if (currentView === VIEW_TYPES.displays) {
-        displays.forEach(display => display.draw());
-        masterScrollbar.draw();
-    } else if (currentView === VIEW_TYPES.overlay) {
-        overlays.forEach(overlay => overlay.draw());
-    }
+    // if (currentView === VIEW_TYPES.displays) {
+    //     displays.forEach(display => display.draw());
+    //     masterScrollbar.draw();
+    // } else if (currentView === VIEW_TYPES.overlay) {
+    //     overlays.forEach(overlay => overlay.draw());
+    // }
 }
 
 /**
  * Populate the header DOM object with essential elements and functionality.
  */
 function _setupHeader() {
-    let displayButton = createButton("Displays");
-    overlayButton = createButton("Overlay (0/2)");
-    displayButton.mouseClicked(_loadDisplaysView);
-    overlayButton.mouseClicked(_loadOverlayView);
-    overlayButton.elt.disabled = true;
-    displayButton.parent(headerDiv);
-    overlayButton.parent(headerDiv);
+    // let displayButton = createButton("Displays");
+    // overlayButton = createButton("Overlay (0/2)");
+    // displayButton.mouseClicked(_loadDisplaysView);
+    // overlayButton.mouseClicked(_loadOverlayView);
+    // overlayButton.elt.disabled = true;
+    // displayButton.parent(headerDiv);
+    // overlayButton.parent(headerDiv);
+    let uploadSelect = document.getElementById("uploadSelect");
+    model.getDatasets().forEach(dataset => {
+        let option = document.createElement("option");
+        option.text = dataset;
+        uploadSelect.add(option);
+    });
+    _attachHeaderListeners();
 }
 
 /**
@@ -115,89 +123,89 @@ function _createEmptyDisplay() {
  * @param {string} directory name of the directory to look for images
  */
 function _createTimelapseDisplay(dataset, directory) {
-    if (dataset === "---") return;
-    emptyDisplay.setErrorState(false);
+    // if (dataset === "---") return;
+    // emptyDisplay.setErrorState(false);
 
-    /* Improve performance by checking cache for display data that has already been loaded */
-    let cacheHit = displayCache[dataset];
-    if (!!cacheHit && cacheHit.directory === directory) {
-        let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
-        displays.push(newDisplay);
-        _syncMasterScrollbarMarkers();
-        return;
-    }
+    // /* Improve performance by checking cache for display data that has already been loaded */
+    // let cacheHit = displayCache[dataset];
+    // if (!!cacheHit && cacheHit.directory === directory) {
+    //     let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
+    //     displays.push(newDisplay);
+    //     _syncMasterScrollbarMarkers();
+    //     return;
+    // }
 
-    let tempDisplay = new TempDisplay(displaysDiv, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    // let tempDisplay = new TempDisplay(displaysDiv, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
-    const start = performance.now();
-    /* Load frames and timestamps simultaneously. After that, load images. */
-    loader.loadFramesAndTimestamps(
-        dataset,
-        (frames, timestamps) => {
-            console.log(`Successfully loaded ${frames.length} frames and ${timestamps.length} timestamps in ${Math.floor(performance.now() - start)}ms.`);
-            /* Load images matching the "frames" names, up to MAX_IMAGES total */
-            loader.loadImages(
-                dataset,
-                frames,
-                (images) => {
-                    console.log(`Successfully loaded ${images.length} images in ${Math.floor(performance.now() - start)}ms.`);
-                    tempDisplay.remove();
-                    let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
-                    displays.push(newDisplay);
-                    _cacheDisplay(dataset, directory, frames, timestamps, images);
-                    _syncMasterScrollbarMarkers();
-                },
-                (err) => {
-                    console.error(`Error loading images for the ${dataset} dataset.`);
-                    console.log(err);
-                    tempDisplay.remove();
-                    emptyDisplay.setErrorState(true);
-                },
-                directory,
-            );
-        },
-        (err) => {
-            console.error(`Error loading frames/timestamps for the ${dataset} dataset.`);
-            console.log(err);
-            tempDisplay.remove();
-            emptyDisplay.setErrorState(true);
-        },
-    );
+    // const start = performance.now();
+    // /* Load frames and timestamps simultaneously. After that, load images. */
+    // loader.loadFramesAndTimestamps(
+    //     dataset,
+    //     (frames, timestamps) => {
+    //         console.log(`Successfully loaded ${frames.length} frames and ${timestamps.length} timestamps in ${Math.floor(performance.now() - start)}ms.`);
+    //         /* Load images matching the "frames" names, up to MAX_IMAGES total */
+    //         loader.loadImages(
+    //             dataset,
+    //             frames,
+    //             (images) => {
+    //                 console.log(`Successfully loaded ${images.length} images in ${Math.floor(performance.now() - start)}ms.`);
+    //                 tempDisplay.remove();
+    //                 let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
+    //                 displays.push(newDisplay);
+    //                 _cacheDisplay(dataset, directory, frames, timestamps, images);
+    //                 _syncMasterScrollbarMarkers();
+    //             },
+    //             (err) => {
+    //                 console.error(`Error loading images for the ${dataset} dataset.`);
+    //                 console.log(err);
+    //                 tempDisplay.remove();
+    //                 emptyDisplay.setErrorState(true);
+    //             },
+    //             directory,
+    //         );
+    //     },
+    //     (err) => {
+    //         console.error(`Error loading frames/timestamps for the ${dataset} dataset.`);
+    //         console.log(err);
+    //         tempDisplay.remove();
+    //         emptyDisplay.setErrorState(true);
+    //     },
+    // );
 }
 
 /**
  * Reconstructs an overlay object that will be displayed as an OverlayDisplay.
  */
 function _reconstructOverlayDisplay() {
-    overlays = [];
-    let display1 = displayCache[selectedDisplays[0].getName()];
-    let display2 = displayCache[selectedDisplays[1].getName()];
+    // overlays = [];
+    // let display1 = displayCache[selectedDisplays[0].getName()];
+    // let display2 = displayCache[selectedDisplays[1].getName()];
 
-    let tempDisplay = new TempDisplay(overlayDiv, OVERLAY_WIDTH, OVERLAY_HEIGHT);
+    // let tempDisplay = new TempDisplay(overlayDiv, OVERLAY_WIDTH, OVERLAY_HEIGHT);
 
-    const start = performance.now();
-    /* Load monochrome images for one of the two selected displays. */
-    loader.loadMonochromes(
-        display2.name,
-        display2.frames,
-        (monochromes) => {
-            console.log(`Successfully loaded ${monochromes.length} monochrome images in ${Math.floor(performance.now() - start)}ms.`);
-            tempDisplay.remove();
-            overlays.push(new OverlayDisplay(
-                `overlay-${display1.name}-${display2.name}`,
-                display1.images,
-                monochromes,
-                overlayDiv,
-                OVERLAY_WIDTH,
-                OVERLAY_HEIGHT,
-            ));
-        },
-        (err) => {
-            console.error(`Error loading monochrome images for the ${display2.name} dataset.`);
-            console.log(err);
-            tempDisplay.remove();
-        },
-    );
+    // const start = performance.now();
+    // /* Load monochrome images for one of the two selected displays. */
+    // loader.loadMonochromes(
+    //     display2.name,
+    //     display2.frames,
+    //     (monochromes) => {
+    //         console.log(`Successfully loaded ${monochromes.length} monochrome images in ${Math.floor(performance.now() - start)}ms.`);
+    //         tempDisplay.remove();
+    //         overlays.push(new OverlayDisplay(
+    //             `overlay-${display1.name}-${display2.name}`,
+    //             display1.images,
+    //             monochromes,
+    //             overlayDiv,
+    //             OVERLAY_WIDTH,
+    //             OVERLAY_HEIGHT,
+    //         ));
+    //     },
+    //     (err) => {
+    //         console.error(`Error loading monochrome images for the ${display2.name} dataset.`);
+    //         console.log(err);
+    //         tempDisplay.remove();
+    //     },
+    // );
 }
 
 /**
@@ -209,26 +217,26 @@ function _reconstructOverlayDisplay() {
  */
 function _constructDisplayObject(dataset, frames, timestamps, images) {
 
-    let displayCount = 1;
-    let duplicates = displays.filter((display) => display.getName() === dataset);
-    if (duplicates.length > 0) {
-        /* Find the duplicate with the highest id number. */
-        let values = duplicates.map((duplicate) => parseInt(duplicate.id.charAt(duplicate.id.length - 1)));
-        displayCount = Math.max(...values) + 1;
-    }
+    // let displayCount = 1;
+    // let duplicates = displays.filter((display) => display.getName() === dataset);
+    // if (duplicates.length > 0) {
+    //     /* Find the duplicate with the highest id number. */
+    //     let values = duplicates.map((duplicate) => parseInt(duplicate.id.charAt(duplicate.id.length - 1)));
+    //     displayCount = Math.max(...values) + 1;
+    // }
 
-    return new TimelapseDisplay(
-        dataset,
-        dataset + "-" + displayCount,
-        frames,
-        timestamps,
-        images,
-        displaysDiv,
-        DISPLAY_WIDTH,
-        DISPLAY_HEIGHT,
-        masterScrollbar.getIndex(),
-        _removeDisplay,
-    );
+    // return new TimelapseDisplay(
+    //     dataset,
+    //     dataset + "-" + displayCount,
+    //     frames,
+    //     timestamps,
+    //     images,
+    //     displaysDiv,
+    //     DISPLAY_WIDTH,
+    //     DISPLAY_HEIGHT,
+    //     masterScrollbar.getIndex(),
+    //     _removeDisplay,
+    // );
 }
 
 /**
@@ -239,37 +247,37 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
  *  - the inputs that control saving and loading positions in the global scrollbar
  */
 function _constructGlobalControls() {
-    let masterControls = createDiv();
-    masterControls.class("masterControls");
-    masterControls.parent(controlsDiv);
+    // let masterControls = createDiv();
+    // masterControls.class("masterControls");
+    // masterControls.parent(controlsDiv);
 
-    configSelect = createSelect();
-    configSelect.id("configSelect");
-    configSelect.option("Select config");
-    configSelect.disable("Select config");
-    configSelect.parent(masterControls);
+    // configSelect = createSelect();
+    // configSelect.id("configSelect");
+    // configSelect.option("Select config");
+    // configSelect.disable("Select config");
+    // configSelect.parent(masterControls);
 
-    normalizeControl = createCheckbox("Normalize", true);
-    normalizeControl.id("normalizeControl");
-    normalizeControl.parent(masterControls);
+    // normalizeControl = createCheckbox("Normalize", true);
+    // normalizeControl.id("normalizeControl");
+    // normalizeControl.parent(masterControls);
 
-    let loadConfig = createButton("Load Config");
-    loadConfig.id("loadConfig");
-    loadConfig.mouseClicked((e) => _loadConfiguration(configSelect.elt.value));
-    loadConfig.parent(masterControls);
+    // let loadConfig = createButton("Load Config");
+    // loadConfig.id("loadConfig");
+    // loadConfig.mouseClicked((e) => _loadConfiguration(configSelect.elt.value));
+    // loadConfig.parent(masterControls);
 
-    let saveConfig = createButton("Save Config");
-    saveConfig.id("saveConfig");
-    saveConfig.mouseClicked(_saveCurrentConfiguration);
-    saveConfig.parent(masterControls);
+    // let saveConfig = createButton("Save Config");
+    // saveConfig.id("saveConfig");
+    // saveConfig.mouseClicked(_saveCurrentConfiguration);
+    // saveConfig.parent(masterControls);
 
-    masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterScrollbar", masterControls);
-    for (let i = 0; i < MAX_IMAGES; i++) {
-        masterScrollbar.addSegment(i);
-    }
-    masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
-    masterControls.mouseOver(() => controlsActive = true);
-    masterControls.mouseOut(() => controlsActive = false);
+    // masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterScrollbar", masterControls);
+    // for (let i = 0; i < MAX_IMAGES; i++) {
+    //     masterScrollbar.addSegment(i);
+    // }
+    // masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
+    // masterControls.mouseOver(() => controlsActive = true);
+    // masterControls.mouseOut(() => controlsActive = false);
 }
 
 /**
@@ -281,13 +289,13 @@ function _constructGlobalControls() {
  * @param {Array<p5.Image>} images array of loaded p5 images
  */
 function _cacheDisplay(name, directory, frames, timestamps, images) {
-    displayCache[name] = {
-        name: name,
-        directory: directory,
-        frames: frames,
-        timestamps: timestamps,
-        images: images,
-    }
+    // displayCache[name] = {
+    //     name: name,
+    //     directory: directory,
+    //     frames: frames,
+    //     timestamps: timestamps,
+    //     images: images,
+    // }
 }
 
 // /**
@@ -309,24 +317,24 @@ function _cacheDisplay(name, directory, frames, timestamps, images) {
  */
 function _updateDisplaysWithMaster(newOffset) {
     /* Calculate the start-end range of the master scrollbar. */
-    let masterStart = masterScrollbar.getStart();
-    let masterEnd = masterScrollbar.getEnd();
-    let masterRange = masterEnd - masterStart;
-    if (newOffset < masterStart || newOffset > masterEnd) {
-        return;
-    }
-    displays.forEach(display => {
-        /* Calculate the start-end range of each display. */
-        let start = display.getStart();
-        let end = display.getEnd();
-        let range = end - start;
-        /* Step the displays index by a factor of range/masterRange. */
-        let stepRatio = 1;
-        if (normalizeControl.checked()) {
-            stepRatio = range / masterRange;
-        }
-        display.setIndexFromMaster(newOffset - masterStart, stepRatio);
-    });
+    // let masterStart = masterScrollbar.getStart();
+    // let masterEnd = masterScrollbar.getEnd();
+    // let masterRange = masterEnd - masterStart;
+    // if (newOffset < masterStart || newOffset > masterEnd) {
+    //     return;
+    // }
+    // displays.forEach(display => {
+    //     /* Calculate the start-end range of each display. */
+    //     let start = display.getStart();
+    //     let end = display.getEnd();
+    //     let range = end - start;
+    //     /* Step the displays index by a factor of range/masterRange. */
+    //     let stepRatio = 1;
+    //     if (normalizeControl.checked()) {
+    //         stepRatio = range / masterRange;
+    //     }
+    //     display.setIndexFromMaster(newOffset - masterStart, stepRatio);
+    // });
 }
 
 /**
@@ -334,19 +342,19 @@ function _updateDisplaysWithMaster(newOffset) {
  * start-end range.
  */
 function _syncMasterScrollbarMarkers() {
-    let start = -1;
-    let end = -1;
-    displays.forEach((display) => {
-        if ((start < 0 || end < 0) || ((end - start) > (display.getEnd() - display.getStart()))) {
-            start = display.getStart();
-            end = display.getEnd();
-        }
-    });
+    // let start = -1;
+    // let end = -1;
+    // displays.forEach((display) => {
+    //     if ((start < 0 || end < 0) || ((end - start) > (display.getEnd() - display.getStart()))) {
+    //         start = display.getStart();
+    //         end = display.getEnd();
+    //     }
+    // });
 
-    if (start >= 0 && end >= start) {
-        masterScrollbar.setStart(start);
-        masterScrollbar.setEnd(end);
-    }
+    // if (start >= 0 && end >= start) {
+    //     masterScrollbar.setStart(start);
+    //     masterScrollbar.setEnd(end);
+    // }
 }
 
 /**
@@ -354,22 +362,22 @@ function _syncMasterScrollbarMarkers() {
  * @param {string} displayID id of display to be removed
  */
 function _removeDisplay(displayID) {
-    console.log("Attempting to remove timelapse display with id: " + displayID);
+    // console.log("Attempting to remove timelapse display with id: " + displayID);
 
-    let displayIdx = displays.findIndex(display => display.getId() === displayID);
-    if (displayIdx > -1) {
-        let selectedIdx = selectedDisplays.findIndex(selectedDisplay => selectedDisplay.getId() === displayID);
-        if (selectedIdx > -1) {
-            selectedDisplays.splice(selectedIdx, 1); /* Remove selected display at index selectedIdx */
-        }
-        displays[displayIdx].remove();
-        displays.splice(displayIdx, 1); /* Remove display at index displayIdx */
-        console.log("Successfully removed timelapse display with id: " + displayID);
-    } else {
-        console.error("Removal Error: could not locate timelapse display with id" + displayID);
-    }
+    // let displayIdx = displays.findIndex(display => display.getId() === displayID);
+    // if (displayIdx > -1) {
+    //     let selectedIdx = selectedDisplays.findIndex(selectedDisplay => selectedDisplay.getId() === displayID);
+    //     if (selectedIdx > -1) {
+    //         selectedDisplays.splice(selectedIdx, 1); /* Remove selected display at index selectedIdx */
+    //     }
+    //     displays[displayIdx].remove();
+    //     displays.splice(displayIdx, 1); /* Remove display at index displayIdx */
+    //     console.log("Successfully removed timelapse display with id: " + displayID);
+    // } else {
+    //     console.error("Removal Error: could not locate timelapse display with id" + displayID);
+    // }
 
-    _syncMasterScrollbarMarkers();
+    // _syncMasterScrollbarMarkers();
 }
 
 /**
@@ -379,26 +387,26 @@ function _removeDisplay(displayID) {
  */
 function _selectDisplay(display) {
     /* If display is already selected, unselect it and return */
-    let selectedIdx = selectedDisplays.findIndex((selectedDisplay) => selectedDisplay.getId() === display.getId());
-    if (selectedIdx >= 0) {
-        selectedDisplays.splice(selectedIdx, 1);
-        display.toggleSelected();
-    } else {
-        /* Reduce the selected displays to 1 or less */
-        while (selectedDisplays.length >= 2) {
-            selectedDisplays[0].toggleSelected();
-            selectedDisplays.shift();
-        }
-        selectedDisplays.push(display);
-        display.toggleSelected();
-    }
-    /* Edit HTML values of header overlay button */
-    if (selectedDisplays.length === 2) {
-        overlayButton.elt.disabled = false;
-    } else {
-        overlayButton.elt.disabled = true;
-    }
-    overlayButton.elt.innerText = `Overlay (${selectedDisplays.length}/2)`;
+    // let selectedIdx = selectedDisplays.findIndex((selectedDisplay) => selectedDisplay.getId() === display.getId());
+    // if (selectedIdx >= 0) {
+    //     selectedDisplays.splice(selectedIdx, 1);
+    //     display.toggleSelected();
+    // } else {
+    //     /* Reduce the selected displays to 1 or less */
+    //     while (selectedDisplays.length >= 2) {
+    //         selectedDisplays[0].toggleSelected();
+    //         selectedDisplays.shift();
+    //     }
+    //     selectedDisplays.push(display);
+    //     display.toggleSelected();
+    // }
+    // /* Edit HTML values of header overlay button */
+    // if (selectedDisplays.length === 2) {
+    //     overlayButton.elt.disabled = false;
+    // } else {
+    //     overlayButton.elt.disabled = true;
+    // }
+    // overlayButton.elt.innerText = `Overlay (${selectedDisplays.length}/2)`;
 }
 
 /**
@@ -421,36 +429,36 @@ function _selectDisplay(display) {
  *  ]
  */
 function _saveCurrentConfiguration() {
-    let config = {
-        displays: {},
-        masterControls: {},
-    };
+    // let config = {
+    //     displays: {},
+    //     masterControls: {},
+    // };
 
-    let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
-    if (!!configName) {
-        let colourTint = 32 * Object.keys(configs).length;
-        let colour = `rgb(${colourTint},${colourTint},${colourTint})`;
+    // let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
+    // if (!!configName) {
+    //     let colourTint = 32 * Object.keys(configs).length;
+    //     let colour = `rgb(${colourTint},${colourTint},${colourTint})`;
 
-        displays.forEach(display => {
-            let displayIdx = display.getIndex();
-            let startPos = display.getStart();
-            let endPos = display.getEnd();
-            config.displays[display.getId()] = {
-                index: displayIdx,
-                start: startPos,
-                end: endPos,
-            };
-            display.addDot(configName, displayIdx, colour);
-        });
-        let masterIdx = masterScrollbar.getIndex();
-        config.masterControls = { index: masterIdx };
-        masterScrollbar.addDot(configName, masterIdx, colour);
+    //     displays.forEach(display => {
+    //         let displayIdx = display.getIndex();
+    //         let startPos = display.getStart();
+    //         let endPos = display.getEnd();
+    //         config.displays[display.getId()] = {
+    //             index: displayIdx,
+    //             start: startPos,
+    //             end: endPos,
+    //         };
+    //         display.addDot(configName, displayIdx, colour);
+    //     });
+    //     let masterIdx = masterScrollbar.getIndex();
+    //     config.masterControls = { index: masterIdx };
+    //     masterScrollbar.addDot(configName, masterIdx, colour);
 
-        configs[configName] = config;
-        configSelect.option(configName);
-        configSelect.value(configName);
-        console.log(`Successfully saved the [${configName}] configuration.`);
-    }
+    //     configs[configName] = config;
+    //     configSelect.option(configName);
+    //     configSelect.value(configName);
+    //     console.log(`Successfully saved the [${configName}] configuration.`);
+    // }
 }
 
 /**
@@ -458,21 +466,21 @@ function _saveCurrentConfiguration() {
  * @param {string} config name of the configuration we want to load.
  */
 function _loadConfiguration(config) {
-    let configuration = configs[config];
-    if (!!configuration) {
-        let configDisplays = Object.keys(configuration.displays);
-        configDisplays.forEach(id => {
-            let display = displays.find((display) => display.getId() === id);
-            /* IMPORTANT: Must set start/end positions before the index! */
-            display.setStart(configuration.displays[id].start);
-            display.setEnd(configuration.displays[id].end);
-            display.setIndex(configuration.displays[id].index);
-        });
-        /* IMPORTANT: Likewise, must sync master scrollbar markers before setting index! */
-        _syncMasterScrollbarMarkers();
-        masterScrollbar.setIndex(configuration.masterControls.index);
-        console.log(`Succesfully loaded the [${config}] configuration.`)
-    }
+    // let configuration = configs[config];
+    // if (!!configuration) {
+    //     let configDisplays = Object.keys(configuration.displays);
+    //     configDisplays.forEach(id => {
+    //         let display = displays.find((display) => display.getId() === id);
+    //         /* IMPORTANT: Must set start/end positions before the index! */
+    //         display.setStart(configuration.displays[id].start);
+    //         display.setEnd(configuration.displays[id].end);
+    //         display.setIndex(configuration.displays[id].index);
+    //     });
+    //     /* IMPORTANT: Likewise, must sync master scrollbar markers before setting index! */
+    //     _syncMasterScrollbarMarkers();
+    //     masterScrollbar.setIndex(configuration.masterControls.index);
+    //     console.log(`Succesfully loaded the [${config}] configuration.`)
+    // }
 }
 
 /**
@@ -480,25 +488,25 @@ function _loadConfiguration(config) {
  * @param {string} config name of the configuration we want to highlight.
  */
 function _highlightConfiguration(config) {
-    let configuration = configs[config];
-    if (!!configuration) {
-        let configDisplays = Object.keys(configuration.displays);
-        configDisplays.forEach(id => {
-            let display = displays.find((display) => display.getId() === id);
-            display.highlightDotAtIndex(configuration.displays[id].index);
-        });
-        masterScrollbar.highlightDotAtIndex(configuration.masterControls.index);
-        highlightedConfig = config;
-    }
+    // let configuration = configs[config];
+    // if (!!configuration) {
+    //     let configDisplays = Object.keys(configuration.displays);
+    //     configDisplays.forEach(id => {
+    //         let display = displays.find((display) => display.getId() === id);
+    //         display.highlightDotAtIndex(configuration.displays[id].index);
+    //     });
+    //     masterScrollbar.highlightDotAtIndex(configuration.masterControls.index);
+    //     highlightedConfig = config;
+    // }
 }
 
 /**
  * Unhighlight all dots in each display.
  */
 function _unhighlightConfigurations() {
-    displays.forEach((display) => display.unhighlightConfigs());
-    masterScrollbar.unhighlightConfigs();
-    highlightedConfig = "";
+    // displays.forEach((display) => display.unhighlightConfigs());
+    // masterScrollbar.unhighlightConfigs();
+    // highlightedConfig = "";
 }
 
 //// Switching Views ////
@@ -507,37 +515,37 @@ function _unhighlightConfigurations() {
  * Hide all currentView-specific elements in the DOM.
  */
 function _clearView() {
-    if (currentView === VIEW_TYPES.displays) {
-        bodyDiv.addClass("hidden");
-        controlsDiv.addClass("hidden");
-    } else if (currentView === VIEW_TYPES.overlay) {
-        overlayDiv.addClass("hidden");
-        overlayDiv.elt.innerHTML = "";
-    }
+    // if (currentView === VIEW_TYPES.displays) {
+    //     bodyDiv.addClass("hidden");
+    //     controlsDiv.addClass("hidden");
+    // } else if (currentView === VIEW_TYPES.overlay) {
+    //     overlayDiv.addClass("hidden");
+    //     overlayDiv.elt.innerHTML = "";
+    // }
 }
 
 /**
  * Set the currently displayed view to the displays view.
  */
 function _loadDisplaysView() {
-    if (currentView === VIEW_TYPES.displays) return;
-    _clearView();
-    console.log("Loading displays view...");
-    bodyDiv.removeClass("hidden");
-    controlsDiv.removeClass("hidden");
-    currentView = VIEW_TYPES.displays;
+    // if (currentView === VIEW_TYPES.displays) return;
+    // _clearView();
+    // console.log("Loading displays view...");
+    // bodyDiv.removeClass("hidden");
+    // controlsDiv.removeClass("hidden");
+    // currentView = VIEW_TYPES.displays;
 }
 
 /**
  * Set the currently displayed view to the overlay view.
  */
 function _loadOverlayView() {
-    if (currentView === VIEW_TYPES.overlay) return;
-    _clearView();
-    console.log("Loading overlay view...");
-    overlayDiv.removeClass("hidden");
-    currentView = VIEW_TYPES.overlay;
-    _reconstructOverlayDisplay();
+    // if (currentView === VIEW_TYPES.overlay) return;
+    // _clearView();
+    // console.log("Loading overlay view...");
+    // overlayDiv.removeClass("hidden");
+    // currentView = VIEW_TYPES.overlay;
+    // _reconstructOverlayDisplay();
 }
 
 //// User Event Handling ////
@@ -549,9 +557,9 @@ function _loadOverlayView() {
  *  - mouseup event
  */
 function _attachUserEventListeners() {
-    document.addEventListener("mousemove", handleMouseMoved);
-    document.addEventListener("mousedown", handleMousePressed);
-    document.addEventListener("mouseup", handleMouseReleased);
+    // document.addEventListener("mousemove", handleMouseMoved);
+    // document.addEventListener("mousedown", handleMousePressed);
+    // document.addEventListener("mouseup", handleMouseReleased);
 }
 
 /**
@@ -560,54 +568,54 @@ function _attachUserEventListeners() {
  * @param {number} mx x coordinate of the cursor
  */
 function handleMouseMoved(e, mx = mouseX) {
-    if (currentView === VIEW_TYPES.displays) {
-        if (!mouseIsFocused) {
-            // If the mouse is not focused in a display/scrollbar, check for highlighting configs
-            let hoverDot = null;
-            for (let i = 0; i <= displays.length; i++) {
-                // Check if hovering over display/master scrollbar configs
-                if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
-                    i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
-            }
-            if (hoverDot !== null) {
-                // If hovering over a dot in any display/scrollbar, highlight all configs
-                let configName = hoverDot.configName;
-                _highlightConfiguration(configName);
-            } else if (highlightedConfig !== "") {
-                // If moved out of the dot, unhighlight all displays/scrollbar dots
-                _unhighlightConfigurations();
-            }
-            return;
-        };
+    // if (currentView === VIEW_TYPES.displays) {
+    //     if (!mouseIsFocused) {
+    //         // If the mouse is not focused in a display/scrollbar, check for highlighting configs
+    //         let hoverDot = null;
+    //         for (let i = 0; i <= displays.length; i++) {
+    //             // Check if hovering over display/master scrollbar configs
+    //             if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
+    //                 i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
+    //         }
+    //         if (hoverDot !== null) {
+    //             // If hovering over a dot in any display/scrollbar, highlight all configs
+    //             let configName = hoverDot.configName;
+    //             _highlightConfiguration(configName);
+    //         } else if (highlightedConfig !== "") {
+    //             // If moved out of the dot, unhighlight all displays/scrollbar dots
+    //             _unhighlightConfigurations();
+    //         }
+    //         return;
+    //     };
 
-        // First check if the controls bar is active (overwrites other behaviour)
-        if (controlsActive) {
-            if (masterScrollbar.hasMouseInScrollbar()) {
-                let index = masterScrollbar.setIndexFromMouse(mx);
-                if (index >= 0) {
-                    _updateDisplaysWithMaster(index);
-                }
-            }
-            return;
-        }
+    //     // First check if the controls bar is active (overwrites other behaviour)
+    //     if (controlsActive) {
+    //         if (masterScrollbar.hasMouseInScrollbar()) {
+    //             let index = masterScrollbar.setIndexFromMouse(mx);
+    //             if (index >= 0) {
+    //                 _updateDisplaysWithMaster(index);
+    //             }
+    //         }
+    //         return;
+    //     }
 
-        // Then, check if display is focused
-        let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
-        if (focusedDisplay instanceof TimelapseDisplay) {
-            focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStart, mouseIsFocusedOnEnd);
-            if (mouseIsFocusedOnStart || mouseIsFocusedOnEnd) {
-                _syncMasterScrollbarMarkers();
-            }
-        }
-    } else if (currentView === VIEW_TYPES.overlay) {
-        if (mouseIsFocused) {
-            // Check if overlay scrollbar is focused
-            let focusedDisplay = overlays.find((overlay) => overlay.hasMouseInScrollbar());
-            if (focusedDisplay instanceof OverlayDisplay) {
-                focusedDisplay.setIndexFromMouse(mx);
-            }
-        }
-    }
+    //     // Then, check if display is focused
+    //     let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+    //     if (focusedDisplay instanceof TimelapseDisplay) {
+    //         focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStart, mouseIsFocusedOnEnd);
+    //         if (mouseIsFocusedOnStart || mouseIsFocusedOnEnd) {
+    //             _syncMasterScrollbarMarkers();
+    //         }
+    //     }
+    // } else if (currentView === VIEW_TYPES.overlay) {
+    //     if (mouseIsFocused) {
+    //         // Check if overlay scrollbar is focused
+    //         let focusedDisplay = overlays.find((overlay) => overlay.hasMouseInScrollbar());
+    //         if (focusedDisplay instanceof OverlayDisplay) {
+    //             focusedDisplay.setIndexFromMouse(mx);
+    //         }
+    //     }
+    // }
 }
 
 /**
@@ -616,40 +624,96 @@ function handleMouseMoved(e, mx = mouseX) {
  * @param {number} mx x coordinate of the cursor
  */
 function handleMousePressed(e, mx = mouseX) {
-    if (currentView === VIEW_TYPES.overlay) {
-        /* Handle overlay mouse pressed events */
-        mouseIsFocused = overlays[0].hasMouseInScrollbar();
-        handleMouseMoved(e, mx);
-        return;
-    }
-    /* Handle mouse over scrollbar events */
-    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
-    if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
-        mouseIsFocused = true;
-        if (focusedDisplay instanceof TimelapseDisplay) {
-            mouseIsFocusedOnStart = focusedDisplay.hasMouseFocusedOnStart(mx);
-            mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx);
-        }
-        if (!(mouseIsFocusedOnStart || mouseIsFocusedOnEnd) && highlightedConfig !== "") {
-            /* Giving start/end positions mouse priority over configurations. */
-            _loadConfiguration(highlightedConfig);
-        } else {
-            handleMouseMoved(e, mx);
-        }
-        return;
-    }
-    /* Handle mouse over image events */
-    focusedDisplay = displays.find((display) => display.hasMouseOnImage());
-    if (focusedDisplay instanceof TimelapseDisplay) {
-        _selectDisplay(focusedDisplay);
-    }
+    // if (currentView === VIEW_TYPES.overlay) {
+    //     /* Handle overlay mouse pressed events */
+    //     mouseIsFocused = overlays[0].hasMouseInScrollbar();
+    //     handleMouseMoved(e, mx);
+    //     return;
+    // }
+    // /* Handle mouse over scrollbar events */
+    // let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
+    // if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
+    //     mouseIsFocused = true;
+    //     if (focusedDisplay instanceof TimelapseDisplay) {
+    //         mouseIsFocusedOnStart = focusedDisplay.hasMouseFocusedOnStart(mx);
+    //         mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx);
+    //     }
+    //     if (!(mouseIsFocusedOnStart || mouseIsFocusedOnEnd) && highlightedConfig !== "") {
+    //         /* Giving start/end positions mouse priority over configurations. */
+    //         _loadConfiguration(highlightedConfig);
+    //     } else {
+    //         handleMouseMoved(e, mx);
+    //     }
+    //     return;
+    // }
+    // /* Handle mouse over image events */
+    // focusedDisplay = displays.find((display) => display.hasMouseOnImage());
+    // if (focusedDisplay instanceof TimelapseDisplay) {
+    //     _selectDisplay(focusedDisplay);
+    // }
 }
 
 /**
  * Mouse released event handler.
  */
 function handleMouseReleased() {
-    mouseIsFocused = false;
-    mouseIsFocusedOnStart = false;
-    mouseIsFocusedOnEnd = false;
+    // mouseIsFocused = false;
+    // mouseIsFocusedOnStart = false;
+    // mouseIsFocusedOnEnd = false;
+}
+
+/* Controller */
+function mouseMoved(event, mx = mouseX, my = mouseY) {
+    console.log(`Mouse moved at ${mx}, ${my}`)
+}
+
+function mousePressed(event, mx = mouseX, my = mouseY) {
+    console.log(`Mouse pressed at ${mx}, ${my}`);
+}
+
+function mouseReleased(event, mx = mouseX, my = mouseY) {
+    console.log(`Mouse released at ${mx}, ${my}`);
+}
+
+function _attachHeaderListeners() {
+    /* Upload header functions */
+    document.getElementById("uploadButton")?.addEventListener("click", e => {
+        let dataset = document.getElementById("uploadSelect")?.value;
+        if (!!dataset && dataset !== "---") {
+            console.log(`Loading dataset ${dataset}`);
+        }
+    });
+
+    /* Global header functions */
+    document.getElementById("loadConfigButton")?.addEventListener("click", e => {
+        let config = document.getElementById("configSelect")?.value;
+        if (!!config) {
+            console.log(`Loading configuration ${config}`);
+        }
+    });
+    document.getElementById("saveConfigButton")?.addEventListener("click", e => {
+        console.log(`Saving configuration`);
+    });
+    document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
+        let checked = e.target.value;
+        console.log(`Value of normalize checkbox: ${checked}`);
+    });
+
+    /* Individual display header functions */
+    document.getElementById("lockCheckbox").addEventListener("change", e => {
+        let checked = e.target.checked;
+        console.log(`Value of lock checkbox: ${checked}`);
+    });
+    document.getElementById("removeButton")?.addEventListener("click", e => {
+        console.log(`Removing display`);
+    });
+    document.getElementById("loadFrameButton")?.addEventListener("click", e => {
+        let frame = document.getElementById("frameSelect").value;
+        if (!!frame) {
+            console.log(`Loading frame: ${frame}`);
+        }
+    });
+    document.getElementById("saveFrameButton")?.addEventListener("click", e => {
+        console.log(`Saving current frame`);
+    });
 }

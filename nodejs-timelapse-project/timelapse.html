@@ -3,19 +3,59 @@
 
 <head>
     <title>Timelapse Exploration Application</title>
-    <link rel="stylesheet" type="text/css" href="stylesheet.css">
-    <script src="includes/p5.js"></script>
+    <link rel="stylesheet" type="text/css" href="stylesheet2.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.min.js"></script>
     <script src="canvas.js"></script>
+    <script src="modules/Model.js"></script>
+    <script src="modules/iModel.js"></script>
     <script src="modules/Scrollbar.js"></script>
     <script src="modules/TimelapseDisplay.js"></script>
     <script src="modules/OverlayDisplay.js"></script>
     <script src="modules/Loader.js"></script>
-    <script src="modules/EmptyDisplay.js"></script>
     <script src="modules/TempDisplay.js"></script>
     <script src="modules/Utilities.js"></script>
 </head>
 
 <body>
+    <header>
+        <div class="headerContainer">
+            <select id="uploadSelect">
+                <option>---</option>
+            </select>
+            <button id="uploadButton">Load</button>
+        </div>
+        <div class="vLine"></div>
+        <div class="headerContainer">
+            <select id="configSelect">
+                <option disabled>Select Config</option>
+            </select>
+            <button id="loadConfigButton">Load Config</button>
+            <button id="saveConfigButton">Save Config</button>
+        </div>
+        <div class="headerContainer">
+            <div>
+                <label for="normalizeCheckbox">Normalize</label>
+                <input type="checkbox" id="normalizeCheckbox" checked />
+            </div>
+        </div>
+        <div class="vLine"></div>
+        <div id="displayControls" class="hidden" style="display: flex;">
+            <div class="headerContainer">
+                <div>
+                    <label for="lockCheckbox">Lock</label>
+                    <input type="checkbox" id="lockCheckbox" />
+                </div>
+                <button id="removeButton">Remove</button>
+            </div>
+            <div class="headerContainer">
+                <select id="frameSelect">
+                    <option disabled>Select Frame</option>
+                </select>
+                <button id="loadFrameButton">Load Frame</button>
+                <button id="saveFrameButton">Save Frame</button>
+            </div>
+        </div>
+    </header>
 </body>
 
 </html>
