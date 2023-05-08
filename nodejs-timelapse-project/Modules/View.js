@@ -43,7 +43,36 @@ View.prototype.draw = function () {
             display.scrollbarHeight
         );
 
+        /* Scrollbar Segments */
         fill(0);
+        stroke(25);
+        for (let idx = 0; idx < display.images.length; idx++) {
+            let pos = display.x + display.padding + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
+            let top = display.y + display.padding + display.height;
+            switch (idx % 50) {
+                case 0:
+                    line(pos, top, pos, top + 16);
+                    break;
+                case 25:
+                    line(pos, top, pos, top + 12);
+                    break;
+                case 12:
+                case 18:
+                    line(pos, top, pos, top + 8);
+                    break;
+                case 6:
+                case 18:
+                case 32:
+                case 44:
+                    line(pos, top, pos, top + 5);
+                    break;
+                default:
+                    line(pos, top, pos, top + 1);
+                    break;
+            }
+        }
+
+        /* Scrollbar main position arrow */
         triangle(
             trianglePos + display.x + display.padding,
             display.y + display.padding + display.height + 5,
