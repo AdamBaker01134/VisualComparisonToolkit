@@ -14,7 +14,12 @@ View.prototype.draw = function () {
     clear();
 
     this.model.displays.forEach(display => {
-        noStroke();
+        if (this.iModel.selections.find(selection => selection === display)) {
+            stroke("rgb(52, 219, 85)");
+            strokeWeight(2);
+        } else {
+            noStroke();
+        }
         fill("rgb(190, 190, 190)");
         rect(
             display.x,
@@ -24,6 +29,8 @@ View.prototype.draw = function () {
             10  /* Border radius */
         );
 
+        noStroke();
+        strokeWeight(1);
         image(
             display.images[display.index],
             display.x + display.padding,

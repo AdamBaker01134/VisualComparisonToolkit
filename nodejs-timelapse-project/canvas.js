@@ -9,6 +9,7 @@
 p5.disableFriendlyErrors = true;
 
 let model;
+let imodel;
 let view;
 let loader;
 
@@ -63,6 +64,7 @@ function preload() {
     // overlayDiv = createElementWithID("div", "", "overlayContainer", "container");
     // overlayDiv.addClass("hidden");
     model = new Model();
+    imodel = new iModel();
     loader = new Loader(model.maxImages, model.imagePath);
     model.setDatasets(loader.loadDatasets());
 }
@@ -76,7 +78,9 @@ function setup() {
     // displaysDiv.parent(bodyDiv);
     view = new View();
     model.addSubscriber(view);
+    imodel.addSubscriber(view);
     view.setModel(model);
+    view.setInteractionModel(imodel);
 
     _setupHeader();
     // _constructGlobalControls();
@@ -658,6 +662,10 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse pressed at ${mx}, ${my}`);
+    let display = null;
+    if (display = model.checkImageHit(mx, my)) {
+        imodel.select(display);
+    }
 }
 
 function mouseReleased(event, mx = mouseX, my = mouseY) {
@@ -669,14 +677,14 @@ function _attachHeaderListeners() {
     document.getElementById("uploadButton")?.addEventListener("click", e => {
         let dataset = document.getElementById("uploadSelect")?.value;
         if (!!dataset && dataset !== "---") {
-            model.setLoading(true);
+            model.incrementLoading();
             document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
             const start = performance.now();
             console.log(`Beginning load of ${dataset}...`);
             loader.initDatasetLoad(
                 dataset,
                 loadObj => {
-                    model.setLoading(false);
+                    model.decrementLoading();
                     document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
                     console.log(
                         `Finished loading ${dataset} in ${Math.floor(performance.now() - start)}ms. \

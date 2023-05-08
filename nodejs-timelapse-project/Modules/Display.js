@@ -26,6 +26,17 @@ Display.prototype.setIndex = function (index) {
 }
 
 /**
+ * Check to see if mouse is on the image
+ * @param {number} x x coordinate of cursor
+ * @param {number} y y coordinate of cursor
+ * @returns {boolean}
+ */
+Display.prototype.checkImageHit = function (x, y) {
+    return x > this.x + this.padding && y > this.y + this.padding &&
+            x < this.x + this.padding + this.width && y < this.y + this.padding + this.height;
+}
+
+/**
  * Check to see if mouse is on the scrollbar
  * @param {number} x x coordinate of cursor
  * @param {number} y y coordinate of cursor
