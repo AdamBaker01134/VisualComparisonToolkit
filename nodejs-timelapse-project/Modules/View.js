@@ -1,5 +1,5 @@
 function View () {
-    this.startTime = 0;
+
 }
 
 View.prototype.setModel = function (model) {
@@ -19,15 +19,15 @@ View.prototype.draw = function () {
         rect(
             display.x,
             display.y,
-            display.width + 20,
-            display.height + 20 + 30,
-            10
+            display.width + display.padding * 2,
+            display.height + display.padding * 2 + display.scrollbarHeight,
+            10  /* Border radius */
         );
 
         image(
             display.images[display.index],
-            display.x + 10,
-            display.y + 10,
+            display.x + display.padding,
+            display.y + display.padding,
             display.width,
             display.height
         );
@@ -37,20 +37,20 @@ View.prototype.draw = function () {
         let trianglePos = lineGap * (0.5 + display.index);
         fill("rgb(34, 154, 34)");
         rect(
-            display.x + 10,
-            display.y + 10 + display.height,
+            display.x + display.padding,
+            display.y + display.padding + display.height,
             display.width,
-            30
+            display.scrollbarHeight
         );
 
         fill(0);
         triangle(
-            trianglePos + display.x + 10,
-            display.y + 10 + display.height + 5,
-            trianglePos + display.x + 10 - 5,
-            display.y + 10 + display.height + 30 - 0.5,
-            trianglePos + display.x + 10 + 5,
-            display.y + 10 + display.height + 30 - 0.5
+            trianglePos + display.x + display.padding,
+            display.y + display.padding + display.height + 5,
+            trianglePos + display.x + display.padding - 5,
+            display.y + display.padding + display.height + display.scrollbarHeight - 0.5,
+            trianglePos + display.x + display.padding + 5,
+            display.y + display.padding + display.height + display.scrollbarHeight - 0.5
         );
     });
 }

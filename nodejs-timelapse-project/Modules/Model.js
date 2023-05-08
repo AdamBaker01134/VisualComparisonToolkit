@@ -21,6 +21,13 @@ Model.prototype.setLoading = function (loading) {
     this.loading = loading;
 }
 
+Model.prototype.checkScrollbarHit = function (x, y) {
+    for (let i = 0; i < this.displays.length; i++) {
+        if (this.displays[i].checkScrollbarHit(x, y)) return true;
+    }
+    return false;
+}
+
 Model.prototype.addDisplay = function (display) {
     this.displays.push(display);
     this.notifySubscribers();

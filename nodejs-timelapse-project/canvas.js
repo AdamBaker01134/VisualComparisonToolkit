@@ -650,7 +650,9 @@ function handleMouseReleased() {
 /* Controller */
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse moved at ${mx}, ${my}`)
-    model.testUpdateIndex(mx);
+    if (model.checkScrollbarHit(mx, my)) {
+        model.testUpdateIndex(mx);
+    }
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
