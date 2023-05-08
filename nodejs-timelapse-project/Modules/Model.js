@@ -1,21 +1,42 @@
+/* Application Model */
 function Model() {
+    this.datasets = [];
     this.maxImages = 1000;
-    this.imagePath = "./img/"
-    this.loader = new Loader(this.maxImages, this.imagePath);
+    this.imagePath = "./img/";
+    this.normalized = true;
+    this.loading = false;
+    this.displays = [];
+    this.subscribers = [];
 }
 
-Model.prototype.getDatasets = function () {
-    return this.datasets;
+Model.prototype.setDatasets = function (datasets) {
+    this.datasets = datasets;
 }
 
-Model.prototype.getMaxImages = function () {
-    return this.maxImages;
+Model.prototype.setNormalized = function (normalized) {
+    this.normalized = normalized
 }
 
-Model.prototype.getImagePath = function () {
-    return this.imagePath;
+Model.prototype.setLoading = function (loading) {
+    this.loading = loading;
 }
 
-Model.prototype.loadDatasets = function () {
-    this.datasets = this.loader.loadDatasets();
+Model.prototype.addDisplay = function (display) {
+    this.displays.push(display);
+    this.notifySubscribers();
+}
+
+Model.prototype.addSubscriber = function (subscriber) {
+    this.subscribers.push(subscriber);
+}
+
+Model.prototype.notifySubscribers = function () {
+    this.subscribers.forEach(subscriber => subscriber.modelChanged())
+}
+
+Model.prototype.testUpdateIndex = function (x) {
+    this.displays.forEach(display => {
+        display.setIndex(x % display.images.length);
+    });
+    this.notifySubscribers();
 }

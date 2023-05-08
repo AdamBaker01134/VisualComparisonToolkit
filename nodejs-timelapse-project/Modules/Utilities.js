@@ -11,6 +11,21 @@ function createElementWithID(tag, content, id, className) {
     return el;
 }
 
+/**
+ * Generate a unique display id
+ * @param {Model} model model from which to generate a new display id
+ * @param {string} name name of the dataset
+ */
+function generateDisplayId(model, name) {
+    let idNum = 1;
+    model.displays.forEach(display => {
+        let displayName = display.id.split("-")[0];
+        let displayIdNum = parseInt(display.id.split("-")[1]);
+        if (displayName === name) idNum = displayIdNum + 1;
+    });
+    return name + "-" + idNum;
+}
+
 /*
  * Find the first value in an Array for which the supplied callback function
  *  returns true. Operates on each index in the Array, starting at 'fromIndex'

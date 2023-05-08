@@ -9,6 +9,8 @@
 p5.disableFriendlyErrors = true;
 
 let model;
+let view;
+let loader;
 
 /* Constants */
 const MAX_IMAGES = 1000;
@@ -61,22 +63,27 @@ function preload() {
     // overlayDiv = createElementWithID("div", "", "overlayContainer", "container");
     // overlayDiv.addClass("hidden");
     model = new Model();
-    model.loadDatasets();
+    loader = new Loader(model.maxImages, model.imagePath);
+    model.setDatasets(loader.loadDatasets());
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
+    createCanvas(1920, 1080);
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
+    view = new View();
+    model.addSubscriber(view);
+    view.setModel(model);
 
     _setupHeader();
-    // _createEmptyDisplay();
     // _constructGlobalControls();
 
     // _attachUserEventListeners();
 
     // noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
+    noLoop();
 }
 
 /* p5.js function that acts as the draw loop */
@@ -101,20 +108,12 @@ function _setupHeader() {
     // displayButton.parent(headerDiv);
     // overlayButton.parent(headerDiv);
     let uploadSelect = document.getElementById("uploadSelect");
-    model.getDatasets().forEach(dataset => {
+    model.datasets.forEach(dataset => {
         let option = document.createElement("option");
         option.text = dataset;
         uploadSelect.add(option);
     });
     _attachHeaderListeners();
-}
-
-/**
- * Create an empty display object.
- * The header div and datasets array must both be initialized before this happens.
- */
-function _createEmptyDisplay() {
-    emptyDisplay = new EmptyDisplay(bodyDiv, datasets, _createTimelapseDisplay);
 }
 
 /**
@@ -548,20 +547,6 @@ function _loadOverlayView() {
     // _reconstructOverlayDisplay();
 }
 
-//// User Event Handling ////
-
-/**
- * Attach following event listeners to the document:
- *  - mousemove event
- *  - mousedown event
- *  - mouseup event
- */
-function _attachUserEventListeners() {
-    // document.addEventListener("mousemove", handleMouseMoved);
-    // document.addEventListener("mousedown", handleMousePressed);
-    // document.addEventListener("mouseup", handleMouseReleased);
-}
-
 /**
  * Mouse moved event handler.
  * @param {Event} e
@@ -664,15 +649,16 @@ function handleMouseReleased() {
 
 /* Controller */
 function mouseMoved(event, mx = mouseX, my = mouseY) {
-    console.log(`Mouse moved at ${mx}, ${my}`)
+    // console.log(`Mouse moved at ${mx}, ${my}`)
+    model.testUpdateIndex(mx);
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
-    console.log(`Mouse pressed at ${mx}, ${my}`);
+    // console.log(`Mouse pressed at ${mx}, ${my}`);
 }
 
 function mouseReleased(event, mx = mouseX, my = mouseY) {
-    console.log(`Mouse released at ${mx}, ${my}`);
+    // console.log(`Mouse released at ${mx}, ${my}`);
 }
 
 function _attachHeaderListeners() {
@@ -680,7 +666,37 @@ function _attachHeaderListeners() {
     document.getElementById("uploadButton")?.addEventListener("click", e => {
         let dataset = document.getElementById("uploadSelect")?.value;
         if (!!dataset && dataset !== "---") {
-            console.log(`Loading dataset ${dataset}`);
+            model.setLoading(true);
+            document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
+            const start = performance.now();
+            console.log(`Beginning load of ${dataset}...`);
+            loader.initDatasetLoad(
+                dataset,
+                loadObj => {
+                    model.setLoading(false);
+                    document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
+                    console.log(
+                        `Finished loading ${dataset} in ${Math.floor(performance.now() - start)}ms. \
+                        \nLoaded ${loadObj.frames.length} frames. \
+                        \nLoaded ${loadObj.timestamps.length} timestamps. \
+                        \nLoaded ${loadObj.images.length} images.`);
+                    model.addDisplay(new Display(
+                        generateDisplayId(model, loadObj.name),
+                        10 + model.displays.length * (30 + 350),
+                        10,
+                        350,
+                        350,
+                        loadObj.frames,
+                        loadObj.timestamps,
+                        loadObj.images)
+                    );
+                    model.displays.forEach(display => console.log(display.id));
+                },
+                err => {
+                    console.error(err);
+                    alert("Error: there were issues loading the video, please try again.");
+                }
+            )
         }
     });
 
@@ -695,8 +711,7 @@ function _attachHeaderListeners() {
         console.log(`Saving configuration`);
     });
     document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
-        let checked = e.target.value;
-        console.log(`Value of normalize checkbox: ${checked}`);
+        model.setNormalized(e.target.checked);
     });
 
     /* Individual display header functions */

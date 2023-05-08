@@ -29,76 +29,147 @@ Loader.prototype.loadDatasets = function (callback = () => { }, errCallback = ()
 }
 
 /**
- * Load the frames and timestamps from the summer-day-frames.txt and summer-day-timestamps.txt
- * files, respectively.
- * @param {string} dataset name of the dataset from which we will load the frames/timestamps
- * @param {Function} callback callback function called once frames/timestamps have been loaded
- * @param {Function} errCallback callback function called if there was an error loading frames/timestamps
+ * Begin a new dataset load.
+ * @param {string} dataset name of the dataset to load
+ * @param {Function=} callback callback function called once all information has loaded 
+ * @param {Function=} errCallback callback function called if an error occurs
  */
-Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => { }, errCallback = () => { }) {
+Loader.prototype.initDatasetLoad = function (dataset, callback = () => { }, errCallback = () => { }) {
+    let loadObj = {
+        name: dataset,
+        onSuccess: callback,
+        onError: errCallback,
+    };
+    this._loadFrames(loadObj);
+}
 
-    let frames = null;
-    let timestamps = null;
-
-    const ret = () => {
-        if (frames == null || timestamps == null)
-            return;
-        callback(frames, timestamps);
-    }
-
+/**
+ * Load the frames from a dataset.
+ * @param {Object} loadObj object containing collected information during the load
+ */
+Loader.prototype._loadFrames = function (loadObj) {
     // Load image frames
     loadStrings(
-        this.imgPath + dataset + "/summer-day-frames.txt",
+        this.imgPath + loadObj.name + "/summer-day-frames.txt",
         loadedFrames => {
-            frames = loadedFrames;
-            ret();
+            loadObj.frames = loadedFrames;
+            this._loadTimestamps(loadObj);
         },
-        errCallback,
-    );
-
-    // Load image timestamps
-    loadStrings(
-        this.imgPath + dataset + "/summer-day-timestamps.txt",
-        loadedTimestamps => {
-            timestamps = loadedTimestamps;
-            ret();
-        },
-        errCallback,
+        loadObj.onError,
     );
 }
 
 /**
- * Load the dataset frames/images from the /eighth directory.
- * @param {string} dataset name of the dataset from which we will load the images
- * @param {Array<string>} frames an array of strings that are the names of the images in the dataset
- * @param {Function} callback callback function called once images have been loaded
- * @param {Function} errCallback callback function called if there was an error loading images
- * @param {string=} opt_dir [OPTIONAL] alternative load directory
+ * Load the timestamps from a dataset.
+ * @param {Object} loadObj object containing collected information during the load
  */
-Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, errCallback = () => { }, opt_dir = "/eighth/") {
-    let loadedImages = [];
-    let numLoaded = 0;
+Loader.prototype._loadTimestamps = function (loadObj) {
+    // Load image timestamps (if they exist)
+    loadStrings(
+        this.imgPath + loadObj.name + "/summer-day-timestamps.txt",
+        loadedTimestamps => {
+            loadObj.timestamps = loadedTimestamps;
+            this._loadImages(loadObj);
+        },
+        err => {
+            // Lack of timestamps shouldn't end the load
+            console.error(err);
+            loadObj.timestamps = [];
+            this._loadImages(loadObj);
+        },
+    );
+}
 
-    let total = Math.min(this.capacity, frames.length);
-
+/**
+ * Load the images from a dataset.
+ * @param {Object} loadObj object containing collected information during the load
+ */
+Loader.prototype._loadImages = function (loadObj) {
+    loadObj.images = [];
+    let numLoaded = 0
+    let total = Math.min(this.capacity, loadObj.frames.length);
     for (let i = 0; i < total; i++) {
-        loadedImages.push(loadImage(
-            this.imgPath + dataset + opt_dir + frames[i],
-            img => {
-                if (numLoaded++ >= total - 1) callback(loadedImages);
+        loadObj.images.push(loadImage(
+            this.imgPath + loadObj.name + "/eighth/" + loadObj.frames[i],
+            loadedImage => {
+                if (numLoaded++ >= total - 1) loadObj.onSuccess(loadObj);
             },
-            (err) => { errCallback(err) }
+            loadObj.onError,
         ));
     }
 }
 
-/**
- * Load the dataset monochrome images from the /mono directory.
- * @param {string} dataset name of the dataset from which we will load the monochrome images in the dataset
- * @param {Array<string>} frames an array of strings that are the names of the monochrome images in the dataset
- * @param {Function} callback callback function called once images have been loaded 
- * @param {Function} errCallback callback function called if there was an error loading images 
- */
-Loader.prototype.loadMonochromes = function (dataset, frames, callback = () => { }, errCallback = () => {}) {
-    this.loadImages(dataset, frames, callback, errCallback, "/mono/");
-}
+// /**
+//  * Load the frames and timestamps from the summer-day-frames.txt and summer-day-timestamps.txt
+//  * files, respectively.
+//  * @param {string} dataset name of the dataset from which we will load the frames/timestamps
+//  * @param {Function} callback callback function called once frames/timestamps have been loaded
+//  * @param {Function} errCallback callback function called if there was an error loading frames/timestamps
+//  */
+// Loader.prototype.loadFramesAndTimestamps = function (dataset, callback = () => { }, errCallback = () => { }) {
+
+//     let frames = null;
+//     let timestamps = null;
+
+//     const ret = () => {
+//         if (frames == null || timestamps == null)
+//             return;
+//         callback(frames, timestamps);
+//     }
+
+//     // Load image frames
+//     loadStrings(
+//         this.imgPath + dataset + "/summer-day-frames.txt",
+//         loadedFrames => {
+//             frames = loadedFrames;
+//             ret();
+//         },
+//         errCallback,
+//     );
+
+//     // Load image timestamps
+//     loadStrings(
+//         this.imgPath + dataset + "/summer-day-timestamps.txt",
+//         loadedTimestamps => {
+//             timestamps = loadedTimestamps;
+//             ret();
+//         },
+//         errCallback,
+//     );
+// }
+
+// /**
+//  * Load the dataset frames/images from the /eighth directory.
+//  * @param {string} dataset name of the dataset from which we will load the images
+//  * @param {Array<string>} frames an array of strings that are the names of the images in the dataset
+//  * @param {Function} callback callback function called once images have been loaded
+//  * @param {Function} errCallback callback function called if there was an error loading images
+//  * @param {string=} opt_dir [OPTIONAL] alternative load directory
+//  */
+// Loader.prototype.loadImages = function (dataset, frames, callback = () => { }, errCallback = () => { }, opt_dir = "/eighth/") {
+//     let loadedImages = [];
+//     let numLoaded = 0;
+
+//     let total = Math.min(this.capacity, frames.length);
+
+//     for (let i = 0; i < total; i++) {
+//         loadedImages.push(loadImage(
+//             this.imgPath + dataset + opt_dir + frames[i],
+//             img => {
+//                 if (numLoaded++ >= total - 1) callback(loadedImages);
+//             },
+//             (err) => { errCallback(err) }
+//         ));
+//     }
+// }
+
+// /**
+//  * Load the dataset monochrome images from the /mono directory.
+//  * @param {string} dataset name of the dataset from which we will load the monochrome images in the dataset
+//  * @param {Array<string>} frames an array of strings that are the names of the monochrome images in the dataset
+//  * @param {Function} callback callback function called once images have been loaded 
+//  * @param {Function} errCallback callback function called if there was an error loading images 
+//  */
+// Loader.prototype.loadMonochromes = function (dataset, frames, callback = () => { }, errCallback = () => { }) {
+//     this.loadImages(dataset, frames, callback, errCallback, "/mono/");
+// }
