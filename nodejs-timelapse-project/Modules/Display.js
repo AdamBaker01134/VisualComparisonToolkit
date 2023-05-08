@@ -1,4 +1,4 @@
-function Display (id, x, y, width, height, frames, timestamps, images) {
+function Display (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
     this.id = id;
     
     this.x = x;
@@ -6,8 +6,8 @@ function Display (id, x, y, width, height, frames, timestamps, images) {
     this.width = width;
     this.height = height;
 
-    this.padding = 10;
-    this.scrollbarHeight = 30
+    this.padding = padding;
+    this.scrollbarHeight = scrollbarHeight;
 
     this.frames = frames;
     this.timestamps = timestamps;

@@ -69,7 +69,8 @@ function preload() {
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
-    createCanvas(1920, 1080);
+    model.setDisplaysPerRow(Math.floor(innerWidth / 380));
+    createCanvas(innerWidth, 410 * 3);
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
@@ -682,17 +683,24 @@ function _attachHeaderListeners() {
                         \nLoaded ${loadObj.frames.length} frames. \
                         \nLoaded ${loadObj.timestamps.length} timestamps. \
                         \nLoaded ${loadObj.images.length} images.`);
+
+                    const PADDING = 10;
+                    const SCROLLBAR_HEIGHT = 30;
+                    const DISPLAY_WIDTH = 350;
+                    let column = model.displays.length % model.displaysPerRow;
+                    let row = Math.floor(model.displays.length / model.displaysPerRow);
                     model.addDisplay(new Display(
                         generateDisplayId(model, loadObj.name),
-                        10 + model.displays.length * (30 + 350),
-                        10,
-                        350,
-                        350,
+                        PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
+                        PADDING + row * (PADDING * 3 + DISPLAY_WIDTH + SCROLLBAR_HEIGHT),
+                        DISPLAY_WIDTH,
+                        DISPLAY_WIDTH,
+                        PADDING,
+                        SCROLLBAR_HEIGHT,
                         loadObj.frames,
                         loadObj.timestamps,
                         loadObj.images)
                     );
-                    model.displays.forEach(display => console.log(display.id));
                 },
                 err => {
                     console.error(err);

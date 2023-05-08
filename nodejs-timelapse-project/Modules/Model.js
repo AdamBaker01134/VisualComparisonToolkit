@@ -9,6 +9,10 @@ function Model() {
     this.subscribers = [];
 }
 
+Model.prototype.setDisplaysPerRow = function (size) {
+    this.displaysPerRow = size;
+}
+
 Model.prototype.setDatasets = function (datasets) {
     this.datasets = datasets;
 }
