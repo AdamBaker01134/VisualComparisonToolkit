@@ -26,6 +26,30 @@ function generateDisplayId(model, name) {
     return name + "-" + idNum;
 }
 
+/**
+ * Get index in a scrollbar based on the x coordinate of the cursor
+ * @param {number} x x coordinate of the scrollbar
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} segments number of segments in the scrollbar
+ * @param {number} width width of the scrollbar
+ */
+function getIndexFromMouse (x, mx, segments, width) {
+    let idx = (int)(map(
+        mx,                 // value to map
+        x,                  // min value of mx
+        x + width,          // max value of mx
+        0,                  // min value of desired index
+        segments            // max value of desired index
+    ));
+
+    if (idx >= segments) {
+        idx = segments - 1;
+    } else if (idx < 0) {
+        idx = 0;
+    }
+    return idx;
+}
+
 /*
  * Find the first value in an Array for which the supplied callback function
  *  returns true. Operates on each index in the Array, starting at 'fromIndex'

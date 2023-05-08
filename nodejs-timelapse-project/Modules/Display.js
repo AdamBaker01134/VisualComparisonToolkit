@@ -27,22 +27,22 @@ Display.prototype.setIndex = function (index) {
 
 /**
  * Check to see if mouse is on the image
- * @param {number} x x coordinate of cursor
- * @param {number} y y coordinate of cursor
+ * @param {number} mx x coordinate of cursor
+ * @param {number} my y coordinate of cursor
  * @returns {boolean}
  */
-Display.prototype.checkImageHit = function (x, y) {
-    return x > this.x + this.padding && y > this.y + this.padding &&
-            x < this.x + this.padding + this.width && y < this.y + this.padding + this.height;
+Display.prototype.checkImageHit = function (mx, my) {
+    return mx > this.x + this.padding && my > this.y + this.padding &&
+            mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height;
 }
 
 /**
  * Check to see if mouse is on the scrollbar
- * @param {number} x x coordinate of cursor
- * @param {number} y y coordinate of cursor
+ * @param {number} mx x coordinate of cursor
+ * @param {number} my y coordinate of cursor
  * @returns {boolean}
  */
-Display.prototype.checkScrollbarHit = function (x, y) {
-    return x > this.x + this.padding && y > this.y + this.padding + this.height &&
-            x < this.x + this.padding + this.width && y < this.y + this.padding + this.height + this.scrollbarHeight;
+Display.prototype.checkScrollbarHit = function (mx, my) {
+    return mx > this.x + this.padding && my > this.y + this.padding + this.height &&
+            mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height + this.scrollbarHeight;
 }

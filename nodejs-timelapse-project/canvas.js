@@ -655,8 +655,12 @@ function handleMouseReleased() {
 /* Controller */
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse moved at ${mx}, ${my}`)
-    if (model.checkScrollbarHit(mx, my)) {
-        model.testUpdateIndex(mx);
+}
+
+function mouseDragged(event, mx = mouseX, my = mouseY) {
+    // console.log(`Mouse dragged at ${mx}, ${my}`)
+    if (imodel.focused) {
+        model.setDisplayIndex(imodel.focused, mx);
     }
 }
 
@@ -666,10 +670,14 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     if (display = model.checkImageHit(mx, my)) {
         imodel.select(display);
     }
+    if (display = model.checkScrollbarHit(mx, my)) {
+        imodel.setFocused(display);
+    }
 }
 
 function mouseReleased(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse released at ${mx}, ${my}`);
+    imodel.setFocused(null);
 }
 
 function _attachHeaderListeners() {

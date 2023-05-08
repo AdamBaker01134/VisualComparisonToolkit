@@ -30,16 +30,31 @@ Model.prototype.decrementLoading = function () {
     if (this.loading < 0) this.loading = 0;
 }
 
-Model.prototype.checkImageHit = function (x, y) {
+/**
+ * Set the focused display based on the position of the cursor
+ * @param {Display} display focused display
+ * @param {number} mx x coordinate of the cursor
+ */
+Model.prototype.setDisplayIndex = function (display, mx) {
+    display.setIndex(getIndexFromMouse(
+        display.x + display.padding,
+        mx,
+        display.images.length,
+        display.width
+    ));
+    this.notifySubscribers();
+}
+
+Model.prototype.checkImageHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkImageHit(x, y)) return this.displays[i];
+        if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];
     }
     return null;
 }
 
-Model.prototype.checkScrollbarHit = function (x, y) {
+Model.prototype.checkScrollbarHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkScrollbarHit(x, y)) return this.displays[i];
+        if (this.displays[i].checkScrollbarHit(mx, my)) return this.displays[i];
     }
     return null;
 }
@@ -55,11 +70,4 @@ Model.prototype.addSubscriber = function (subscriber) {
 
 Model.prototype.notifySubscribers = function () {
     this.subscribers.forEach(subscriber => subscriber.modelChanged())
-}
-
-Model.prototype.testUpdateIndex = function (x) {
-    this.displays.forEach(display => {
-        display.setIndex(x % display.images.length);
-    });
-    this.notifySubscribers();
 }
