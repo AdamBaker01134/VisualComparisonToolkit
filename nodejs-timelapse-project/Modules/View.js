@@ -20,7 +20,7 @@ View.prototype.draw = function () {
             display.x,
             display.y,
             display.width + 20,
-            display.height + 20,
+            display.height + 20 + 30,
             10
         );
 
@@ -30,6 +30,27 @@ View.prototype.draw = function () {
             display.y + 10,
             display.width,
             display.height
+        );
+
+        /* Scrollbar */
+        let lineGap = display.width / display.images.length;
+        let trianglePos = lineGap * (0.5 + display.index);
+        fill("rgb(34, 154, 34)");
+        rect(
+            display.x + 10,
+            display.y + 10 + display.height,
+            display.width,
+            30
+        );
+
+        fill(0);
+        triangle(
+            trianglePos + display.x + 10,
+            display.y + 10 + display.height + 5,
+            trianglePos + display.x + 10 - 5,
+            display.y + 10 + display.height + 30 - 0.5,
+            trianglePos + display.x + 10 + 5,
+            display.y + 10 + display.height + 30 - 0.5
         );
     });
 }
