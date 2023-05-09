@@ -15,6 +15,8 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
 
     this.index = 0;
     this.savedFrames = [];
+
+    this.locked = false;
 }
 
 /**
@@ -23,7 +25,17 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
  * @param {number} index new image index
  */
 Display.prototype.setIndex = function (index) {
-    this.index = index;
+    if (!this.locked) {
+        this.index = index;
+    }
+}
+
+/**
+ * Set the lock state of the display.
+ * @param {boolean} locked lock value
+ */
+Display.prototype.setLocked = function (locked) {
+    this.locked = locked;
 }
 
 /**

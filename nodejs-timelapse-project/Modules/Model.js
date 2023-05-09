@@ -54,18 +54,6 @@ Model.prototype.setIndex = function (display, index) {
     this.notifySubscribers();
 }
 
-/**
- * Add a saved frame with a custom name to the display.
- * @param {Display} display selected display
- */
-Model.prototype.saveFrame = function (display) {
-    let name = prompt("Enter a name for this frame:", `frame-${display.savedFrames.length}`);
-    if (!!name) {
-        display.addSavedFrame(name, display.index);
-    }
-    this.notifySubscribers();
-}
-
 Model.prototype.checkImageHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];

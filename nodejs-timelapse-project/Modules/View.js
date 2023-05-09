@@ -14,7 +14,7 @@ View.prototype.draw = function () {
     clear();
 
     this.model.displays.forEach(display => {
-        if (this.iModel.selections.find(selection => selection === display)) {
+        if (display === imodel.selection) {
             stroke("rgb(52, 219, 85)");
             strokeWeight(2);
         } else {
@@ -42,7 +42,11 @@ View.prototype.draw = function () {
         /* Scrollbar */
         let lineGap = display.width / display.images.length;
         let trianglePos = lineGap * (0.5 + display.index);
-        fill("rgb(34, 154, 34)");
+        if (display.locked) {
+            fill("rgb(128, 128, 128)");
+        } else {
+            fill("rgb(34, 154, 34)");
+        }
         rect(
             display.x + display.padding,
             display.y + display.padding + display.height,

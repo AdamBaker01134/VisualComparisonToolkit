@@ -1,7 +1,7 @@
 /* Application Interaction Model */
 function iModel () {
     this.focused = null;
-    this.selections = [];
+    this.selection = null;
     this.subscribers = [];
 }
 
@@ -15,27 +15,41 @@ iModel.prototype.setFocused = function (display) {
 }
 
 /**
- * Add a display to the list of selected displays
- * or, remove it if it has already been selected
+ * Select a display.
  * @param {Display} display selected display 
  */
 iModel.prototype.select = function (display) {
-    let index = this.selections.indexOf(display);
-    if (index >= 0) {
+    if (display === this.selection) {
         /* If display was already selected, unselect it */
-        this.selections.splice(index, 1);
+        this.selection = null;
     } else {
-        this.selections.push(display);
+        this.selection = display;
     }
     this.notifySubscribers();
 }
 
 /**
- * Retrieve the selected displays.
- * @returns {Array<Display>}
+ * Add a saved frame with a custom name to the selected display.
  */
-iModel.prototype.getSelections = function () {
-    return this.selections;
+iModel.prototype.saveFrame = function () {
+    if (this.selection !== null) {
+        let name = prompt("Enter a name for this frame:", `frame-${this.selection.savedFrames.length}`);
+        if (!!name) {
+            this.selection.addSavedFrame(name, this.selection.index);
+        }
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Set the locked state of the selected display
+ * @param {boolean} lock true if we want to lock, false if we want to unlock
+ */
+iModel.prototype.setLocked = function (lock) {
+    if (this.selection !== null) {
+        this.selection.setLocked(lock);
+        this.notifySubscribers();
+    }
 }
 
 /**

@@ -746,34 +746,26 @@ function _attachHeaderListeners() {
     /* Individual display header functions */
     document.getElementById("lockCheckbox").addEventListener("change", e => {
         let checked = e.target.checked;
-        console.log(`Value of lock checkbox: ${checked}`);
+        imodel.setLocked(checked);
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {
-        let selected = imodel.getSelections();
-        if (selected.length === 1) {
-            let display = selected[0];
-            model.removeDisplay(display);
-            imodel.select(display); /* Need to unselect display */
-            console.log(`Removed ${display.id}.`)
+        if (imodel.selection !== null) {
+            console.log(`Removing ${imodel.selection.id}...`);
+            model.removeDisplay(imodel.selection);
+            imodel.select(imodel.selection); /* Need to unselect display */
+            updateDisplayControls();
         }
     });
     document.getElementById("loadFrameButton")?.addEventListener("click", e => {
         let name = document.getElementById("frameSelect").value;
-        let selected = imodel.getSelections();
-        if (selected.length === 1) {
-            let display = selected[0];
-            let frame = display.savedFrames.find(savedFrame => savedFrame.name === name);
-            if (!!frame) {
-                model.setIndex(display, frame.index);
-            }
+        let frame = imodel?.selection.savedFrames.find(savedFrame => savedFrame.name === name);
+        if (!!frame) {
+            model.setIndex(imodel.selection, frame.index);
         }
     });
     document.getElementById("saveFrameButton")?.addEventListener("click", e => {
-        let selected = imodel.getSelections();
-        if (selected.length === 1) {
-            model.saveFrame(selected[0]);
-            setSavedFrames();
-        }
+        imodel.saveFrame();
+        setSavedFrames();
     });
 }
 
@@ -785,8 +777,9 @@ function _attachHeaderListeners() {
  */
 function updateDisplayControls () {
     let displayControls = document.getElementById("displayControls");
-    if (imodel.selections.length === 1) {
+    if (imodel.selection !== null) {
         displayControls?.classList.remove("hidden");
+        document.getElementById("lockCheckbox").checked = imodel.selection.locked;
     } else {
         displayControls?.classList.add("hidden");
     }
@@ -804,12 +797,9 @@ function setSavedFrames () {
     defaultOption.text = "Select Frame";
     defaultOption.disabled = true;
     frameSelect.add(defaultOption);
-    let selected = imodel.getSelections();
-    if (selected.length === 1) {
-        selected[0].savedFrames.forEach((savedFrame, index) => {
-            let option = document.createElement("option");
-            option.text = savedFrame.name;
-            frameSelect.add(option, index + 1);
-        });
-    }
+    imodel.selection?.savedFrames.forEach(savedFrame => {
+        let option = document.createElement("option");
+        option.text = savedFrame.name;
+        frameSelect.add(option);
+    });
 }
