@@ -14,6 +14,7 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
     this.images = images;
 
     this.index = 0;
+    this.savedFrames = [];
 }
 
 /**
@@ -45,4 +46,20 @@ Display.prototype.checkImageHit = function (mx, my) {
 Display.prototype.checkScrollbarHit = function (mx, my) {
     return mx > this.x + this.padding && my > this.y + this.padding + this.height &&
             mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height + this.scrollbarHeight;
+}
+
+/**
+ * Add a saved frame to this display.
+ * @param {string} name customized frame name
+ * @param {number} index index of frame
+ */
+Display.prototype.addSavedFrame = function (name, index) {
+    if (this.savedFrames.findIndex(savedFrame => savedFrame.index === index) < 0) {
+        if (index >= 0 && index <= this.images.length) {
+            this.savedFrames.push({
+                name: name,
+                index: index,
+            });
+        }
+    }
 }

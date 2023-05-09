@@ -660,7 +660,7 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
 function mouseDragged(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse dragged at ${mx}, ${my}`)
     if (imodel.focused) {
-        model.setDisplayIndex(imodel.focused, mx);
+        model.setIndexFromMouse(imodel.focused, mx);
     }
 }
 
@@ -669,6 +669,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     let display = null;
     if (display = model.checkImageHit(mx, my)) {
         imodel.select(display);
+        updateDisplayControls();
     }
     if (display = model.checkScrollbarHit(mx, my)) {
         imodel.setFocused(display);
@@ -749,12 +750,49 @@ function _attachHeaderListeners() {
         console.log(`Removing display`);
     });
     document.getElementById("loadFrameButton")?.addEventListener("click", e => {
-        let frame = document.getElementById("frameSelect").value;
+        let name = document.getElementById("frameSelect").value;
+        let frame = imodel.getSavedFrames().find(savedFrame => savedFrame.name === name);
         if (!!frame) {
-            console.log(`Loading frame: ${frame}`);
+            model.setIndex(imodel.selections[0], frame.index);
         }
     });
     document.getElementById("saveFrameButton")?.addEventListener("click", e => {
-        console.log(`Saving current frame`);
+        imodel.saveFrame();
+        setSavedFrames();
+    });
+}
+
+/***  Header HTML manipulation functions ***/
+
+/**
+ * Set the display controls as hidden or visible to the user
+ * depending on the selection.
+ */
+function updateDisplayControls () {
+    let displayControls = document.getElementById("displayControls");
+    if (imodel.selections.length === 1) {
+        displayControls?.classList.remove("hidden");
+    } else {
+        displayControls?.classList.add("hidden");
+    }
+    setSavedFrames();
+}
+
+/**
+ * Set the saved frames selection element to the saved frames of the
+ * selected display.
+ */
+function setSavedFrames () {
+    let frameSelect = document.getElementById("frameSelect");
+    frameSelect.innerHTML = "";
+    let defaultOption = document.createElement("option");
+    defaultOption.text = "Select Frame";
+    defaultOption.disabled = true;
+    frameSelect.add(defaultOption);
+    let savedFrames = imodel.getSavedFrames();
+    savedFrames.forEach((savedFrame, index) => {
+        let option = document.createElement("option");
+        option.text = savedFrame.name;
+        frameSelect.add(option, index + 1);
     });
 }

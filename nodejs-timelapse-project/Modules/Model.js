@@ -35,13 +35,22 @@ Model.prototype.decrementLoading = function () {
  * @param {Display} display focused display
  * @param {number} mx x coordinate of the cursor
  */
-Model.prototype.setDisplayIndex = function (display, mx) {
-    display.setIndex(getIndexFromMouse(
+Model.prototype.setIndexFromMouse = function (display, mx) {
+    this.setIndex(display, getIndexFromMouse(
         display.x + display.padding,
         mx,
         display.images.length,
         display.width
     ));
+}
+
+/**
+ * Set the index of a specific display
+ * @param {Display} display relevant display
+ * @param {number} index index to set in the display
+ */
+Model.prototype.setIndex = function (display, index) {
+    display.setIndex(index);
     this.notifySubscribers();
 }
 

@@ -31,6 +31,30 @@ iModel.prototype.select = function (display) {
 }
 
 /**
+ * Retrieve all saved frames from a selected display.
+ * @returns {Array<Object>}
+ */
+iModel.prototype.getSavedFrames = function () {
+    if (this.selections.length === 1) {
+        return this.selections[0].savedFrames;
+    } else {
+        return [];
+    }
+}
+
+/**
+ * Add a saved frame with a custom name to the selected display.
+ */
+iModel.prototype.saveFrame = function () {
+    if (this.selections.length === 1) {
+        let name = prompt("Enter a name for this frame:", `frame-${this.selections[0].savedFrames?.length}`);
+        if (!!name) {
+            this.selections[0].addSavedFrame(name, this.selections[0].index);
+        }
+    }
+}
+
+/**
  * Add an interaction model subscriber
  * @param {*} subscriber Object that is subscribed to the interaction models changes
  */
