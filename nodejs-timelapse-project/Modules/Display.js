@@ -1,3 +1,4 @@
+/* Application Display for Videos */
 function Display (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
     this.id = id;
     

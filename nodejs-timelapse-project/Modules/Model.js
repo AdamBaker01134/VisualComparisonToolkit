@@ -6,25 +6,52 @@ function Model() {
     this.normalized = true;
     this.loading = 0;
     this.displays = [];
+    this.globalScrollbar = null;
     this.subscribers = [];
 }
 
+/**
+ * Set the number of displays that are allowed to be drawn in a single row
+ * @param {number} size number of displays allowed per row
+ */
 Model.prototype.setDisplaysPerRow = function (size) {
     this.displaysPerRow = size;
 }
 
+/**
+ * Set known datasets in the system
+ * @param {Array<string>} datasets a list of dataset names
+ */
 Model.prototype.setDatasets = function (datasets) {
     this.datasets = datasets;
 }
 
+/**
+ * @param {GlobalScrollbar} scrollbar global scrollbar
+ */
+Model.prototype.setGlobalScrollbar = function (scrollbar) {
+    this.globalScrollbar = scrollbar;
+    this.notifySubscribers();
+}
+
+/**
+ * Set system normalization state.
+ * @param {boolean} normalized normalization state
+ */
 Model.prototype.setNormalized = function (normalized) {
     this.normalized = normalized
 }
 
+/**
+ * Increment the number of currently loading sets in the system
+ */
 Model.prototype.incrementLoading = function () {
     this.loading++;
 }
 
+/**
+ * Decrement the number of currently loading sets in the system
+ */
 Model.prototype.decrementLoading = function () {
     this.loading--;
     if (this.loading < 0) this.loading = 0;

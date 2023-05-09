@@ -71,8 +71,8 @@ function preload() {
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
-    model.setDisplaysPerRow(Math.floor(innerWidth / 380));
-    createCanvas(innerWidth, 410 * 3);
+    model.setDisplaysPerRow(Math.floor(windowWidth / 380));
+    createCanvas(windowWidth, windowHeight * 3);
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
@@ -83,7 +83,7 @@ function setup() {
     view.setInteractionModel(imodel);
 
     _setupHeader();
-    // _constructGlobalControls();
+    _setupGlobalScrollbar();
 
     // _attachUserEventListeners();
 
@@ -250,7 +250,7 @@ function _constructDisplayObject(dataset, frames, timestamps, images) {
  *  - the Set All button to set all displays to the current index of the global scrollbar
  *  - the inputs that control saving and loading positions in the global scrollbar
  */
-function _constructGlobalControls() {
+function _setupGlobalScrollbar() {
     // let masterControls = createDiv();
     // masterControls.class("masterControls");
     // masterControls.parent(controlsDiv);
@@ -282,6 +282,14 @@ function _constructGlobalControls() {
     // masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
     // masterControls.mouseOver(() => controlsActive = true);
     // masterControls.mouseOut(() => controlsActive = false);
+    model.setGlobalScrollbar(new GlobalScrollbar(
+        0,
+        0,
+        400,
+        30,
+        10,
+        model.maxImages
+    ));
 }
 
 /**
