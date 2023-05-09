@@ -54,6 +54,18 @@ Model.prototype.setIndex = function (display, index) {
     this.notifySubscribers();
 }
 
+/**
+ * Add a saved frame with a custom name to the display.
+ * @param {Display} display selected display
+ */
+Model.prototype.saveFrame = function (display) {
+    let name = prompt("Enter a name for this frame:", `frame-${display.savedFrames.length}`);
+    if (!!name) {
+        display.addSavedFrame(name, display.index);
+    }
+    this.notifySubscribers();
+}
+
 Model.prototype.checkImageHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];
@@ -70,6 +82,23 @@ Model.prototype.checkScrollbarHit = function (mx, my) {
 
 Model.prototype.addDisplay = function (display) {
     this.displays.push(display);
+    this.notifySubscribers();
+}
+
+/**
+ * Remove a display and update the locations of all affected displays.
+ * @param {Display} display relevant display
+ */
+Model.prototype.removeDisplay = function (display) {
+    let index = this.displays.findIndex(d => d === display);
+    if (index >= 0) {
+        for (let i = this.displays.length - 1; i > index; i--) {
+            let newX = this.displays[i - 1].x;
+            let newY = this.displays[i - 1].y;
+            this.displays[i].setLocation(newX, newY);
+        }
+        this.displays.splice(index, 1);
+    }
     this.notifySubscribers();
 }
 

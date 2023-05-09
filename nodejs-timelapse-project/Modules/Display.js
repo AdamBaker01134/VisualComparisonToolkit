@@ -27,6 +27,16 @@ Display.prototype.setIndex = function (index) {
 }
 
 /**
+ * Update the location parameters in the display.
+ * @param {number} newX new x coordinate for the display
+ * @param {number} newY new y coordinate for the display
+ */
+Display.prototype.setLocation = function (newX, newY) {
+    this.x = newX;
+    this.y = newY;
+}
+
+/**
  * Check to see if mouse is on the image
  * @param {number} mx x coordinate of cursor
  * @param {number} my y coordinate of cursor

@@ -722,6 +722,8 @@ function _attachHeaderListeners() {
                 err => {
                     console.error(err);
                     alert("Error: there were issues loading the video, please try again.");
+                    model.decrementLoading();
+                    document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
                 }
             )
         }
@@ -747,18 +749,31 @@ function _attachHeaderListeners() {
         console.log(`Value of lock checkbox: ${checked}`);
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {
-        console.log(`Removing display`);
+        let selected = imodel.getSelections();
+        if (selected.length === 1) {
+            let display = selected[0];
+            model.removeDisplay(display);
+            imodel.select(display); /* Need to unselect display */
+            console.log(`Removed ${display.id}.`)
+        }
     });
     document.getElementById("loadFrameButton")?.addEventListener("click", e => {
         let name = document.getElementById("frameSelect").value;
-        let frame = imodel.getSavedFrames().find(savedFrame => savedFrame.name === name);
-        if (!!frame) {
-            model.setIndex(imodel.selections[0], frame.index);
+        let selected = imodel.getSelections();
+        if (selected.length === 1) {
+            let display = selected[0];
+            let frame = display.savedFrames.find(savedFrame => savedFrame.name === name);
+            if (!!frame) {
+                model.setIndex(display, frame.index);
+            }
         }
     });
     document.getElementById("saveFrameButton")?.addEventListener("click", e => {
-        imodel.saveFrame();
-        setSavedFrames();
+        let selected = imodel.getSelections();
+        if (selected.length === 1) {
+            model.saveFrame(selected[0]);
+            setSavedFrames();
+        }
     });
 }
 
@@ -789,10 +804,12 @@ function setSavedFrames () {
     defaultOption.text = "Select Frame";
     defaultOption.disabled = true;
     frameSelect.add(defaultOption);
-    let savedFrames = imodel.getSavedFrames();
-    savedFrames.forEach((savedFrame, index) => {
-        let option = document.createElement("option");
-        option.text = savedFrame.name;
-        frameSelect.add(option, index + 1);
-    });
+    let selected = imodel.getSelections();
+    if (selected.length === 1) {
+        selected[0].savedFrames.forEach((savedFrame, index) => {
+            let option = document.createElement("option");
+            option.text = savedFrame.name;
+            frameSelect.add(option, index + 1);
+        });
+    }
 }
