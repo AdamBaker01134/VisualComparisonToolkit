@@ -1,3 +1,4 @@
+/* Application Canvas View */
 function View () {
 
 }
