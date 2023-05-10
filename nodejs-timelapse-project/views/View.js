@@ -86,8 +86,7 @@ View.prototype.draw = function () {
             scrollbar.x,
             scrollbar.y,
             scrollbar.width + scrollbar.padding * 2,
-            scrollbar.height + scrollbar.padding * 2,
-            10  /* Border radius */
+            scrollbar.height + scrollbar.padding * 2
         );
 
         fill("rgb(34, 154, 34)");

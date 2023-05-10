@@ -36,6 +36,16 @@ Model.prototype.setGlobalScrollbar = function (scrollbar) {
 }
 
 /**
+ * Set the location of the global scrollbar in the canvas.
+ * @param {number} newX new x location for the global scrollbar
+ * @param {number} newY new y location for the global scrollbar
+ */
+Model.prototype.setGlobalScrollbarLocation = function (newX, newY) {
+    this.globalScrollbar.setLocation(newX, newY);
+    this.notifySubscribers();
+}
+
+/**
  * Set system normalization state.
  * @param {boolean} normalized normalization state
  */

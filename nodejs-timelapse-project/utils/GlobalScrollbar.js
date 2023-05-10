@@ -44,6 +44,11 @@ GlobalScrollbar.prototype.setLocation = function (newX, newY) {
  */
 GlobalScrollbar.prototype.setIndex = function (index) {
     this.index = index;
+    if (this.index < 0) {
+        this.index = 0;
+    } else if (this.index >= this.getSize()) {
+        this.index = this.getSize() - 1;
+    }
 }
 
 /**

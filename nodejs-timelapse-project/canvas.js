@@ -13,7 +13,8 @@ let imodel;
 let loader;
 
 /* Constants */
-const MAX_IMAGES = 1000;
+const HEADER_HEIGHT = 72;
+// const MAX_IMAGES = 1000;
 // const DISPLAY_WIDTH = 350;
 // const DISPLAY_HEIGHT = 350;
 // const OVERLAY_WIDTH = 700;
@@ -88,9 +89,8 @@ function setup() {
     headerview.setInteractionModel(imodel);
 
     _attachHeaderListeners();
+    _attachUserEventListeners();
     _setupGlobalScrollbar();
-
-    // _attachUserEventListeners();
 
     // noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
     noLoop();
@@ -282,10 +282,10 @@ function _setupGlobalScrollbar() {
     // masterControls.mouseOut(() => controlsActive = false);
     model.setGlobalScrollbar(new GlobalScrollbar(
         0,
+        innerHeight + scrollY - HEADER_HEIGHT - 40,
+        windowWidth * 0.98,
+        40,
         0,
-        400,
-        30,
-        10,
         model.maxImages
     ));
 }
@@ -766,5 +766,11 @@ function _attachHeaderListeners() {
     });
     document.getElementById("saveFrameButton")?.addEventListener("click", e => {
         imodel.saveFrame();
+    });
+}
+
+function _attachUserEventListeners () {
+    document.addEventListener("scroll", event => {
+        model.setGlobalScrollbarLocation(0, innerHeight + scrollY - HEADER_HEIGHT - 40);
     });
 }

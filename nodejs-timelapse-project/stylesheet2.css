@@ -9,6 +9,8 @@ header {
     background-color: #BEBEBE;
     border-bottom: 1px solid grey;
     justify-content: space-evenly;
+    position: sticky;
+    top: 0px;
 }
 
 .vLine {
