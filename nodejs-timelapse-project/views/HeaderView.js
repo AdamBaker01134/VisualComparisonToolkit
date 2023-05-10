@@ -97,14 +97,14 @@ Headerview.prototype.updateUploadSelect = function () {
         option.text = dataset;
         uploadSelect.add(option);
     });
-    this.datasetSnapshot = this.model.datasets;
+    this.datasetSnapshot = [...this.model.datasets];
 }
 
 /**
  * Update the config select element with cofigs from the imodel.
  */
 Headerview.prototype.updateConfigSelect = function () {
-    this.configSnapshot = this.imodel.configs;
+    this.configSnapshot = [...this.imodel.configs];
 }
 
 /**
@@ -112,7 +112,18 @@ Headerview.prototype.updateConfigSelect = function () {
  */
 Headerview.prototype.updateFrameSelect = function () {
     if (this.imodel.selection !== null) {
-        this.frameSnapshot = this.imodel.selection.savedFrames;
+        let frameSelect = document.getElementById("frameSelect");
+        frameSelect.innerHTML = "";
+        let defaultOption = document.createElement("option");
+        defaultOption.text = "Select Frame";
+        defaultOption.disabled = true;
+        frameSelect.add(defaultOption);
+        this.imodel.selection.savedFrames.forEach(savedFrame => {
+            let option = document.createElement("option");
+            option.text = savedFrame.name;
+            frameSelect.add(option);
+        });
+        this.frameSnapshot = [...this.imodel.selection.savedFrames];
     }
 }
 

@@ -36,6 +36,11 @@ Display.prototype.getSize = function () {
 Display.prototype.setIndex = function (index) {
     if (!this.locked) {
         this.index = index;
+        if (this.index < 0) {
+            this.index = 0;
+        } else if (this.index >= this.getSize()) {
+            this.index = this.getSize() - 1;
+        }
     }
 }
 
@@ -85,12 +90,10 @@ Display.prototype.checkScrollbarHit = function (mx, my) {
  * @param {number} index index of frame
  */
 Display.prototype.addSavedFrame = function (name, index) {
-    if (this.savedFrames.findIndex(savedFrame => savedFrame.index === index) < 0) {
-        if (index >= 0 && index <= this.getSize()) {
-            this.savedFrames.push({
-                name: name,
-                index: index,
-            });
-        }
+    if (index >= 0 && index <= this.getSize()) {
+        this.savedFrames.push({
+            name: name,
+            index: index,
+        });
     }
 }

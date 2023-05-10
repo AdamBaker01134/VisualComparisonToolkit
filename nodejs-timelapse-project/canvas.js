@@ -71,7 +71,7 @@ function preload() {
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
     model.setDisplaysPerRow(Math.floor(windowWidth / 380));
-    createCanvas(windowWidth, windowHeight * 3);
+    createCanvas(windowWidth * 0.98, windowHeight * 3);
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
@@ -718,7 +718,8 @@ function _attachHeaderListeners() {
                         SCROLLBAR_HEIGHT,
                         loadObj.frames,
                         loadObj.timestamps,
-                        loadObj.images)
+                        loadObj.images,
+                        model.globalScrollbar.index)
                     );
                 },
                 err => {

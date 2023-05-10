@@ -7,6 +7,7 @@ function Model() {
     this.loading = 0;
     this.displays = [];
     this.globalScrollbar = null;
+    this.offset = 0;
     this.subscribers = [];
 }
 
@@ -80,6 +81,12 @@ Model.prototype.setIndexFromMouse = function (focusedObject, mx) {
  */
 Model.prototype.setIndex = function (focusedObject, index) {
     focusedObject.setIndex(index);
+    if (focusedObject instanceof GlobalScrollbar) {
+        this.displays.forEach(display => {
+            display.setIndex(display.index + (this.globalScrollbar.index - this.offset));
+        });
+        this.offset = this.globalScrollbar.index;
+    }
     this.notifySubscribers();
 }
 
