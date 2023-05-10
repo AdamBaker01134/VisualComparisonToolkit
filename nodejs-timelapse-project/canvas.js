@@ -13,7 +13,10 @@ let imodel;
 let loader;
 
 /* Constants */
+const CANVAS_WIDTH = innerWidth * 0.98;
+const CANVAS_HEIGHT =  innerHeight * 3;
 const HEADER_HEIGHT = 72;
+const GLOBAL_SCROLLBAR_HEIGHT = 40;
 // const MAX_IMAGES = 1000;
 // const DISPLAY_WIDTH = 350;
 // const DISPLAY_HEIGHT = 350;
@@ -71,8 +74,8 @@ function preload() {
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
-    model.setDisplaysPerRow(Math.floor(windowWidth / 380));
-    createCanvas(windowWidth * 0.98, windowHeight * 3);
+    model.setDisplaysPerRow(Math.floor(CANVAS_WIDTH / 380));
+    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
@@ -282,9 +285,9 @@ function _setupGlobalScrollbar() {
     // masterControls.mouseOut(() => controlsActive = false);
     model.setGlobalScrollbar(new GlobalScrollbar(
         0,
-        innerHeight + scrollY - HEADER_HEIGHT - 40,
-        windowWidth * 0.98,
-        40,
+        innerHeight + scrollY - HEADER_HEIGHT - GLOBAL_SCROLLBAR_HEIGHT,
+        CANVAS_WIDTH,
+        GLOBAL_SCROLLBAR_HEIGHT,
         0,
         model.maxImages
     ));
@@ -671,6 +674,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
+    if (my < scrollY) return;   /* Ensure that you're clicking on the canvas and not the header */
     // console.log(`Mouse pressed at ${mx}, ${my}`);
     let hit = null;
     if (hit = model.checkScrollbarHit(mx, my)) {
@@ -770,7 +774,7 @@ function _attachHeaderListeners() {
 }
 
 function _attachUserEventListeners () {
-    document.addEventListener("scroll", event => {
+    document.addEventListener("scroll", e => {
         model.setGlobalScrollbarLocation(0, innerHeight + scrollY - HEADER_HEIGHT - 40);
     });
 }
