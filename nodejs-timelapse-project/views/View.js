@@ -41,7 +41,7 @@ View.prototype.draw = function () {
         );
 
         /* Scrollbar */
-        let lineGap = display.width / display.images.length;
+        let lineGap = display.width / display.getSize();
         let trianglePos = lineGap * (0.5 + display.index);
         if (display.locked) {
             fill("rgb(128, 128, 128)");
@@ -58,7 +58,7 @@ View.prototype.draw = function () {
         /* Scrollbar Segments */
         fill(0);
         stroke(25);
-        for (let idx = 0; idx < display.images.length; idx++) {
+        for (let idx = 0; idx < display.getSize(); idx++) {
             let top = display.y + display.padding + display.height;
             let pos = display.x + display.padding + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
             renderLine(idx, top, pos);
@@ -78,7 +78,7 @@ View.prototype.draw = function () {
     /* Global Scrollbar */
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof GlobalScrollbar) {
-        let lineGap = scrollbar.width / scrollbar.size;
+        let lineGap = scrollbar.width / scrollbar.getSize();
         let trianglePos = lineGap * (0.5 + scrollbar.index);
         noStroke();
         fill("rgb(190, 190, 190)");
@@ -101,7 +101,7 @@ View.prototype.draw = function () {
         /* Global Scrollbar Segments */
         fill(0);
         stroke(25);
-        for (let idx = 0; idx < scrollbar.size; idx++) {
+        for (let idx = 0; idx < scrollbar.getSize(); idx++) {
             let top = scrollbar.y + scrollbar.padding;
             let pos = scrollbar.x + scrollbar.padding + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
             renderLine(idx, top, pos);

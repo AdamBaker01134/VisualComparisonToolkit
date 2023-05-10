@@ -7,12 +7,12 @@ function iModel () {
 }
 
 /**
- * Set the focused display.
- * @param {Display|null} display display to set as focused
+ * Set the focused display/scrollbar.
+ * @param {Display|GlobalScrollbar|null} focusedObject display/scrollbar to set as focused
  */
-iModel.prototype.setFocused = function (display) {
-    if (this.focused !== display) {
-        this.focused = display;
+iModel.prototype.setFocused = function (focusedObject) {
+    if (this.focused !== focusedObject) {
+        this.focused = focusedObject;
         this.notifySubscribers();
     }
 }

@@ -13,6 +13,14 @@ function GlobalScrollbar (x, y, width, height, padding, size) {
 }
 
 /**
+ * Get the number of segments in the scrollbar.
+ * @returns {number}
+ */
+GlobalScrollbar.prototype.getSize = function () {
+    return this.size;
+}
+
+/**
  * Update the number of segments displayed in the global scrollbar.
  * @param {number} size number of segments
  */
@@ -46,5 +54,5 @@ GlobalScrollbar.prototype.setIndex = function (index) {
  */
 GlobalScrollbar.prototype.checkHit = function (mx, my) {
     return mx > this.x + this.padding && my > this.y + this.padding &&
-            mx < this.x + this.padding + this.width && my < this.y + this.padding + this.width;
+            mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height;
 }

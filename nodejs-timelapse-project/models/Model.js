@@ -60,26 +60,26 @@ Model.prototype.decrementLoading = function () {
 }
 
 /**
- * Set the focused display based on the position of the cursor
- * @param {Display} display focused display
+ * Set the focused display/scrollbar based on the position of the cursor
+ * @param {Display|GlobalScrollbar} focusedObject focused display/scrollbar
  * @param {number} mx x coordinate of the cursor
  */
-Model.prototype.setIndexFromMouse = function (display, mx) {
-    this.setIndex(display, getIndexFromMouse(
-        display.x + display.padding,
+Model.prototype.setIndexFromMouse = function (focusedObject, mx) {
+    this.setIndex(focusedObject, getIndexFromMouse(
+        focusedObject.x + focusedObject.padding,
         mx,
-        display.images.length,
-        display.width
+        focusedObject.getSize(),
+        focusedObject.width
     ));
 }
 
 /**
- * Set the index of a specific display
- * @param {Display} display relevant display
+ * Set the index of a specific display/scrollbar
+ * @param {Display|GlobalScrollbar} focusedObject relevant display/scrollbar
  * @param {number} index index to set in the display
  */
-Model.prototype.setIndex = function (display, index) {
-    display.setIndex(index);
+Model.prototype.setIndex = function (focusedObject, index) {
+    focusedObject.setIndex(index);
     this.notifySubscribers();
 }
 
@@ -90,7 +90,14 @@ Model.prototype.checkImageHit = function (mx, my) {
     return null;
 }
 
+/**
+ * Model check if a display/global scrollbar was hit in a mouse event
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Display|GlobalScrollbar|null}
+ */
 Model.prototype.checkScrollbarHit = function (mx, my) {
+    if (this.globalScrollbar.checkHit(mx, my)) return this.globalScrollbar;
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i].checkScrollbarHit(mx, my)) return this.displays[i];
     }

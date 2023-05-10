@@ -672,12 +672,11 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse pressed at ${mx}, ${my}`);
-    let display = null;
-    if (display = model.checkImageHit(mx, my)) {
-        imodel.select(display);
-    }
-    if (display = model.checkScrollbarHit(mx, my)) {
-        imodel.setFocused(display);
+    let hit = null;
+    if (hit = model.checkScrollbarHit(mx, my)) {
+        imodel.setFocused(hit);
+    } else if (hit = model.checkImageHit(mx, my)) {
+        imodel.select(hit);
     }
 }
 

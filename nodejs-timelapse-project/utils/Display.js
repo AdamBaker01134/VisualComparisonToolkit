@@ -21,6 +21,14 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
 }
 
 /**
+ * Get the number of segments in the display scrollbar.
+ * @returns {number}
+ */
+Display.prototype.getSize = function () {
+    return this.images.length;
+}
+
+/**
  * Set the index of the display.
  * Affects both the scrollbar position and the image being displayed.
  * @param {number} index new image index
@@ -78,7 +86,7 @@ Display.prototype.checkScrollbarHit = function (mx, my) {
  */
 Display.prototype.addSavedFrame = function (name, index) {
     if (this.savedFrames.findIndex(savedFrame => savedFrame.index === index) < 0) {
-        if (index >= 0 && index <= this.images.length) {
+        if (index >= 0 && index <= this.getSize()) {
             this.savedFrames.push({
                 name: name,
                 index: index,
