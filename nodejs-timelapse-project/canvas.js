@@ -10,7 +10,6 @@ p5.disableFriendlyErrors = true;
 
 let model;
 let imodel;
-let view;
 let loader;
 
 /* Constants */
@@ -76,13 +75,19 @@ function setup() {
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
-    view = new View();
+    let view = new View();
     model.addSubscriber(view);
     imodel.addSubscriber(view);
     view.setModel(model);
     view.setInteractionModel(imodel);
 
-    _setupHeader();
+    let headerview = new Headerview();
+    model.addSubscriber(headerview);
+    imodel.addSubscriber(headerview);
+    headerview.setModel(model);
+    headerview.setInteractionModel(imodel);
+
+    _attachHeaderListeners();
     _setupGlobalScrollbar();
 
     // _attachUserEventListeners();
@@ -112,13 +117,6 @@ function _setupHeader() {
     // overlayButton.elt.disabled = true;
     // displayButton.parent(headerDiv);
     // overlayButton.parent(headerDiv);
-    let uploadSelect = document.getElementById("uploadSelect");
-    model.datasets.forEach(dataset => {
-        let option = document.createElement("option");
-        option.text = dataset;
-        uploadSelect.add(option);
-    });
-    _attachHeaderListeners();
 }
 
 /**
@@ -677,7 +675,6 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     let display = null;
     if (display = model.checkImageHit(mx, my)) {
         imodel.select(display);
-        updateDisplayControls();
     }
     if (display = model.checkScrollbarHit(mx, my)) {
         imodel.setFocused(display);
@@ -695,14 +692,12 @@ function _attachHeaderListeners() {
         let dataset = document.getElementById("uploadSelect")?.value;
         if (!!dataset && dataset !== "---") {
             model.incrementLoading();
-            document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
             const start = performance.now();
             console.log(`Beginning load of ${dataset}...`);
             loader.initDatasetLoad(
                 dataset,
                 loadObj => {
                     model.decrementLoading();
-                    document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
                     console.log(
                         `Finished loading ${dataset} in ${Math.floor(performance.now() - start)}ms. \
                         \nLoaded ${loadObj.frames.length} frames. \
@@ -731,7 +726,6 @@ function _attachHeaderListeners() {
                     console.error(err);
                     alert("Error: there were issues loading the video, please try again.");
                     model.decrementLoading();
-                    document.getElementById("loading-spinner").style.display = model.loading ? "block" : "none";
                 }
             )
         }
@@ -761,7 +755,6 @@ function _attachHeaderListeners() {
             console.log(`Removing ${imodel.selection.id}...`);
             model.removeDisplay(imodel.selection);
             imodel.select(imodel.selection); /* Need to unselect display */
-            updateDisplayControls();
         }
     });
     document.getElementById("loadFrameButton")?.addEventListener("click", e => {
@@ -773,41 +766,5 @@ function _attachHeaderListeners() {
     });
     document.getElementById("saveFrameButton")?.addEventListener("click", e => {
         imodel.saveFrame();
-        setSavedFrames();
-    });
-}
-
-/***  Header HTML manipulation functions ***/
-
-/**
- * Set the display controls as hidden or visible to the user
- * depending on the selection.
- */
-function updateDisplayControls () {
-    let displayControls = document.getElementById("displayControls");
-    if (imodel.selection !== null) {
-        displayControls?.classList.remove("hidden");
-        document.getElementById("lockCheckbox").checked = imodel.selection.locked;
-    } else {
-        displayControls?.classList.add("hidden");
-    }
-    setSavedFrames();
-}
-
-/**
- * Set the saved frames selection element to the saved frames of the
- * selected display.
- */
-function setSavedFrames () {
-    let frameSelect = document.getElementById("frameSelect");
-    frameSelect.innerHTML = "";
-    let defaultOption = document.createElement("option");
-    defaultOption.text = "Select Frame";
-    defaultOption.disabled = true;
-    frameSelect.add(defaultOption);
-    imodel.selection?.savedFrames.forEach(savedFrame => {
-        let option = document.createElement("option");
-        option.text = savedFrame.name;
-        frameSelect.add(option);
     });
 }

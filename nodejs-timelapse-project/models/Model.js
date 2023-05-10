@@ -47,6 +47,7 @@ Model.prototype.setNormalized = function (normalized) {
  */
 Model.prototype.incrementLoading = function () {
     this.loading++;
+    this.notifySubscribers();
 }
 
 /**
@@ -55,6 +56,7 @@ Model.prototype.incrementLoading = function () {
 Model.prototype.decrementLoading = function () {
     this.loading--;
     if (this.loading < 0) this.loading = 0;
+    this.notifySubscribers();
 }
 
 /**

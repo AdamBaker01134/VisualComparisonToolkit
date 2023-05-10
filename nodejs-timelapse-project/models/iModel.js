@@ -2,6 +2,7 @@
 function iModel () {
     this.focused = null;
     this.selection = null;
+    this.configs = [];
     this.subscribers = [];
 }
 
@@ -10,8 +11,10 @@ function iModel () {
  * @param {Display|null} display display to set as focused
  */
 iModel.prototype.setFocused = function (display) {
-    this.focused = display;
-    this.notifySubscribers();
+    if (this.focused !== display) {
+        this.focused = display;
+        this.notifySubscribers();
+    }
 }
 
 /**
