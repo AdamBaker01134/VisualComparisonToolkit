@@ -2,6 +2,7 @@
 function iModel () {
     this.focused = null;
     this.selection = null;
+    this.ghost = null;
     this.configs = [];
     this.subscribers = [];
 }
@@ -15,6 +16,22 @@ iModel.prototype.setFocused = function (focusedObject) {
         this.focused = focusedObject;
         this.notifySubscribers();
     }
+}
+
+/**
+ * Add a ghost to be shown as a display being dragged
+ * @param {Display|null} display display that is being dragged
+ */
+iModel.prototype.setGhost = function (display) {
+    this.ghost = display;
+    this.notifySubscribers();
+}
+
+/**
+ * Ghost has moved, so subscribers need to be notified.
+ */
+iModel.prototype.updateGhost = function () {
+    this.notifySubscribers();
 }
 
 /**

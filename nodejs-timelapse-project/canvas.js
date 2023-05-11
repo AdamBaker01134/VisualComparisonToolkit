@@ -664,11 +664,12 @@ function handleMouseReleased() {
 /* Controller */
 const STATE = {
     READY: "ready",
+    PREPARE_SELECT: "prepareSelect",
     OUT_OF_BOUNDS: "oob",
     FOCUSED: "focused",
     START_FOCUSED: "startFocused",
     END_FOCUSED: "endFocused",
-    MOVING: "moving",
+    GHOSTING: "ghosting",
 }
 let currentState = STATE.READY;
 
@@ -694,6 +695,18 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
         case STATE.END_FOCUSED:
             model.setEndFromMouse(imodel.focused, mx);
             break;
+        case STATE.PREPARE_SELECT:
+            let hit = null;
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.setGhost(hit);
+                currentState = STATE.GHOSTING;
+            } else {
+                currentState = STATE.READY;
+            }
+            break;
+        case STATE.GHOSTING:
+            imodel.updateGhost();
+            break;
     }
 }
 
@@ -714,7 +727,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     currentState = STATE.FOCUSED;
                 }
             } else if (hit = model.checkImageHit(mx, my)) {
-                imodel.select(hit);
+                currentState = STATE.PREPARE_SELECT;
             }
             break;
     }
@@ -728,6 +741,16 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.START_FOCUSED:
         case STATE.END_FOCUSED:
             imodel.setFocused(null);
+            currentState = STATE.READY;
+            break;
+        case STATE.PREPARE_SELECT:
+            let hit = null;
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.select(hit);
+            }
+            currentState = STATE.READY;
+        case STATE.GHOSTING:
+            imodel.setGhost(null);
             currentState = STATE.READY;
             break;
     }

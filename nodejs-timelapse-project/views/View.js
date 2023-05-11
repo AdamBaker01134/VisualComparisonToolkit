@@ -176,6 +176,29 @@ View.prototype.draw = function () {
             scrollbarTop + scrollbar.height - 0.5
         )
     }
+
+    /* Dragging ghost */
+    let ghost = imodel.ghost;
+    if (ghost instanceof Display) {
+        let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
+        let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
+        noStroke();
+        fill("rgba(190, 190, 190, 0.5)");
+        rect(
+            ghostX,
+            ghostY,
+            ghost.width + ghost.padding * 2,
+            ghost.height + ghost.padding * 2 + ghost.scrollbarHeight,
+            10  /* Border radius */
+        );
+        fill("rgba(34, 154, 34, 0.5)");
+        rect(
+            ghostX + ghost.padding,
+            ghostY + ghost.padding + ghost.height,
+            ghost.width,
+            ghost.scrollbarHeight
+        );
+    }
 }
 
 /**
