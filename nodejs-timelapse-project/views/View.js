@@ -30,15 +30,34 @@ View.prototype.draw = function () {
             10  /* Border radius */
         );
 
+        let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
         noStroke();
         strokeWeight(1);
         image(
-            display.images[Math.floor(display.index)], /* Floor index in case index has been affected by ratio */
+            display.images[index],
             display.x + display.padding,
             display.y + display.padding,
             display.width,
             display.height
         );
+
+        /* Timestamp */
+        stroke("rgb(0, 0, 0)");
+        fill("rgb(255, 255, 255)");
+        textSize(16);
+        if (index > display.timestamps.length - 1) {
+            text(
+                display.frames[index],
+                display.x + display.padding + 5,
+                display.y + display.padding + 16
+            );
+        } else {
+            text(
+                display.timestamps[index],
+                display.x + display.padding + 5,
+                display.y + display.padding + 16
+            );
+        }
 
         /* Scrollbar */
         let lineGap = display.getLineGap();
@@ -47,6 +66,7 @@ View.prototype.draw = function () {
         let trianglePos = display.getPosition();
         let startPos = display.getStartPosition();
         let endPos = display.getEndPosition();
+        noStroke();
         if (display.locked) {
             fill("rgb(128, 128, 128)");
         } else {
