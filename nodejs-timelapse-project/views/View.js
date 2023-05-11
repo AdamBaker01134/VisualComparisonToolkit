@@ -41,45 +41,85 @@ View.prototype.draw = function () {
         );
 
         /* Scrollbar */
-        let lineGap = display.width / display.getSize();
-        let trianglePos = lineGap * (0.5 + display.index);
+        let lineGap = display.getLineGap();
+        let scrollbarLeft = display.getScrollbarLeft();
+        let scrollbarTop = display.getScrollbarTop();
+        let trianglePos = display.getPosition();
+        let startPos = display.getStartPosition();
+        let endPos = display.getEndPosition();
         if (display.locked) {
             fill("rgb(128, 128, 128)");
         } else {
             fill("rgb(34, 154, 34)");
         }
         rect(
-            display.x + display.padding,
-            display.y + display.padding + display.height,
+            scrollbarLeft,
+            scrollbarTop,
             display.width,
+            display.scrollbarHeight
+        );
+        fill("rgb(255, 255, 255)");
+        rect(
+            scrollbarLeft,
+            scrollbarTop,
+            startPos - scrollbarLeft,
+            display.scrollbarHeight
+        );
+        rect(
+            endPos,
+            scrollbarTop,
+            scrollbarLeft + display.width - endPos,
             display.scrollbarHeight
         );
 
         /* Scrollbar Segments */
-        fill(0);
-        stroke(25);
+        fill("rgb(0, 0, 0)");
+        stroke("rgb(25, 25, 25)");
         for (let idx = 0; idx < display.getSize(); idx++) {
-            let top = display.y + display.padding + display.height;
-            let pos = display.x + display.padding + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-            renderLine(idx, top, pos);
+            let pos = scrollbarLeft + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
+            renderLine(idx, scrollbarTop, pos);
         }
 
-        /* Scrollbar main position arrow */
+        /* Scrollbar start position arrow */
+        fill("rgb(255, 255, 255)");
         triangle(
-            trianglePos + display.x + display.padding,
-            display.y + display.padding + display.height + 5,
-            trianglePos + display.x + display.padding - 5,
-            display.y + display.padding + display.height + display.scrollbarHeight - 0.5,
-            trianglePos + display.x + display.padding + 5,
-            display.y + display.padding + display.height + display.scrollbarHeight - 0.5
+            startPos,
+            scrollbarTop + 5,
+            startPos - 5,
+            scrollbarTop + display.scrollbarHeight - 0.5,
+            startPos + 5,
+            scrollbarTop + display.scrollbarHeight - 0.5
+        );
+
+        /* Scrollbar end position arrow */
+        triangle(
+            endPos,
+            scrollbarTop + 5,
+            endPos - 5,
+            scrollbarTop + display.scrollbarHeight - 0.5,
+            endPos + 5,
+            scrollbarTop + display.scrollbarHeight - 0.5
+        );
+
+        /* Scrollbar main position arrow */
+        fill("rgb(0, 0, 0)");
+        triangle(
+            trianglePos,
+            scrollbarTop + 5,
+            trianglePos - 5,
+            scrollbarTop + display.scrollbarHeight - 0.5,
+            trianglePos + 5,
+            scrollbarTop + display.scrollbarHeight - 0.5
         );
     });
 
     /* Global Scrollbar */
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof GlobalScrollbar) {
-        let lineGap = scrollbar.width / scrollbar.getSize();
-        let trianglePos = lineGap * (0.5 + scrollbar.index);
+        let lineGap = scrollbar.getLineGap();
+        let scrollbarLeft = scrollbar.getScrollbarLeft();
+        let scrollbarTop = scrollbar.getScrollbarTop();
+        let trianglePos = scrollbar.getPosition();
         noStroke();
         fill("rgb(190, 190, 190)");
         rect(
@@ -91,8 +131,8 @@ View.prototype.draw = function () {
 
         fill("rgb(34, 154, 34)");
         rect(
-            scrollbar.x + scrollbar.padding,
-            scrollbar.y + scrollbar.padding,
+            scrollbarLeft,
+            scrollbarTop,
             scrollbar.width,
             scrollbar.height
         );
@@ -101,19 +141,19 @@ View.prototype.draw = function () {
         fill(0);
         stroke(25);
         for (let idx = 0; idx < scrollbar.getSize(); idx++) {
-            let top = scrollbar.y + scrollbar.padding;
-            let pos = scrollbar.x + scrollbar.padding + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
+            let top = scrollbarTop;
+            let pos = scrollbarLeft + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
             renderLine(idx, top, pos);
         }
 
         /* Global Scrollbar main position arrow */
         triangle(
-            trianglePos + scrollbar.x + scrollbar.padding,
-            scrollbar.y + scrollbar.padding + 5,
-            trianglePos + scrollbar.x + scrollbar.padding - 5,
-            scrollbar.y + scrollbar.padding + scrollbar.height - 0.5,
-            trianglePos + scrollbar.x + scrollbar.padding + 5,
-            scrollbar.y + scrollbar.padding + scrollbar.height - 0.5
+            trianglePos,
+            scrollbarTop + 5,
+            trianglePos - 5,
+            scrollbarTop + scrollbar.height - 0.5,
+            trianglePos + 5,
+            scrollbarTop + scrollbar.height - 0.5
         )
     }
 }

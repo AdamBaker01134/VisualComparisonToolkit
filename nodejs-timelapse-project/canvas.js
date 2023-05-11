@@ -17,7 +17,8 @@ const CANVAS_WIDTH = innerWidth * 0.98;
 const CANVAS_HEIGHT =  innerHeight * 3;
 const HEADER_HEIGHT = 72;
 const GLOBAL_SCROLLBAR_HEIGHT = 40;
-// const MAX_IMAGES = 1000;
+const MAX_IMAGES = 1000;
+const IMG_PATH = "./img/";
 // const DISPLAY_WIDTH = 350;
 // const DISPLAY_HEIGHT = 350;
 // const OVERLAY_WIDTH = 700;
@@ -28,7 +29,6 @@ const GLOBAL_SCROLLBAR_HEIGHT = 40;
 // }
 
 /* Path variables */
-// const IMG_PATH = "./img/";
 // let plotPath = "";
 
 /* State data */
@@ -68,7 +68,7 @@ function preload() {
     // overlayDiv.addClass("hidden");
     model = new Model();
     imodel = new iModel();
-    loader = new Loader(model.maxImages, model.imagePath);
+    loader = new Loader(MAX_IMAGES, IMG_PATH);
     model.setDatasets(loader.loadDatasets());
 }
 
@@ -289,7 +289,7 @@ function _setupGlobalScrollbar() {
         CANVAS_WIDTH,
         GLOBAL_SCROLLBAR_HEIGHT,
         0,
-        model.maxImages
+        MAX_IMAGES,
     ));
 }
 
@@ -669,7 +669,13 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
 function mouseDragged(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse dragged at ${mx}, ${my}`)
     if (imodel.focused) {
-        model.setIndexFromMouse(imodel.focused, mx);
+        if (imodel.startFocused) {
+            model.setStartFromMouse(imodel.focused, mx);
+        } else if (imodel.endFocused) {
+            model.setEndFromMouse(imodel.focused, mx);
+        } else {
+            model.setIndexFromMouse(imodel.focused, mx);
+        }
     }
 }
 
@@ -678,7 +684,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse pressed at ${mx}, ${my}`);
     let hit = null;
     if (hit = model.checkScrollbarHit(mx, my)) {
-        imodel.setFocused(hit);
+        imodel.setFocused(hit, mx);
     } else if (hit = model.checkImageHit(mx, my)) {
         imodel.select(hit);
     }

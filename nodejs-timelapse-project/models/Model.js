@@ -1,8 +1,6 @@
 /* Application Model */
 function Model() {
     this.datasets = [];
-    this.maxImages = 1000;
-    this.imagePath = "./img/";
     this.normalized = true;
     this.loading = 0;
     this.displays = [];
@@ -71,17 +69,12 @@ Model.prototype.decrementLoading = function () {
 }
 
 /**
- * Set the focused display/scrollbar based on the position of the cursor
+ * Set the index of the focused display/scrollbar based on the position of the cursor
  * @param {Display|GlobalScrollbar} focusedObject focused display/scrollbar
  * @param {number} mx x coordinate of the cursor
  */
 Model.prototype.setIndexFromMouse = function (focusedObject, mx) {
-    this.setIndex(focusedObject, getIndexFromMouse(
-        focusedObject.x + focusedObject.padding,
-        mx,
-        focusedObject.getSize(),
-        focusedObject.width
-    ));
+    this.setIndex(focusedObject, this.getIndexFromMouse(focusedObject, mx));
 }
 
 /**
@@ -100,6 +93,65 @@ Model.prototype.setIndex = function (focusedObject, index) {
     this.notifySubscribers();
 }
 
+/**
+ * Set the start index of thefocused display/scrollbar based on the position of the cursor
+ * @param {Display} focusedObject focused display/scrollbar
+ * @param {number} mx x coordinate of the cursor
+ */
+Model.prototype.setStartFromMouse = function (focusedObject, mx) {
+    this.setStart(focusedObject, this.getIndexFromMouse(focusedObject, mx));
+}
+
+/**
+ * Set the start index of a specific display/scrollbar
+ * @param {Display} focusedObject relevant display/scrollbar
+ * @param {number} index start index to set in the display
+ */
+Model.prototype.setStart = function (focusedObject, index) {
+    focusedObject.setStart(index);
+    this.notifySubscribers();
+}
+
+/**
+ * Set the end index of the focused display/scrollbar based on the position of the cursor
+ * @param {Display} focusedObject focused display/scrollbar
+ * @param {number} mx x coordinate of the cursor
+ */
+Model.prototype.setEndFromMouse = function (focusedObject, mx) {
+    this.setEnd(focusedObject, this.getIndexFromMouse(focusedObject, mx));
+}
+
+/**
+ * Set the end index of a specific display/scrollbar
+ * @param {Display} focusedObject relevant display/scrollbar
+ * @param {number} index end index to set in the display
+ */
+Model.prototype.setEnd = function (focusedObject, index) {
+    focusedObject.setEnd(index);
+    this.notifySubscribers();
+}
+
+/**
+ * Map the mouses x coordinate to an index in the display/scrollbar
+ * @param {Display|GlobalScrollbar} focusedObject object mouse is focused on
+ * @param {number} mx x coordinate of the cursor
+ * @returns {number}
+ */
+Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
+    return getIndexFromMouse(
+        focusedObject.x + focusedObject.padding,
+        mx,
+        focusedObject.getSize(),
+        focusedObject.width
+    );
+}
+
+/**
+ * Model check if a display image was hit in a mouse event
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Display|null}
+ */
 Model.prototype.checkImageHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];

@@ -12,12 +12,38 @@ function GlobalScrollbar (x, y, width, height, padding, size) {
     this.index = 0;
 }
 
-/**
- * Get the number of segments in the scrollbar.
- * @returns {number}
- */
+/* Get the number of segments in the scrollbar */
 GlobalScrollbar.prototype.getSize = function () {
     return this.size;
+}
+
+/* Get the line gap between segments in the scrollbar */
+GlobalScrollbar.prototype.getLineGap = function () {
+    return this.width / this.getSize();
+}
+
+/* Get the x-coordinate of the scrollbar in the canvas */
+GlobalScrollbar.prototype.getScrollbarLeft = function () {
+    return this.x + this.padding;
+}
+
+/* Get the y-coordinate of the scrollbar in the canvas */
+GlobalScrollbar.prototype.getScrollbarTop = function () {
+    return this.y + this.padding;
+}
+
+/* Get the index position x-coordinate of the scrollbar in the canvas */
+GlobalScrollbar.prototype.getPosition = function () {
+    return this.getLineGap() * (0.5 + this.index) + this.getScrollbarLeft();
+}
+
+/** Currently no start position in global scrollbar **/
+GlobalScrollbar.prototype.getStartPosition = function () {
+    return -999;
+}
+/** Currently no end position in global scrollbar **/
+GlobalScrollbar.prototype.getEndPosition = function () {
+    return -999;
 }
 
 /**
