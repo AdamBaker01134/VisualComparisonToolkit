@@ -33,7 +33,7 @@ View.prototype.draw = function () {
         noStroke();
         strokeWeight(1);
         image(
-            display.images[display.index],
+            display.images[Math.floor(display.index)], /* Floor index in case index has been affected by ratio */
             display.x + display.padding,
             display.y + display.padding,
             display.width,

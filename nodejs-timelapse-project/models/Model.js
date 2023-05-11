@@ -86,7 +86,11 @@ Model.prototype.setIndex = function (focusedObject, index) {
     focusedObject.setIndex(index);
     if (focusedObject instanceof GlobalScrollbar) {
         this.displays.forEach(display => {
-            display.setIndex(display.index + (this.globalScrollbar.index - this.offset));
+            let step = 1; /* Normalizing ratio */
+            if (this.normalized) {
+                step = (display.end - display.start) / focusedObject.getSize();
+            }
+            display.setIndex(display.index + (this.globalScrollbar.index - this.offset) * step);
         });
         this.offset = this.globalScrollbar.index;
     }
