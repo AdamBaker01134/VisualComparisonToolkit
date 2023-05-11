@@ -1,8 +1,6 @@
 /* Application Interaction Model */
 function iModel () {
     this.focused = null;
-    this.startFocused = false;
-    this.endFocused = false;
     this.selection = null;
     this.configs = [];
     this.subscribers = [];
@@ -12,16 +10,9 @@ function iModel () {
  * Set the focused display/scrollbar.
  * @param {Display|GlobalScrollbar|null} focusedObject display/scrollbar to set as focused
  */
-iModel.prototype.setFocused = function (focusedObject, mx = mouseX) {
+iModel.prototype.setFocused = function (focusedObject) {
     if (this.focused !== focusedObject) {
         this.focused = focusedObject;
-        if (focusedObject instanceof Display) {
-            this.startFocused = !focusedObject.checkPositionHit(mx) && focusedObject.checkStartHit(mx);
-            this.endFocused = !focusedObject.checkPositionHit(mx) && !focusedObject.checkStartHit(mx) && focusedObject.checkEndHit(mx);
-        } else {
-            this.startFocused = false;
-            this.endFocused = false;
-        }
         this.notifySubscribers();
     }
 }

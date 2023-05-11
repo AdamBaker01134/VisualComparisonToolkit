@@ -37,13 +37,30 @@ GlobalScrollbar.prototype.getPosition = function () {
     return this.getLineGap() * (0.5 + this.index) + this.getScrollbarLeft();
 }
 
+/**
+ * Check to see if the mouse is on the main position arrow
+ * @param {number} mx x coordinate of cursor
+ * @returns {boolean}
+ */
+GlobalScrollbar.prototype.checkPositionHit = function (mx) {
+    let pos = this.getPosition();
+    return mx > pos - 5 && mx < pos + 5;
+}
+
 /** Currently no start position in global scrollbar **/
 GlobalScrollbar.prototype.getStartPosition = function () {
     return -999;
 }
+GlobalScrollbar.prototype.checkStartHit = function () {
+    return false;
+}
+
 /** Currently no end position in global scrollbar **/
 GlobalScrollbar.prototype.getEndPosition = function () {
     return -999;
+}
+GlobalScrollbar.prototype.checkEndHit = function () {
+    return false;
 }
 
 /**

@@ -14,7 +14,7 @@ let loader;
 
 /* Constants */
 const CANVAS_WIDTH = innerWidth * 0.98;
-const CANVAS_HEIGHT =  innerHeight * 3;
+const CANVAS_HEIGHT = innerHeight * 3;
 const HEADER_HEIGHT = 72;
 const GLOBAL_SCROLLBAR_HEIGHT = 40;
 const MAX_IMAGES = 1000;
@@ -662,37 +662,75 @@ function handleMouseReleased() {
 }
 
 /* Controller */
+const STATE = {
+    READY: "ready",
+    OUT_OF_BOUNDS: "oob",
+    FOCUSED: "focused",
+    START_FOCUSED: "startFocused",
+    END_FOCUSED: "endFocused",
+    MOVING: "moving",
+}
+let currentState = STATE.READY;
+
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse moved at ${mx}, ${my}`)
+    switch (currentState) {
+        case STATE.READY:
+            if (my < scrollY) currentState = STATE.OUT_OF_BOUNDS;
+        case STATE.OUT_OF_BOUNDS:
+            if (my > scrollY) currentState = STATE.READY;
+    }
 }
 
 function mouseDragged(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse dragged at ${mx}, ${my}`)
-    if (imodel.focused) {
-        if (imodel.startFocused) {
-            model.setStartFromMouse(imodel.focused, mx);
-        } else if (imodel.endFocused) {
-            model.setEndFromMouse(imodel.focused, mx);
-        } else {
+    switch (currentState) {
+        case STATE.FOCUSED:
             model.setIndexFromMouse(imodel.focused, mx);
-        }
+            break;
+        case STATE.START_FOCUSED:
+            model.setStartFromMouse(imodel.focused, mx);
+            break;
+        case STATE.END_FOCUSED:
+            model.setEndFromMouse(imodel.focused, mx);
+            break;
     }
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
-    if (my < scrollY) return;   /* Ensure that you're clicking on the canvas and not the header */
     // console.log(`Mouse pressed at ${mx}, ${my}`);
-    let hit = null;
-    if (hit = model.checkScrollbarHit(mx, my)) {
-        imodel.setFocused(hit, mx);
-    } else if (hit = model.checkImageHit(mx, my)) {
-        imodel.select(hit);
+    switch (currentState) {
+        case STATE.READY:
+            let hit = null;
+            if (hit = model.checkScrollbarHit(mx, my)) {
+                imodel.setFocused(hit);
+                let startFocused = !imodel.focused.checkPositionHit(mx) && imodel.focused.checkStartHit(mx);
+                let endFocused = !imodel.focused.checkPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
+                if (startFocused) {
+                    currentState = STATE.START_FOCUSED;
+                } else if (endFocused) {
+                    currentState = STATE.END_FOCUSED;
+                } else {
+                    currentState = STATE.FOCUSED;
+                }
+            } else if (hit = model.checkImageHit(mx, my)) {
+                imodel.select(hit);
+            }
+            break;
     }
+
 }
 
 function mouseReleased(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse released at ${mx}, ${my}`);
-    imodel.setFocused(null);
+    switch (currentState) {
+        case STATE.FOCUSED:
+        case STATE.START_FOCUSED:
+        case STATE.END_FOCUSED:
+            imodel.setFocused(null);
+            currentState = STATE.READY;
+            break;
+    }
 }
 
 function _attachHeaderListeners() {
@@ -779,7 +817,7 @@ function _attachHeaderListeners() {
     });
 }
 
-function _attachUserEventListeners () {
+function _attachUserEventListeners() {
     document.addEventListener("scroll", e => {
         model.setGlobalScrollbarLocation(0, innerHeight + scrollY - HEADER_HEIGHT - 40);
     });
