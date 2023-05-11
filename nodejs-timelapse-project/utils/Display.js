@@ -157,23 +157,25 @@ Display.prototype.checkPositionHit = function (mx) {
 }
 
 /**
- * Check to see if the mouse is on the start position arrow
+ * Check to see if the mouse is on the start position arrow or within the left empty area
  * @param {number} mx x coordinate of cursor
  * @returns {boolean}
  */
 Display.prototype.checkStartHit = function (mx) {
     let pos = this.getStartPosition();
-    return mx > pos - 5 && mx < pos + 5;
+    let scrollbarLeft = this.getScrollbarLeft();
+    return mx > scrollbarLeft - 5 && mx < pos + 5;
 }
 
 /**
- * Check to see if the mouse is on the end position arrow
+ * Check to see if the mouse is on the end position arrow or within the right empty area
  * @param {number} mx x coordinate of cursor
  * @returns {boolean}
  */
 Display.prototype.checkEndHit = function (mx) {
     let pos = this.getEndPosition();
-    return mx > pos - 5 && mx < pos + 5;
+    let scrollbarRight = this.getScrollbarLeft() + this.width;
+    return mx > pos - 5 && mx < scrollbarRight + 5;
 }
 
 /**
