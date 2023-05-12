@@ -102,11 +102,11 @@ View.prototype.draw = function () {
 
         /* Config Dots */
         this.model.configs.forEach((config, index) => {
-            let configIndex = config.displays.find(d => d.id === display.id)?.index;
-            if (configIndex) {
+            let match = config.displays.find(d => d.id === display.id);
+            if (match) {
                 let colourTint = 32 * index;
                 let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-                let pos = scrollbarLeft + (lineGap * configIndex) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
+                let pos = scrollbarLeft + (lineGap * match.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
                 this.renderDot(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
             }
         });
@@ -262,7 +262,7 @@ function renderLine (idx, top, pos) {
 View.prototype.renderDot = function (top, pos, colour, highlighted) {
     fill(colour);
     if (highlighted) {
-        stroke("rgb(255, 204, 0");
+        stroke("rgb(255, 204, 0)");
     } else {
         stroke("rgb(25, 25, 25)");
     }

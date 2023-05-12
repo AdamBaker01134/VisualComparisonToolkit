@@ -724,7 +724,9 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     let hit = null;
     switch (currentState) {
         case STATE.READY:
-            if (hit = model.checkScrollbarHit(mx, my)) {
+            if (imodel.highlightedConfig) {
+                model.loadConfig(imodel.highlightedConfig);
+            } else if (hit = model.checkScrollbarHit(mx, my)) {
                 imodel.setFocused(hit);
                 let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);

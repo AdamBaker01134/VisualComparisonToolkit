@@ -188,17 +188,21 @@ Model.prototype.checkDotHit = function (mx, my) {
     let target = this.checkScrollbarHit(mx, my);
     if (target instanceof Display) {
         for (let i = 0; i < this.configs.length; i++) {
-            let index = this.configs[i].displays.find(display => display.id === target.id)?.index;
-            if (index) {
-                let pos = target.getPositionOfIndex(index);
-                if (mx > pos - 2 && mx < pos + 2) return this.configs[i];
+            let match = this.configs[i].displays.find(display => display.id === target.id);
+            if (match) {
+                let pos = target.getPositionOfIndex(match.index);
+                if (mx > pos - 2 && mx < pos + 2 && my < target.getScrollbarTop() + 4) {
+                    return this.configs[i];
+                }
             }
         }
     } else if (target instanceof GlobalScrollbar) {
         for (let i = 0; i < this.configs.length; i++) {
             let index = this.configs[i].globalScrollbar.index;
             let pos = target.getPositionOfIndex(index);
-            if (mx > pos - 2 && mx < pos + 2) return this.configs[i];
+            if (mx > pos - 2 && mx < pos + 2 && my < target.getScrollbarTop() + 4) {
+                return this.configs[i];
+            }
         }
     }
     return null;
@@ -301,9 +305,9 @@ Model.prototype.loadConfig = function (configName) {
         config.displays.forEach(configDisplay => {
             let display = this.displays.find(display => display.id === configDisplay.id);
             if (display) {
-                display.setIndex(configDisplay.index);
                 display.setStart(configDisplay.start);
                 display.setEnd(configDisplay.end);
+                display.setIndex(configDisplay.index);
             }
         });
         this.setNormalized(config.normalized);
