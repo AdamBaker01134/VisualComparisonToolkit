@@ -177,8 +177,43 @@ Model.prototype.checkScrollbarHit = function (mx, my) {
     return null;
 }
 
+/**
+ * Add a display to the model
+ * @param {Display} display new display
+ */
 Model.prototype.addDisplay = function (display) {
     this.displays.push(display);
+    this.notifySubscribers();
+}
+
+/**
+ * Move a display to the position of a target display and update the locations of all affected displays.
+ * @param {Display} display display to move
+ * @param {Display} target target with the displays new location
+ */
+Model.prototype.moveDisplay = function (display, target) {
+    let index = this.displays.findIndex(d => d === display);
+    let targetIndex = this.displays.findIndex(d => d === target);
+    if (index >= 0 && targetIndex >= 0 && index !== targetIndex) {
+        let savedTargetX = this.displays[targetIndex].x;
+        let savedTargetY = this.displays[targetIndex].y;
+        if (index < targetIndex) {
+            for (let i = targetIndex; i > index; i--) {
+                let newX = this.displays[i - 1].x;
+                let newY = this.displays[i - 1].y;
+                this.displays[i].setLocation(newX, newY);
+            }
+        } else {
+            for (let i = targetIndex; i < index; i++) {
+                let newX = this.displays[i + 1].x;
+                let newY = this.displays[i + 1].y;
+                this.displays[i].setLocation(newX, newY);
+            }
+        }
+        display.setLocation(savedTargetX, savedTargetY);
+        this.displays.splice(index, 1);
+        this.displays.splice(targetIndex, 0, display);
+    }
     this.notifySubscribers();
 }
 

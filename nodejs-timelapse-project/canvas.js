@@ -678,13 +678,16 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
     switch (currentState) {
         case STATE.READY:
             if (my < scrollY) currentState = STATE.OUT_OF_BOUNDS;
+            break;
         case STATE.OUT_OF_BOUNDS:
             if (my > scrollY) currentState = STATE.READY;
+            break;
     }
 }
 
 function mouseDragged(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse dragged at ${mx}, ${my}`)
+    let hit = null;
     switch (currentState) {
         case STATE.FOCUSED:
             model.setIndexFromMouse(imodel.focused, mx);
@@ -696,7 +699,6 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             model.setEndFromMouse(imodel.focused, mx);
             break;
         case STATE.PREPARE_SELECT:
-            let hit = null;
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.setGhost(hit);
                 currentState = STATE.GHOSTING;
@@ -712,9 +714,9 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse pressed at ${mx}, ${my}`);
+    let hit = null;
     switch (currentState) {
         case STATE.READY:
-            let hit = null;
             if (hit = model.checkScrollbarHit(mx, my)) {
                 imodel.setFocused(hit);
                 let startFocused = !imodel.focused.checkPositionHit(mx) && imodel.focused.checkStartHit(mx);
@@ -736,6 +738,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
 
 function mouseReleased(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse released at ${mx}, ${my}`);
+    let hit = null;
     switch (currentState) {
         case STATE.FOCUSED:
         case STATE.START_FOCUSED:
@@ -744,12 +747,15 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             currentState = STATE.READY;
             break;
         case STATE.PREPARE_SELECT:
-            let hit = null;
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.select(hit);
             }
             currentState = STATE.READY;
+            break;
         case STATE.GHOSTING:
+            if (hit = model.checkImageHit(mx, my)) {
+                model.moveDisplay(imodel.ghost, hit);
+            }
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
