@@ -810,13 +810,13 @@ function _attachHeaderListeners() {
 
     /* Global header functions */
     document.getElementById("loadConfigButton")?.addEventListener("click", e => {
-        let config = document.getElementById("configSelect")?.value;
-        if (!!config) {
-            console.log(`Loading configuration ${config}`);
+        let configName = document.getElementById("configSelect")?.value;
+        if (!!configName) {
+            model.loadConfig(configName);
         }
     });
     document.getElementById("saveConfigButton")?.addEventListener("click", e => {
-        console.log(`Saving configuration`);
+        model.addConfig();
     });
     document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
         model.setNormalized(e.target.checked);

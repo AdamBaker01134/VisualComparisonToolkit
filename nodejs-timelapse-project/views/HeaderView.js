@@ -34,7 +34,7 @@ Headerview.prototype.draw = function () {
     if (this.datasetSnapshot !== this.model.datasets) {
         this.updateUploadSelect();
     }
-    if (this.configSnapshot !== this.imodel.configs) {
+    if (this.configSnapshot !== this.model.configs) {
         this.updateConfigSelect();
     }
     if (!!this.imodel.selection && this.frameSnapshot !== this.imodel.selection.savedFrames) {
@@ -104,7 +104,18 @@ Headerview.prototype.updateUploadSelect = function () {
  * Update the config select element with cofigs from the imodel.
  */
 Headerview.prototype.updateConfigSelect = function () {
-    this.configSnapshot = [...this.imodel.configs];
+    let configSelect = document.getElementById("configSelect");
+    configSelect.innerHTML = "";
+    let defaultOption = document.createElement("option");
+    defaultOption.text = "Select Config";
+    defaultOption.disabled = true;
+    configSelect.add(defaultOption);
+    this.model.configs.forEach(config => {
+        let option = document.createElement("option");
+        option.text = config.name;
+        configSelect.add(option);
+    });
+    this.configSnapshot = [...this.model.configs];
 }
 
 /**

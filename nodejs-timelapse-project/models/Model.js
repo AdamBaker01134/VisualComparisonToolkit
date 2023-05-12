@@ -4,6 +4,7 @@ function Model() {
     this.normalized = true;
     this.loading = 0;
     this.displays = [];
+    this.configs = [];
     this.globalScrollbar = null;
     this.offset = 0;
     this.subscribers = [];
@@ -232,6 +233,56 @@ Model.prototype.removeDisplay = function (display) {
         this.displays.splice(index, 1);
     }
     this.notifySubscribers();
+}
+
+/**
+ * Add a system configuration in JSON format to the model.
+ */
+Model.prototype.addConfig = function () {
+    let name = prompt("Enter a name for this config:", `config-${this.configs.length}`);
+    if (!!name) {
+        let config = {
+            name: name,
+            displays: [],
+            globalScrollbar: {
+                index: this.globalScrollbar.index,
+            },
+            normalized: this.normalized,
+        };
+        this.displays.forEach(display => {
+            config.displays.push({
+                id: display.id,
+                name: getDisplayNameFromId(display.id),
+                index: display.index,
+                start: display.start,
+                end: display.end,
+            });
+        });
+        this.configs.push(config);
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Load a saved config
+ * @param {string} configName name of configuration
+ */
+Model.prototype.loadConfig = function (configName) {
+    let config = this.configs.find(config => config.name === configName);
+    if (config) {
+        this.globalScrollbar.setIndex(config.globalScrollbar.index);
+        this.offset = this.globalScrollbar.index;
+        config.displays.forEach(configDisplay => {
+            let display = this.displays.find(display => display.id === configDisplay.id);
+            if (display) {
+                display.setIndex(configDisplay.index);
+                display.setStart(configDisplay.start);
+                display.setEnd(configDisplay.end);
+            }
+        });
+        this.setNormalized(config.normalized);
+        this.notifySubscribers();
+    }
 }
 
 Model.prototype.addSubscriber = function (subscriber) {

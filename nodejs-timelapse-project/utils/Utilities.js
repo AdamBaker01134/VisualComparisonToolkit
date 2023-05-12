@@ -15,6 +15,7 @@ function createElementWithID(tag, content, id, className) {
  * Generate a unique display id
  * @param {Model} model model from which to generate a new display id
  * @param {string} name name of the dataset
+ * @returns {string}
  */
 function generateDisplayId(model, name) {
     let idNum = 1;
@@ -24,6 +25,15 @@ function generateDisplayId(model, name) {
         if (displayName === name) idNum = displayIdNum + 1;
     });
     return name + "-" + idNum;
+}
+
+/**
+ * Get the display dataset name from a display id
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getDisplayNameFromId(id) {
+    return id.split("-")[0];
 }
 
 /**

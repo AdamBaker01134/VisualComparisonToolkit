@@ -3,7 +3,6 @@ function iModel () {
     this.focused = null;
     this.selection = null;
     this.ghost = null;
-    this.configs = [];
     this.subscribers = [];
 }
 
