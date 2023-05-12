@@ -2,6 +2,7 @@
 function iModel () {
     this.focused = null;
     this.selection = null;
+    this.highlightedConfig = null;
     this.ghost = null;
     this.subscribers = [];
 }
@@ -13,6 +14,27 @@ function iModel () {
 iModel.prototype.setFocused = function (focusedObject) {
     if (this.focused !== focusedObject) {
         this.focused = focusedObject;
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Highlight a configuration
+ * @param {string} configName name of configuration
+ */
+iModel.prototype.highlightConfig = function (configName) {
+    if (this.highlightedConfig !== configName) {
+        this.highlightedConfig = configName;
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Unhighlight a configuration
+ */
+iModel.prototype.unhighlightConfig = function () {
+    if (this.highlightedConfig !== null) {
+        this.highlightedConfig = null;
         this.notifySubscribers();
     }
 }

@@ -675,9 +675,16 @@ let currentState = STATE.READY;
 
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse moved at ${mx}, ${my}`)
+    let hit = null;
     switch (currentState) {
         case STATE.READY:
-            if (my < scrollY) currentState = STATE.OUT_OF_BOUNDS;
+            if (my < scrollY) {
+                currentState = STATE.OUT_OF_BOUNDS;
+            } else if (hit = model.checkDotHit(mx, my)) {
+                imodel.highlightConfig(hit.name);
+            } else {
+                imodel.unhighlightConfig();
+            }
             break;
         case STATE.OUT_OF_BOUNDS:
             if (my > scrollY) currentState = STATE.READY;
@@ -719,8 +726,8 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
         case STATE.READY:
             if (hit = model.checkScrollbarHit(mx, my)) {
                 imodel.setFocused(hit);
-                let startFocused = !imodel.focused.checkPositionHit(mx) && imodel.focused.checkStartHit(mx);
-                let endFocused = !imodel.focused.checkPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
+                let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
+                let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
                 if (startFocused) {
                     currentState = STATE.START_FOCUSED;
                 } else if (endFocused) {

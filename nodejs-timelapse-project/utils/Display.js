@@ -43,19 +43,27 @@ Display.prototype.getScrollbarTop = function () {
     return this.y + this.padding + this.height;
 }
 
+/**
+ * Get the x-coordinate of an index within the scrollbar
+ * @param {number} index index within the scrollbar
+ */
+Display.prototype.getPositionOfIndex = function (index) {
+    return this.getLineGap() * (0.5 + index) + this.getScrollbarLeft();
+}
+
 /* Get the index position x-coordinate of the scrollbar in the canvas */
-Display.prototype.getPosition = function () {
-    return this.getLineGap() * (0.5 + this.index) + this.getScrollbarLeft();
+Display.prototype.getMainPosition = function () {
+    return this.getPositionOfIndex(this.index);
 }
 
 /* Get the start position x-coordinate of the scrollbar in the canvas */
 Display.prototype.getStartPosition = function () {
-    return this.getLineGap() * (0.5 + this.start) + this.getScrollbarLeft();
+    return this.getPositionOfIndex(this.start);
 }
 
 /* Get the end position x-coordinate of the scrollbar in the canvas */
 Display.prototype.getEndPosition = function () {
-    return this.getLineGap() * (0.5 + this.end) + this.getScrollbarLeft();
+    return this.getPositionOfIndex(this.end);
 }
 
 /**
@@ -151,8 +159,8 @@ Display.prototype.checkScrollbarHit = function (mx, my) {
  * @param {number} mx x coordinate of cursor
  * @returns {boolean}
  */
-Display.prototype.checkPositionHit = function (mx) {
-    let pos = this.getPosition();
+Display.prototype.checkMainPositionHit = function (mx) {
+    let pos = this.getMainPosition();
     return mx > pos - 5 && mx < pos + 5;
 }
 

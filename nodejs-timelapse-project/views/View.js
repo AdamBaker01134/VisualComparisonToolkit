@@ -7,15 +7,15 @@ View.prototype.setModel = function (model) {
     this.model = model;
 }
 
-View.prototype.setInteractionModel = function (iModel) {
-    this.iModel = iModel;
+View.prototype.setInteractionModel = function (imodel) {
+    this.imodel = imodel;
 }
 
 View.prototype.draw = function () {
     clear();
 
     this.model.displays.forEach(display => {
-        if (display === imodel.selection) {
+        if (display === this.imodel.selection) {
             stroke("rgb(52, 219, 85)");
             strokeWeight(2);
         } else {
@@ -63,7 +63,7 @@ View.prototype.draw = function () {
         let lineGap = display.getLineGap();
         let scrollbarLeft = display.getScrollbarLeft();
         let scrollbarTop = display.getScrollbarTop();
-        let trianglePos = display.getPosition();
+        let trianglePos = display.getMainPosition();
         let startPos = display.getStartPosition();
         let endPos = display.getEndPosition();
         noStroke();
@@ -100,8 +100,20 @@ View.prototype.draw = function () {
             renderLine(idx, scrollbarTop, pos);
         }
 
+        /* Config Dots */
+        this.model.configs.forEach((config, index) => {
+            let configIndex = config.displays.find(d => d.id === display.id)?.index;
+            if (configIndex) {
+                let colourTint = 32 * index;
+                let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
+                let pos = scrollbarLeft + (lineGap * configIndex) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
+                this.renderDot(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+            }
+        });
+
         /* Scrollbar start position arrow */
         fill("rgb(255, 255, 255)");
+        stroke("rgb(25, 25, 25)");
         triangle(
             startPos,
             scrollbarTop + 5,
@@ -139,7 +151,7 @@ View.prototype.draw = function () {
         let lineGap = scrollbar.getLineGap();
         let scrollbarLeft = scrollbar.getScrollbarLeft();
         let scrollbarTop = scrollbar.getScrollbarTop();
-        let trianglePos = scrollbar.getPosition();
+        let trianglePos = scrollbar.getMainPosition();
         noStroke();
         fill("rgb(190, 190, 190)");
         rect(
@@ -159,14 +171,23 @@ View.prototype.draw = function () {
 
         /* Global Scrollbar Segments */
         fill(0);
-        stroke(25);
+        stroke("rgb(25, 25, 25)");
         for (let idx = 0; idx < scrollbar.getSize(); idx++) {
             let top = scrollbarTop;
             let pos = scrollbarLeft + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
             renderLine(idx, top, pos);
         }
 
+        /* Global Scrollbar Config Dots */
+        this.model.configs.forEach((config, index) => {
+            let colourTint = 32 * index;
+            let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
+            let pos = scrollbarLeft + (lineGap * config.globalScrollbar.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
+            this.renderDot(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+        });
+
         /* Global Scrollbar main position arrow */
+        stroke("rgb(25, 25, 25)");
         triangle(
             trianglePos,
             scrollbarTop + 5,
@@ -178,7 +199,7 @@ View.prototype.draw = function () {
     }
 
     /* Dragging ghost */
-    let ghost = imodel.ghost;
+    let ghost = this.imodel.ghost;
     if (ghost instanceof Display) {
         let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
         let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
@@ -229,6 +250,23 @@ function renderLine (idx, top, pos) {
             line(pos, top, pos, top + 1);
             break;
     }
+}
+
+/**
+ * Draw a dot with a given colour
+ * @param {number} top y coordinate of the top of the object being draw on
+ * @param {number} pos x coordinate of the dot
+ * @param {string} colour colour of the dot
+ * @param {boolean} highlighted whether or not to highlight the dot
+ */
+View.prototype.renderDot = function (top, pos, colour, highlighted) {
+    fill(colour);
+    if (highlighted) {
+        stroke("rgb(255, 204, 0");
+    } else {
+        stroke("rgb(25, 25, 25)");
+    }
+    circle(pos, top + 4, 8);
 }
 
 View.prototype.modelChanged = function () {

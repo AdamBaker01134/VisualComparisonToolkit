@@ -171,9 +171,35 @@ Model.prototype.checkImageHit = function (mx, my) {
  * @returns {Display|GlobalScrollbar|null}
  */
 Model.prototype.checkScrollbarHit = function (mx, my) {
-    if (this.globalScrollbar.checkHit(mx, my)) return this.globalScrollbar;
+    if (this.globalScrollbar?.checkScrollbarHit(mx, my)) return this.globalScrollbar;
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i].checkScrollbarHit(mx, my)) return this.displays[i];
+    }
+    return null;
+}
+
+/**
+ * Model check if a config dot was hit in a mouse event
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Object|null}
+ */
+Model.prototype.checkDotHit = function (mx, my) {
+    let target = this.checkScrollbarHit(mx, my);
+    if (target instanceof Display) {
+        for (let i = 0; i < this.configs.length; i++) {
+            let index = this.configs[i].displays.find(display => display.id === target.id)?.index;
+            if (index) {
+                let pos = target.getPositionOfIndex(index);
+                if (mx > pos - 2 && mx < pos + 2) return this.configs[i];
+            }
+        }
+    } else if (target instanceof GlobalScrollbar) {
+        for (let i = 0; i < this.configs.length; i++) {
+            let index = this.configs[i].globalScrollbar.index;
+            let pos = target.getPositionOfIndex(index);
+            if (mx > pos - 2 && mx < pos + 2) return this.configs[i];
+        }
     }
     return null;
 }
