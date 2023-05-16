@@ -19,6 +19,9 @@ const HEADER_HEIGHT = 72;
 const GLOBAL_SCROLLBAR_HEIGHT = 40;
 const MAX_IMAGES = 1000;
 const IMG_PATH = "./img/";
+const PADDING = 10;
+const SCROLLBAR_HEIGHT = 30;
+const DISPLAY_WIDTH = 350;
 // const DISPLAY_WIDTH = 350;
 // const DISPLAY_HEIGHT = 350;
 // const OVERLAY_WIDTH = 700;
@@ -76,6 +79,7 @@ function preload() {
 function setup() {
     model.setDisplaysPerRow(Math.floor(CANVAS_WIDTH / 380));
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    drawingContext.canvas.getContext('2d', { willReadFrequently: true });
     // displaysDiv = createDiv();
     // displaysDiv.class("displays");
     // displaysDiv.parent(bodyDiv);
@@ -665,6 +669,7 @@ function handleMouseReleased() {
 const STATE = {
     READY: "ready",
     PREPARE_SELECT: "prepareSelect",
+    PREPARE_MOVE: "prepareMove",
     OUT_OF_BOUNDS: "oob",
     FOCUSED: "focused",
     START_FOCUSED: "startFocused",
@@ -672,6 +677,7 @@ const STATE = {
     GHOSTING: "ghosting",
 }
 let currentState = STATE.READY;
+let timer;
 
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse moved at ${mx}, ${my}`)
@@ -709,10 +715,18 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.setGhost(hit);
                 currentState = STATE.GHOSTING;
+                if (hit instanceof Overlay) {
+                    currentState = STATE.PREPARE_MOVE;
+                } else {
+                    timer = setTimeout(() => {
+                        currentState = STATE.PREPARE_MOVE;
+                    }, 3000);
+                }
             } else {
                 currentState = STATE.READY;
             }
             break;
+        case STATE.PREPARE_MOVE:
         case STATE.GHOSTING:
             imodel.updateGhost();
             break;
@@ -761,10 +775,36 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             }
             currentState = STATE.READY;
             break;
+        case STATE.PREPARE_MOVE:
+            if (hit = model.checkImageHit(mx, my)) {
+                if (hit !== imodel.ghost) {
+                    model.moveDisplay(imodel.ghost, hit);
+                }
+            }
+            imodel.setGhost(null);
+            currentState = STATE.READY;
+            break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                model.moveDisplay(imodel.ghost, hit);
+                if (hit !== imodel.ghost && !(hit instanceof Overlay)) {
+                    let column = model.displays.length % model.displaysPerRow;
+                    let row = Math.floor(model.displays.length / model.displaysPerRow);
+                    model.addOverlay(new Overlay(
+                        generateOverlayId(model),
+                        PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
+                        PADDING + row * (PADDING * 3 + DISPLAY_WIDTH + SCROLLBAR_HEIGHT),
+                        DISPLAY_WIDTH,
+                        DISPLAY_WIDTH,
+                        PADDING,
+                        SCROLLBAR_HEIGHT,
+                        imodel.ghost.frames,
+                        imodel.ghost.timestamps,
+                        imodel.ghost.images,
+                        hit.images
+                    ), hit);
+                }
             }
+            clearTimeout(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
@@ -789,9 +829,6 @@ function _attachHeaderListeners() {
                         \nLoaded ${loadObj.timestamps.length} timestamps. \
                         \nLoaded ${loadObj.images.length} images.`);
 
-                    const PADDING = 10;
-                    const SCROLLBAR_HEIGHT = 30;
-                    const DISPLAY_WIDTH = 350;
                     let column = model.displays.length % model.displaysPerRow;
                     let row = Math.floor(model.displays.length / model.displaysPerRow);
                     model.addDisplay(new Display(

@@ -28,6 +28,19 @@ function generateDisplayId(model, name) {
 }
 
 /**
+ * generate a unique overlay id
+ * @param {Model} model model from which to generate a new display id
+ * @returns {string}
+ */
+function generateOverlayId(model) {
+    let idNum = 1;
+    model.displays.forEach(display => {
+        if (display instanceof Overlay) idNum++;
+    });
+    return "Overlay-" + idNum;
+}
+
+/**
  * Get the display dataset name from a display id
  * @param {string} id display id
  * @returns {string}

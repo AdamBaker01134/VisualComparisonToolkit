@@ -29,10 +29,22 @@ View.prototype.draw = function () {
             display.height + display.padding * 2 + display.scrollbarHeight,
             10  /* Border radius */
         );
-
-        let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
         noStroke();
         strokeWeight(1);
+
+        if (display instanceof Overlay) {
+            let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
+            image(
+                display.secondaryImages[secondaryIndex],
+                display.x + display.padding,
+                display.y + display.padding,
+                display.width,
+                display.height
+            );
+            tint(255, parseInt(display.opacity));
+        }
+
+        let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
         image(
             display.images[index],
             display.x + display.padding,
@@ -42,6 +54,7 @@ View.prototype.draw = function () {
         );
 
         /* Timestamp */
+        noTint();
         stroke("rgb(0, 0, 0)");
         fill("rgb(255, 255, 255)");
         textSize(16);
@@ -200,7 +213,7 @@ View.prototype.draw = function () {
 
     /* Dragging ghost */
     let ghost = this.imodel.ghost;
-    if (ghost instanceof Display) {
+    if (ghost instanceof Display || ghost instanceof Overlay) {
         let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
         let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
         noStroke();

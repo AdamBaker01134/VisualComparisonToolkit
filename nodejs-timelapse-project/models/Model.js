@@ -186,7 +186,7 @@ Model.prototype.checkScrollbarHit = function (mx, my) {
  */
 Model.prototype.checkDotHit = function (mx, my) {
     let target = this.checkScrollbarHit(mx, my);
-    if (target instanceof Display) {
+    if (target instanceof Display || target instanceof Overlay) {
         for (let i = 0; i < this.configs.length; i++) {
             let match = this.configs[i].displays.find(display => display.id === target.id);
             if (match) {
@@ -214,6 +214,17 @@ Model.prototype.checkDotHit = function (mx, my) {
  */
 Model.prototype.addDisplay = function (display) {
     this.displays.push(display);
+    this.notifySubscribers();
+}
+
+/**
+ * Add an overlay to the model
+ * @param {Overlay} overlay new overlay
+ * @param {Display} target target display to move overlay to
+ */
+Model.prototype.addOverlay = function (overlay, target) {
+    this.displays.push(overlay);
+    this.moveDisplay(overlay, target);
     this.notifySubscribers();
 }
 
