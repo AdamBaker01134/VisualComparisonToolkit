@@ -1,7 +1,12 @@
 /* Application Display for Videos */
 function Display (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
-    ScrollbarObject.apply(this, [x, y, width, height, padding]);
     this.id = id;
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.padding = padding;
     
     this.scrollbarHeight = scrollbarHeight;
 
@@ -9,8 +14,9 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
     this.timestamps = timestamps;
     this.images = images;
 
-    this.size = this.images.length;
     this.savedFrames = [];
+
+    this.index = 0;
 
     this.start = 0;
     this.end = this.getSize() - 1;
@@ -18,8 +24,15 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
     this.locked = false;
 }
 
-Display.prototype = Object.create(ScrollbarObject.prototype);
-Display.prototype.constructor = Display;
+/* Get the number of segments in the scrollbar */
+Display.prototype.getSize = function () {
+    return this.images.length;
+}
+
+/* Get the line gap between segments in the scrollbar */
+Display.prototype.getLineGap = function () {
+    return this.width / this.getSize();
+}
 
 /* Get the x-coordinate of the scrollbar in the canvas */
 Display.prototype.getScrollbarLeft = function () {
@@ -119,6 +132,16 @@ Display.prototype.setLocked = function (locked) {
 Display.prototype.checkImageHit = function (mx, my) {
     return mx > this.x + this.padding && my > this.y + this.padding &&
             mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height;
+}
+
+/**
+ * Update the location parameters in the display.
+ * @param {number} newX new x coordinate for the display
+ * @param {number} newY new y coordinate for the display
+ */
+Display.prototype.setLocation = function (newX, newY) {
+    this.x = newX;
+    this.y = newY;
 }
 
 /**

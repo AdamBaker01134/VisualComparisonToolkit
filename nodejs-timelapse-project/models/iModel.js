@@ -9,7 +9,7 @@ function iModel () {
 
 /**
  * Set the focused display/scrollbar.
- * @param {ScrollbarObject|null} focusedObject display/scrollbar to set as focused
+ * @param {Display|Overlay|GlobalScrollbar|null} focusedObject display/scrollbar to set as focused
  */
 iModel.prototype.setFocused = function (focusedObject) {
     if (this.focused !== focusedObject) {
