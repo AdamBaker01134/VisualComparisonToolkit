@@ -668,13 +668,14 @@ function handleMouseReleased() {
 /* Controller */
 const STATE = {
     READY: "ready",
-    PREPARE_SELECT: "prepareSelect",
-    PREPARE_MOVE: "prepareMove",
     OUT_OF_BOUNDS: "oob",
     FOCUSED: "focused",
     START_FOCUSED: "startFocused",
     END_FOCUSED: "endFocused",
     GHOSTING: "ghosting",
+    PREPARE_SELECT: "prepareSelect",
+    PREPARE_MOVE: "prepareMove",
+    PREPARE_OVERLAY: "prepareOverlay",
 }
 let currentState = STATE.READY;
 let timer;
@@ -727,7 +728,20 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             }
             break;
         case STATE.PREPARE_MOVE:
+        case STATE.PREPARE_OVERLAY:
+            if (!(hit = model.checkImageHit(mx, my))) {
+                currentState = STATE.GHOSTING;
+            }
+            imodel.updateGhost();
+            break;
         case STATE.GHOSTING:
+            if (hit = model.checkImageHit(mx, my)) {
+                if (imodel.ghost instanceof Overlay || hit instanceof Overlay) {
+                    currentState = STATE.PREPARE_MOVE;
+                } else if (hit instanceof Display) {
+                    currentState = STATE.PREPARE_OVERLAY;
+                }
+            }
             imodel.updateGhost();
             break;
     }
@@ -781,12 +795,13 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     model.moveDisplay(imodel.ghost, hit);
                 }
             }
+            clearTimeout(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
-        case STATE.GHOSTING:
+        case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
-                if (hit !== imodel.ghost && !(hit instanceof Overlay)) {
+                if (hit !== imodel.ghost) {
                     let column = model.displays.length % model.displaysPerRow;
                     let row = Math.floor(model.displays.length / model.displaysPerRow);
                     model.addOverlay(new Overlay(
@@ -804,6 +819,10 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     ), hit);
                 }
             }
+            clearTimeout(timer);
+            imodel.setGhost(null);
+            currentState = STATE.READY;
+        case STATE.GHOSTING:
             clearTimeout(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;
