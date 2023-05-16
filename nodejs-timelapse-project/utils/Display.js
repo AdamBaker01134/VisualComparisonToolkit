@@ -1,20 +1,15 @@
 /* Application Display for Videos */
 function Display (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
+    ScrollbarObject.apply(this, [x, y, width, height, padding]);
     this.id = id;
     
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-
-    this.padding = padding;
     this.scrollbarHeight = scrollbarHeight;
 
     this.frames = frames;
     this.timestamps = timestamps;
     this.images = images;
 
-    this.index = 0;
+    this.size = this.images.length;
     this.savedFrames = [];
 
     this.start = 0;
@@ -23,15 +18,8 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
     this.locked = false;
 }
 
-/* Get the number of segments in the display scrollbar */
-Display.prototype.getSize = function () {
-    return this.images.length;
-}
-
-/* Get the line gap between segments in the display scrollbar */
-Display.prototype.getLineGap = function () {
-    return this.width / this.getSize();
-}
+Display.prototype = Object.create(ScrollbarObject.prototype);
+Display.prototype.constructor = Display;
 
 /* Get the x-coordinate of the scrollbar in the canvas */
 Display.prototype.getScrollbarLeft = function () {
@@ -120,16 +108,6 @@ Display.prototype.setEnd = function (index) {
  */
 Display.prototype.setLocked = function (locked) {
     this.locked = locked;
-}
-
-/**
- * Update the location parameters in the display.
- * @param {number} newX new x coordinate for the display
- * @param {number} newY new y coordinate for the display
- */
-Display.prototype.setLocation = function (newX, newY) {
-    this.x = newX;
-    this.y = newY;
 }
 
 /**
