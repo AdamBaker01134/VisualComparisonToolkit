@@ -1,4 +1,5 @@
 /* Application Interaction Model */
+"use strict";
 function iModel () {
     this.focused = null;
     this.selection = null;

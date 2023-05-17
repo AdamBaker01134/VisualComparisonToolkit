@@ -1,4 +1,5 @@
 /* Application Display for Videos */
+"use strict";
 function Display (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
     this.id = id;
 

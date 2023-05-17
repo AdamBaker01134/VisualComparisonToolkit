@@ -1,4 +1,5 @@
 /* Application Overlay for Videos */
+"use strict";
 function Overlay (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images, secondaryImages) {
     Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images]);
 

@@ -1,4 +1,5 @@
 /* Application Model */
+"use strict";
 function Model() {
     this.datasets = [];
     this.normalized = true;

@@ -1,4 +1,5 @@
 /* Application Header View */
+"use strict";
 function Headerview () {
     /* Snapshot arrays to avoid redrawing select elements and improve performance */
     this.datasetSnapshot = [];

@@ -1,4 +1,5 @@
 /* Global Application Scrollbar */
+"use strict";
 function GlobalScrollbar (x, y, width, height, padding, size) {
     this.x = x;
     this.y = y;

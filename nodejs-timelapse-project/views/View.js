@@ -1,4 +1,5 @@
 /* Application Canvas View */
+"use strict";
 function View () {
 
 }
