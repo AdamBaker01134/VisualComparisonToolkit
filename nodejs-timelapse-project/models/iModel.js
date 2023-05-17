@@ -70,6 +70,17 @@ iModel.prototype.select = function (display) {
 }
 
 /**
+ * Set the opacity of the currently selected display (if it is an overlay that is)
+ * @param {string} opacity opacity value (range from 0 to 255)
+ */
+iModel.prototype.setOpacity = function (opacity) {
+    if (this.selection instanceof Overlay) {
+        this.selection.setOpacity(opacity);
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Add a saved frame with a custom name to the selected display.
  */
 iModel.prototype.saveFrame = function () {

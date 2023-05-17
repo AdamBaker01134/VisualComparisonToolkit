@@ -4,7 +4,7 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, frames, tim
 
     this.images = this.images.map(image => image.get());
     this.secondaryImages = secondaryImages.map(image => image.get());
-    this.secondaryImages.forEach(image => image.filter(THRESHOLD));
+    // this.secondaryImages.forEach(image => image.filter(THRESHOLD));
     this.secondarySize = this.secondaryImages.length;
     this.secondaryIndex = 0;
 
@@ -47,6 +47,11 @@ Overlay.prototype.setIndex = function (index) {
 
         let stepRatio = this.getSecondarySize() / this.getSize();
         this.secondaryIndex = this.secondaryIndex + (step * stepRatio);
+        if (this.secondaryIndex < 0) {
+            this.secondaryIndex = 0;
+        } else if (this.secondaryIndex >= this.getSecondarySize()) {
+            this.secondaryIndex = this.getSecondarySize() - 1;
+        }
     }
 }
 
@@ -60,10 +65,7 @@ Overlay.prototype.setStart = function (index) {
         if (this.start < 0) this.start = 0;
         if (this.start >= this.end) this.start = this.end - 1;
         if (this.start > this.index) {
-            let step = this.start - this.index;
-            let stepRatio = this.getSecondarySize() / this.getSize();
-            this.index = this.start;
-            this.secondaryIndex = this.secondaryIndex + (step * stepRatio);
+            this.setIndex(this.start);
         }
     }
 }
@@ -78,10 +80,15 @@ Overlay.prototype.setEnd = function (index) {
         if (this.end >= this.getSize()) this.end = this.getSize() - 1;
         if (this.end <= this.start) this.end = this.start + 1;
         if (this.end < this.index) {
-            let step = this.end - this.index;
-            let stepRatio = this.getSecondarySize() / this.getSize();
-            this.index = this.end;
-            this.secondaryIndex = this.secondaryIndex + (step * stepRatio);
+            this.setIndex(this.end);
         }
     }
+}
+
+/**
+ * Set the opacity level for the top layer images
+ * @param {string} opacity opacity value of top layer of images
+ */
+Overlay.prototype.setOpacity = function (opacity) {
+    this.opacity = opacity;
 }

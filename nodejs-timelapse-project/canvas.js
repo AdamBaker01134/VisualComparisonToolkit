@@ -899,6 +899,11 @@ function _attachHeaderListeners() {
             imodel.select(imodel.selection); /* Need to unselect display */
         }
     });
+    document.getElementById("opacityInput")?.addEventListener("input", e => {
+        if (imodel.selection !== null) {
+            imodel.setOpacity(e.target.value);
+        }
+    });
     document.getElementById("loadFrameButton")?.addEventListener("click", e => {
         let name = document.getElementById("frameSelect").value;
         let frame = imodel?.selection.savedFrames.find(savedFrame => savedFrame.name === name);

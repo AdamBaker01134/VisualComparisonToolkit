@@ -74,12 +74,22 @@ Headerview.prototype.updateLocked = function () {
  * If a display is selected, it should be visible.
  */
 Headerview.prototype.updateDisplayControlVisibility = function () {
+    /* Regular display controls visibility control */
     let visible = this.imodel.selection !== null;
     let controls = document.getElementById("displayControls");
     if (visible && controls?.classList.contains("hidden")) {
         controls.classList.remove("hidden");
     } else if (!visible && controls?.classList.contains("hidden") === false) {
         controls.classList.add("hidden");
+    }
+
+    /* Opacity container visibility control */
+    let overlay = this.imodel.selection instanceof Overlay;
+    let opacity = document.getElementById("opacityContainer");
+    if (overlay && opacity?.classList.contains("hidden")) {
+        opacity.classList.remove("hidden");
+    } else if (!overlay && opacity?.classList.contains("hidden") === false) {
+        opacity.classList.add("hidden");
     }
 }
 
