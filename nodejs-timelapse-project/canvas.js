@@ -804,7 +804,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                 if (hit !== imodel.ghost) {
                     let column = model.displays.length % model.displaysPerRow;
                     let row = Math.floor(model.displays.length / model.displaysPerRow);
-                    model.addOverlay(new Overlay(
+                    let overlay = new Overlay(
                         generateOverlayId(model),
                         PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
                         PADDING + row * (PADDING * 3 + DISPLAY_WIDTH + SCROLLBAR_HEIGHT),
@@ -816,7 +816,9 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                         imodel.ghost.timestamps,
                         imodel.ghost.images,
                         hit.images
-                    ), hit);
+                    );
+                    model.addOverlay(overlay, hit);
+                    imodel.select(overlay);
                 }
             }
             clearTimeout(timer);
@@ -850,7 +852,7 @@ function _attachHeaderListeners() {
 
                     let column = model.displays.length % model.displaysPerRow;
                     let row = Math.floor(model.displays.length / model.displaysPerRow);
-                    model.addDisplay(new Display(
+                    let display = new Display(
                         generateDisplayId(model, loadObj.name),
                         PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
                         PADDING + row * (PADDING * 3 + DISPLAY_WIDTH + SCROLLBAR_HEIGHT),
@@ -861,8 +863,10 @@ function _attachHeaderListeners() {
                         loadObj.frames,
                         loadObj.timestamps,
                         loadObj.images,
-                        model.globalScrollbar.index)
+                        model.globalScrollbar.index
                     );
+                    model.addDisplay(display);
+                    imodel.select(display);
                 },
                 err => {
                     console.error(err);
