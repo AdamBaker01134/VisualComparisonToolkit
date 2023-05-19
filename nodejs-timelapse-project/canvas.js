@@ -88,6 +88,16 @@ const STATE = {
 let currentState = STATE.READY;
 let timer;
 
+/* Start an interval timer that continually checks if displays should be moved */
+function startTimerInterval() {
+    timer = setInterval(() => {
+        let hit = null;
+        if (!!imodel.ghost && (hit = model.checkImageHit(mouseX, mouseY)) && hit !== imodel.ghost) {
+            model.moveDisplay(imodel.ghost, hit);
+        }
+    }, 2000);
+}
+
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     // console.log(`Mouse moved at ${mx}, ${my}`)
     let hit = null;
@@ -124,13 +134,8 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.setGhost(hit);
                 currentState = STATE.GHOSTING;
-                if (hit instanceof Overlay) {
-                    currentState = STATE.PREPARE_MOVE;
-                } else {
-                    timer = setTimeout(() => {
-                        currentState = STATE.PREPARE_MOVE;
-                    }, 3000);
-                }
+                clearInterval(timer);
+                startTimerInterval();
             } else {
                 currentState = STATE.READY;
             }
@@ -174,7 +179,14 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     currentState = STATE.FOCUSED;
                 }
             } else if (hit = model.checkImageHit(mx, my)) {
-                currentState = STATE.PREPARE_SELECT;
+                if (event.which === 1) {
+                    currentState = STATE.PREPARE_SELECT;
+                } else if (event.which === 2) {
+                    event.preventDefault();
+                    console.log("PANNING INITIATED");
+                    // currentState = STATE.PANNING;
+                    currentState = STATE.READY;
+                }
             }
             break;
     }
@@ -203,7 +215,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     model.moveDisplay(imodel.ghost, hit);
                 }
             }
-            clearTimeout(timer);
+            clearInterval(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
@@ -229,11 +241,11 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     imodel.select(overlay);
                 }
             }
-            clearTimeout(timer);
+            clearInterval(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;
         case STATE.GHOSTING:
-            clearTimeout(timer);
+            clearInterval(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
