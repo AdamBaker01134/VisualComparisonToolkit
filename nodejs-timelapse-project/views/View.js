@@ -114,14 +114,14 @@ View.prototype.draw = function () {
             renderLine(idx, scrollbarTop, pos);
         }
 
-        /* Config Dots */
+        /* Config Benchmark */
         this.model.configs.forEach((config, index) => {
             let match = config.displays.find(d => d.id === display.id);
             if (match) {
                 let colourTint = 32 * index;
                 let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
                 let pos = scrollbarLeft + (lineGap * match.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-                this.renderDot(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+                this.renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
             }
         });
 
@@ -192,12 +192,12 @@ View.prototype.draw = function () {
             renderLine(idx, top, pos);
         }
 
-        /* Global Scrollbar Config Dots */
+        /* Global Scrollbar Config Benchmark */
         this.model.configs.forEach((config, index) => {
             let colourTint = 32 * index;
             let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
             let pos = scrollbarLeft + (lineGap * config.globalScrollbar.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-            this.renderDot(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+            this.renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
         });
 
         /* Global Scrollbar main position arrow */
@@ -267,13 +267,13 @@ function renderLine (idx, top, pos) {
 }
 
 /**
- * Draw a dot with a given colour
+ * Draw a benchmark with a given colour
  * @param {number} top y coordinate of the top of the object being draw on
- * @param {number} pos x coordinate of the dot
- * @param {string} colour colour of the dot
- * @param {boolean} highlighted whether or not to highlight the dot
+ * @param {number} pos x coordinate of the benchmark
+ * @param {string} colour colour of the benchmark
+ * @param {boolean} highlighted whether or not to highlight the benchmark
  */
-View.prototype.renderDot = function (top, pos, colour, highlighted) {
+View.prototype.renderBenchmark = function (top, pos, colour, highlighted) {
     fill(colour);
     if (highlighted) {
         stroke("rgb(255, 204, 0)");

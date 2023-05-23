@@ -180,12 +180,12 @@ Model.prototype.checkScrollbarHit = function (mx, my) {
 }
 
 /**
- * Model check if a config dot was hit in a mouse event
+ * Model check if a config benchmark was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
  * @returns {Object|null}
  */
-Model.prototype.checkDotHit = function (mx, my) {
+Model.prototype.checkBenchmarkHit = function (mx, my) {
     let target = this.checkScrollbarHit(mx, my);
     if (target instanceof Display || target instanceof Overlay) {
         for (let i = 0; i < this.configs.length; i++) {

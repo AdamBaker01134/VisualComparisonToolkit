@@ -105,7 +105,7 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
         case STATE.READY:
             if (my < scrollY) {
                 currentState = STATE.OUT_OF_BOUNDS;
-            } else if (hit = model.checkDotHit(mx, my)) {
+            } else if (hit = model.checkBenchmarkHit(mx, my)) {
                 imodel.highlightConfig(hit.name);
             } else {
                 imodel.unhighlightConfig();
