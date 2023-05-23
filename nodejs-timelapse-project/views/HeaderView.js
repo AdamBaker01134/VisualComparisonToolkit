@@ -30,6 +30,7 @@ Headerview.prototype.draw = function () {
     this.updateLoadingSpinner();
     this.updateNormalized();
     this.updateLocked();
+    this.updateOpacitySlider();
     this.updateDisplayControlVisibility();
 
     if (this.datasetSnapshot !== this.model.datasets) {
@@ -68,6 +69,15 @@ Headerview.prototype.updateLocked = function () {
     let locked = this.imodel.selection?.locked;
     let checkbox = document.getElementById("lockCheckbox");
     if (checkbox?.checked !== locked) checkbox.checked = locked;
+}
+
+/**
+ * Update the value of the opacity slider if it has changed.
+ */
+Headerview.prototype.updateOpacitySlider = function () {
+    let opacity = this.imodel.selection?.opacity;
+    let opacityInput = document.getElementById("opacityInput");
+    if (opacityInput?.value !== opacity) opacityInput.value = opacity;
 }
 
 /**

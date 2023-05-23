@@ -1,6 +1,8 @@
 // Turn on strict mode:
 "use strict";
 
+const ID_DELIMITER = "?";
+
 /*
  * Extend p5.dom functionality.
  */
@@ -20,11 +22,11 @@ function createElementWithID(tag, content, id, className) {
 function generateDisplayId(model, name) {
     let idNum = 1;
     model.displays.forEach(display => {
-        let displayName = display.id.split("-")[0];
-        let displayIdNum = parseInt(display.id.split("-")[1]);
+        let displayName = getDisplayNameFromId(display.id);
+        let displayIdNum = getDisplayIdNumberFromId(display.id);
         if (displayName === name) idNum = displayIdNum + 1;
     });
-    return name + "-" + idNum;
+    return name + ID_DELIMITER + idNum;
 }
 
 /**
@@ -32,12 +34,17 @@ function generateDisplayId(model, name) {
  * @param {Model} model model from which to generate a new display id
  * @returns {string}
  */
-function generateOverlayId(model) {
+function generateOverlayId(model, name, secondaryName) {
     let idNum = 1;
     model.displays.forEach(display => {
-        if (display instanceof Overlay) idNum++;
+        if (display instanceof Overlay) {
+            let displayName = getDisplayNameFromId(display.id);
+            let secondaryDisplayName = getSecondaryDisplayNameFromId(display.id);
+            let displayIdNum = getDisplayIdNumberFromId(display.id);
+            if (displayName === name && secondaryDisplayName === secondaryName) idNum = displayIdNum + 1;
+        }
     });
-    return "Overlay-" + idNum;
+    return name + ID_DELIMITER + idNum + ID_DELIMITER + secondaryName;
 }
 
 /**
@@ -46,7 +53,25 @@ function generateOverlayId(model) {
  * @returns {string}
  */
 function getDisplayNameFromId(id) {
-    return id.split("-")[0];
+    return id.split(ID_DELIMITER)[0];
+}
+
+/**
+ * Get the display id number from a display id
+ * @param {string} id display id
+ * @returns {number}
+ */
+function getDisplayIdNumberFromId(id) {
+    return parseInt(id.split(ID_DELIMITER)[1]);
+}
+
+/**
+ * Get the display id number of the secondary display of an overlay
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getSecondaryDisplayNameFromId(id) {
+    return id.split(ID_DELIMITER)[2];
 }
 
 /**

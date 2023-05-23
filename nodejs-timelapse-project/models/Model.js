@@ -292,12 +292,22 @@ Model.prototype.addConfig = function () {
             normalized: this.normalized,
         };
         this.displays.forEach(display => {
+            let secondaryName = null;
+            let opacity = null;
+            if (display instanceof Overlay) {
+                secondaryName = getSecondaryDisplayNameFromId(display.id);
+                opacity = display.opacity;
+            }
             config.displays.push({
                 id: display.id,
                 name: getDisplayNameFromId(display.id),
                 index: display.index,
                 start: display.start,
                 end: display.end,
+                savedFrames: display.savedFrames,
+                locked: display.locked,
+                secondaryName: secondaryName,
+                opacity: opacity,
             });
         });
         this.configs.push(config);
@@ -320,6 +330,9 @@ Model.prototype.loadConfig = function (configName) {
                 display.setStart(configDisplay.start);
                 display.setEnd(configDisplay.end);
                 display.setIndex(configDisplay.index);
+                if (display instanceof Overlay) {
+                    display.setOpacity(configDisplay.opacity);
+                }
             }
         });
         this.setNormalized(config.normalized);

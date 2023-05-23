@@ -225,7 +225,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     let column = model.displays.length % model.displaysPerRow;
                     let row = Math.floor(model.displays.length / model.displaysPerRow);
                     let overlay = new Overlay(
-                        generateOverlayId(model),
+                        generateOverlayId(model, getDisplayNameFromId(imodel.ghost.id), getDisplayNameFromId(hit.id)),
                         PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
                         PADDING + row * (PADDING * 3 + DISPLAY_HEIGHT + SCROLLBAR_HEIGHT),
                         DISPLAY_WIDTH,
