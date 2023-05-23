@@ -52,7 +52,7 @@ Loader.prototype._loadFrames = function (loadObj) {
     loadStrings(
         this.imgPath + loadObj.name + "/summer-day-frames.txt",
         loadedFrames => {
-            loadObj.frames = loadedFrames;
+            loadObj.frames = loadedFrames.filter(frame => frame !== "");
             this._loadTimestamps(loadObj);
         },
         loadObj.onError,
