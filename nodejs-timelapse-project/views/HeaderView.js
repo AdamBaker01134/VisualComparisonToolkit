@@ -115,7 +115,7 @@ Headerview.prototype.updateUploadSelect = function () {
     uploadSelect.add(defaultOption);
     this.model.datasets.forEach(dataset => {
         let option = document.createElement("option");
-        option.text = dataset;
+        option.text = dataset.name;
         uploadSelect.add(option);
     });
     this.datasetSnapshot = [...this.model.datasets];

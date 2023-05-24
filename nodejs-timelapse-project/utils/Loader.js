@@ -15,28 +15,26 @@ function Loader(capacity = 100, imgPath) {
 }
 
 /**
- * Load datasets from datasets.txt file, returned as an array.
- * @param {Function=} callback callback function called once datasets have been loaded
- * @param {Function=} errCallback error callback function called if there was an error loading datasets
- * @returns promise of an array of strings
+ * Load datasets from the datasets.json file.
  */
-Loader.prototype.loadDatasets = function (callback = () => { }, errCallback = () => { }) {
-    return loadStrings(
-        this.imgPath + "datasets.txt",
-        callback,
-        errCallback
-    );
+Loader.prototype.loadDatasets = function () {
+    return fetch("./img/datasets.json")
+        .then(response => response.json())
+        .then(datasets => datasets.filter(dataset => dataset.visible))
+        .catch(error => console.error(error));
 }
 
 /**
  * Begin a new dataset load.
  * @param {string} dataset name of the dataset to load
+ * @param {string} size size of the dataset images to load
  * @param {Function=} callback callback function called once all information has loaded 
  * @param {Function=} errCallback callback function called if an error occurs
  */
-Loader.prototype.initDatasetLoad = function (dataset, callback = () => { }, errCallback = () => { }) {
+Loader.prototype.initDatasetLoad = function (dataset, size, callback = () => { }, errCallback = () => { }) {
     let loadObj = {
         name: dataset,
+        size: size,
         onSuccess: callback,
         onError: errCallback,
     };
@@ -86,15 +84,33 @@ Loader.prototype._loadTimestamps = function (loadObj) {
  */
 Loader.prototype._loadImages = function (loadObj) {
     loadObj.images = [];
-    let numLoaded = 0
+    // let numLoaded = 0;
+    let finished = false;
     let total = Math.min(this.capacity, loadObj.frames.length);
-    for (let i = 0; i < total; i++) {
-        loadObj.images.push(loadImage(
-            this.imgPath + loadObj.name + "/eighth/" + loadObj.frames[i],
+    let timer = null;
+    loadObj.images.fillWith(null, 0, total);
+    const addImage = (index) => {
+        loadImage(
+            this.imgPath + loadObj.name + `/${loadObj.size}/` + loadObj.frames[index],
             loadedImage => {
-                if (numLoaded++ >= total - 1) loadObj.onSuccess(loadObj);
+                loadObj.images[index] = loadedImage;
+                // numLoaded++;
+                if (!finished && !loadObj.images.includes(null)) {
+                    finished = true;
+                    clearTimeout(timer);
+                    loadObj.onSuccess(loadObj);
+                }
             },
             loadObj.onError,
-        ));
+        );
     }
+    for (let i = 0; i < total; i++) {
+        addImage(i);
+    }
+    timer = setTimeout(() => {
+        console.log("Load timeout. Looping back to catch the stragglers.")
+        let missing = [];
+        loadObj.images.forEach((image, index) => { if (image === null) missing.push(index) });
+        missing.forEach(index => addImage(index));
+    }, 15000);
 }

@@ -17,7 +17,7 @@ const CANVAS_WIDTH = innerWidth * 0.98;
 const CANVAS_HEIGHT = innerHeight * 3;
 const HEADER_HEIGHT = 72;
 const GLOBAL_SCROLLBAR_HEIGHT = 40;
-const MAX_IMAGES = 1000;
+const MAX_IMAGES = 2000;
 const IMG_PATH = "./img/";
 const PADDING = 10;
 const SCROLLBAR_HEIGHT = 30;
@@ -29,7 +29,7 @@ function preload() {
     model = new Model();
     imodel = new iModel();
     loader = new Loader(MAX_IMAGES, IMG_PATH);
-    model.setDatasets(loader.loadDatasets());
+    loader.loadDatasets().then(datasets => model.setDatasets(datasets));
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
@@ -258,10 +258,12 @@ function _attachHeaderListeners() {
         let dataset = document.getElementById("uploadSelect")?.value;
         if (!!dataset && dataset !== "---") {
             model.incrementLoading();
+            let size = model.datasets.find(d => d.name === dataset).size;
             const start = performance.now();
-            console.log(`Beginning load of ${dataset}...`);
+            console.log(`Beginning load of ${dataset} with size ${size}...`);
             loader.initDatasetLoad(
                 dataset,
+                size,
                 loadObj => {
                     model.decrementLoading();
                     console.log(
@@ -290,7 +292,6 @@ function _attachHeaderListeners() {
                 },
                 err => {
                     console.error(err);
-                    alert("Error: there were issues loading the video, please try again.");
                     model.decrementLoading();
                 }
             )

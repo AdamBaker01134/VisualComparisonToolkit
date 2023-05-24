@@ -17,6 +17,7 @@ function Model() {
  */
 Model.prototype.setDisplaysPerRow = function (size) {
     this.displaysPerRow = size;
+    this.notifySubscribers();
 }
 
 /**
@@ -25,6 +26,7 @@ Model.prototype.setDisplaysPerRow = function (size) {
  */
 Model.prototype.setDatasets = function (datasets) {
     this.datasets = datasets;
+    this.notifySubscribers();
 }
 
 /**
