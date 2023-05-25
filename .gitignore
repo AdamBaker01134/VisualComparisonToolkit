@@ -3,3 +3,5 @@
 /nodejs-timelapse-project/img/
 
 /nodejs-timelapse-project/node_modules/
+
+/nodejs-timelapse-project/package-lock.json

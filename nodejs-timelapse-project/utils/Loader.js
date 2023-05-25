@@ -39,6 +39,46 @@ Loader.prototype.initDatasetLoad = function (dataset, size, callback = () => { }
         onError: errCallback,
     };
     this._loadFrames(loadObj);
+    // fetch(`http://localhost:30500/getImages?dataset=${dataset}`, { method: "GET" })
+    //     .then(response => response.json())
+    //     .then(responseJSON => {
+    //         let result = [];
+    //         let numLoaded = 0;
+    //         let transformationString = "c_scale,w_350,h_350";
+    //         let sorted = responseJSON.sort((a, b) => {
+    //             let aList = a.split("/");
+    //             let bList = b.split("/");
+    //             if (aList[aList.length - 1] === bList[bList.length - 1]) {
+    //                 return 0;
+    //             } else if (aList[aList.length - 1] > bList[bList.length - 1]) {
+    //                 return 1;
+    //             } else {
+    //                 return -1;
+    //             }
+    //         });
+    //         for (let i = 0; i < sorted.length; i++) {
+    //             let splitURL = sorted[i].split("/");
+    //             let index = splitURL.findIndex(value => value === "upload");
+    //             splitURL.splice(index + 1, 0, transformationString);
+    //             let updatedURL = splitURL.join("/");
+    //             result.push(loadImage(
+    //                 updatedURL,
+    //                 loadedImage => {
+    //                     if (numLoaded++ >= sorted.length - 1) {
+    //                         let num = 0;
+    //                         setInterval(() => {
+    //                             clear();
+    //                             image(result[num], 0, 0, 350, 350);
+    //                             num++;
+    //                             if (num >= result.length) num = 0;
+    //                         }, 100);
+    //                     }
+    //                 },
+    //                 errCallback,
+    //             ));
+    //         }
+    //     })
+    //     .catch(errCallback);
 }
 
 /**
