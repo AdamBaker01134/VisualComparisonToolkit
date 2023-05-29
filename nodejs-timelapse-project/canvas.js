@@ -234,8 +234,8 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                         SCROLLBAR_HEIGHT,
                         imodel.ghost.frames,
                         imodel.ghost.timestamps,
-                        imodel.ghost.images,
-                        hit.images
+                        imodel.ghost.images.slice(imodel.ghost.start, imodel.ghost.end),
+                        hit.images.slice(hit.start, hit.end)
                     );
                     model.addOverlay(overlay, hit);
                     imodel.select(overlay);
@@ -258,12 +258,12 @@ function _attachHeaderListeners() {
         let dataset = document.getElementById("uploadSelect")?.value;
         if (!!dataset && dataset !== "---") {
             model.incrementLoading();
-            let size = model.datasets.find(d => d.name === dataset).size;
+            let dir = model.datasets.find(d => d.name === dataset).dir;
             const start = performance.now();
-            console.log(`Beginning load of ${dataset} with size ${size}...`);
+            console.log(`Beginning load of ${dataset} from /${dir}...`);
             loader.initDatasetLoad(
                 dataset,
-                size,
+                dir,
                 loadObj => {
                     model.decrementLoading();
                     console.log(

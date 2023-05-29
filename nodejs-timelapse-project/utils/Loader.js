@@ -27,14 +27,14 @@ Loader.prototype.loadDatasets = function () {
 /**
  * Begin a new dataset load.
  * @param {string} dataset name of the dataset to load
- * @param {string} size size of the dataset images to load
+ * @param {string} dir directory of the dataset images to load
  * @param {Function=} callback callback function called once all information has loaded 
  * @param {Function=} errCallback callback function called if an error occurs
  */
-Loader.prototype.initDatasetLoad = function (dataset, size, callback = () => { }, errCallback = () => { }) {
+Loader.prototype.initDatasetLoad = function (dataset, dir, callback = () => { }, errCallback = () => { }) {
     let loadObj = {
         name: dataset,
-        size: size,
+        dir: dir,
         onSuccess: callback,
         onError: errCallback,
     };
@@ -131,7 +131,7 @@ Loader.prototype._loadImages = function (loadObj) {
     loadObj.images.fillWith(null, 0, total);
     const addImage = (index) => {
         loadImage(
-            this.imgPath + loadObj.name + `/${loadObj.size}/` + loadObj.frames[index],
+            this.imgPath + loadObj.name + `/${loadObj.dir}/` + loadObj.frames[index],
             loadedImage => {
                 loadObj.images[index] = loadedImage;
                 // numLoaded++;
