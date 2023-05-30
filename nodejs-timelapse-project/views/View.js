@@ -40,18 +40,6 @@ View.prototype.draw = function () {
             display.height
         );  /* Background fill */
 
-        if (display instanceof Overlay) {
-            let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
-            image(
-                display.secondaryImages[secondaryIndex],
-                display.x + display.padding,
-                display.y + display.padding,
-                display.width,
-                display.height
-            );
-            tint(255, parseInt(display.opacity));
-        }
-
         fill("rgb(0, 0, 0)");
         stroke("rgb(255, 255, 255)");
         rect(
@@ -60,6 +48,18 @@ View.prototype.draw = function () {
             display.viewportWidth,
             display.viewportHeight
         );
+
+        if (display instanceof Overlay) {
+            let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
+            image(
+                display.secondaryImages[secondaryIndex].get(),
+                display.x + display.padding,
+                display.y + display.padding,
+                display.width,
+                display.height
+            );
+            tint(255, parseInt(display.opacity));
+        }
 
         let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
         let imageX = display.viewportX === display.x + display.padding ? display.width - display.viewportWidth : 0;

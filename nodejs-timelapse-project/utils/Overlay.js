@@ -1,11 +1,10 @@
 /* Application Overlay for Videos */
 "use strict";
-function Overlay (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images, secondaryImages) {
-    Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images]);
+function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, secondaryDisplay) {
+    Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, display.frames, display.timestamps, display.images]);
 
-    this.images = this.images.map(image => image.get());
-    this.secondaryImages = secondaryImages.map(image => image.get());
-    // this.secondaryImages.forEach(image => image.filter(THRESHOLD));
+    this.images = this.images.slice(display.start, display.end);
+    this.secondaryImages = secondaryDisplay.images.slice(secondaryDisplay.start, secondaryDisplay.end);
     this.secondarySize = this.secondaryImages.length;
     this.secondaryIndex = 0;
 

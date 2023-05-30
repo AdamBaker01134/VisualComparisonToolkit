@@ -193,7 +193,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
             } else if (hit = model.checkImageHit(mx, my)) {
                 if (event.which === 1) {
                     currentState = STATE.PREPARE_SELECT;
-                } else if (event.which === 2 && !(hit instanceof Overlay)) {
+                } else if (event.which === 2) {
                     event.preventDefault();
                     previousX = mouseX;
                     previousY = mouseY;
@@ -245,10 +245,8 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                         DISPLAY_HEIGHT,
                         PADDING,
                         SCROLLBAR_HEIGHT,
-                        imodel.ghost.frames,
-                        imodel.ghost.timestamps,
-                        imodel.ghost.images.slice(imodel.ghost.start, imodel.ghost.end),
-                        hit.images.slice(hit.start, hit.end)
+                        imodel.ghost,
+                        hit,
                     );
                     model.addOverlay(overlay, hit);
                     imodel.select(overlay);
