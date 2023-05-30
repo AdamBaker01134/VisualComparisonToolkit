@@ -1,6 +1,6 @@
 /* Application Display for Videos */
 "use strict";
-function Display (id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
+function Display(id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
     this.id = id;
 
     this.x = x;
@@ -8,7 +8,7 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
     this.width = width;
     this.height = height;
     this.padding = padding;
-    
+
     this.scrollbarHeight = scrollbarHeight;
 
     this.frames = frames;
@@ -16,6 +16,11 @@ function Display (id, x, y, width, height, padding, scrollbarHeight, frames, tim
     this.images = images;
 
     this.savedFrames = [];
+
+    this.viewportX = this.x + this.padding;
+    this.viewportY = this.y + this.padding;
+    this.viewportWidth = this.width;
+    this.viewportHeight = this.height;
 
     this.index = 0;
 
@@ -132,7 +137,7 @@ Display.prototype.setLocked = function (locked) {
  */
 Display.prototype.checkImageHit = function (mx, my) {
     return mx > this.x + this.padding && my > this.y + this.padding &&
-            mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height;
+        mx < this.x + this.padding + this.width && my < this.y + this.padding + this.height;
 }
 
 /**
@@ -141,8 +146,79 @@ Display.prototype.checkImageHit = function (mx, my) {
  * @param {number} newY new y coordinate for the display
  */
 Display.prototype.setLocation = function (newX, newY) {
+    let dx = newX - this.x;
+    let dy = newY - this.y;
     this.x = newX;
     this.y = newY;
+    this.viewportX += dx;
+    this.viewportY += dy;
+}
+
+/**
+ * Update the location of the image viewport.
+ * @param {number} dx change to x coordinate of the viewport
+ * @param {number} dy change to y coordinate of the viewport
+ */
+Display.prototype.updateViewport = function (dx, dy) {
+
+    const viewportLeft = this.x + this.padding;
+    const viewportRight = this.x + this.padding + this.width;
+    const viewportTop = this.y + this.padding;
+    const viewportBottom = this.y + this.padding + this.height;
+    const minWidth = this.width / 3;
+    const minHeight = this.height / 3;
+
+    /* Horizontal viewport calculations */
+    if (dx > 0) {
+        if (this.viewportX + this.viewportWidth + dx > viewportRight) {
+            this.viewportWidth -= dx;
+            this.viewportX = viewportRight - this.viewportWidth;
+            if (this.viewportWidth < minWidth) {
+                this.viewportWidth = minWidth;
+                this.viewportX = viewportRight - minWidth;
+            }
+        } else {
+            this.viewportWidth += dx;
+            this.viewportX = viewportLeft;
+        }
+    } else {
+        if (this.viewportX + dx < viewportLeft) {
+            this.viewportWidth += dx;
+            this.viewportX = viewportLeft;
+            if (this.viewportWidth < minWidth) {
+                this.viewportWidth = minWidth;
+            }
+        } else {
+            this.viewportWidth -= dx;
+            this.viewportX += dx;
+        }
+    }
+
+    /* Vertical viewport calculations */
+    if (dy > 0) {
+        if (this.viewportY + this.viewportHeight + dy > viewportBottom) {
+            this.viewportHeight -= dy;
+            this.viewportY = viewportBottom - this.viewportHeight;
+            if (this.viewportHeight < minHeight) {
+                this.viewportHeight = minHeight;
+                this.viewportY = viewportBottom - minHeight;
+            }
+        } else {
+            this.viewportHeight += dy;
+            this.viewportY = viewportTop;
+        }
+    } else {
+        if (this.viewportY + dy < viewportTop) {
+            this.viewportHeight += dy;
+            this.viewportY = viewportTop;
+            if (this.viewportHeight < minHeight) {
+                this.viewportHeight = minHeight;
+            }
+        } else {
+            this.viewportHeight -= dy;
+            this.viewportY += dy;
+        }
+    }
 }
 
 /**
@@ -153,7 +229,7 @@ Display.prototype.setLocation = function (newX, newY) {
  */
 Display.prototype.checkScrollbarHit = function (mx, my) {
     return mx > this.x + this.padding - 5 && my > this.y + this.padding + this.height &&
-            mx < this.x + this.padding + this.width + 5 && my < this.y + this.padding + this.height + this.scrollbarHeight;
+        mx < this.x + this.padding + this.width + 5 && my < this.y + this.padding + this.height + this.scrollbarHeight;
 }
 
 /**

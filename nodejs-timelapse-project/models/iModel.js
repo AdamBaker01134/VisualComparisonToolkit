@@ -57,6 +57,19 @@ iModel.prototype.updateGhost = function () {
 }
 
 /**
+ * Update the interaction models selection viewport location.
+ * @param {number} dx change in the x direction of the mouse
+ * @param {number} dy change in the y direction of the mouse
+ */
+iModel.prototype.updateSelectionViewport = function (dx, dy) {
+    if (this.selection !== null) {
+        // this.selection.setViewport(this.selection.viewportX + dx, this.selection.viewportY + dy);
+        this.selection.updateViewport(dx, dy);
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Select a display.
  * @param {Display} display selected display 
  */

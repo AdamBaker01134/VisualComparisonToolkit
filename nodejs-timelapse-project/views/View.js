@@ -32,6 +32,13 @@ View.prototype.draw = function () {
         );
         noStroke();
         strokeWeight(1);
+        fill("rgb(0, 0, 0)");
+        rect(
+            display.x + display.padding,
+            display.y + display.padding,
+            display.width,
+            display.height
+        );  /* Background fill */
 
         if (display instanceof Overlay) {
             let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
@@ -45,13 +52,32 @@ View.prototype.draw = function () {
             tint(255, parseInt(display.opacity));
         }
 
+        fill("rgb(0, 0, 0)");
+        stroke("rgb(255, 255, 255)");
+        rect(
+            display.viewportX,
+            display.viewportY,
+            display.viewportWidth,
+            display.viewportHeight
+        );
+
         let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
+        let imageX = display.viewportX === display.x + display.padding ? display.width - display.viewportWidth : 0;
+        let imageY = display.viewportY === display.y + display.padding ? display.height - display.viewportHeight : 0;
+        let widthRatio = display.images[index].width / display.width;
+        let heightRatio = display.images[index].height / display.height;
+        let img = display.images[index].get(
+            imageX * widthRatio,
+            imageY * heightRatio,
+            display.viewportWidth * widthRatio,
+            display.viewportHeight * heightRatio
+        );
         image(
-            display.images[index],
-            display.x + display.padding,
-            display.y + display.padding,
-            display.width,
-            display.height
+            img,
+            display.viewportX,
+            display.viewportY,
+            display.viewportWidth,
+            display.viewportHeight
         );
 
         /* Timestamp */

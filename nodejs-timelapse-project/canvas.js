@@ -84,9 +84,12 @@ const STATE = {
     PREPARE_SELECT: "prepareSelect",
     PREPARE_MOVE: "prepareMove",
     PREPARE_OVERLAY: "prepareOverlay",
+    PANNING: "panning",
 }
 let currentState = STATE.READY;
 let timer;
+let previousX;
+let previousY;
 
 /* Start an interval timer that continually checks if displays should be moved */
 function startTimerInterval() {
@@ -157,6 +160,15 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             }
             imodel.updateGhost();
             break;
+        case STATE.PANNING:
+            if (imodel.selection !== null) {
+                let dx = mouseX - previousX;
+                let dy = mouseY - previousY;
+                imodel.updateSelectionViewport(dx, dy);
+            }
+            previousX = mouseX;
+            previousY = mouseY;
+            break;
     }
 }
 
@@ -181,11 +193,12 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
             } else if (hit = model.checkImageHit(mx, my)) {
                 if (event.which === 1) {
                     currentState = STATE.PREPARE_SELECT;
-                } else if (event.which === 2) {
+                } else if (event.which === 2 && !(hit instanceof Overlay)) {
                     event.preventDefault();
-                    console.log("PANNING INITIATED");
-                    // currentState = STATE.PANNING;
-                    currentState = STATE.READY;
+                    previousX = mouseX;
+                    previousY = mouseY;
+                    currentState = STATE.PANNING;
+                    if (imodel.selection !== hit) imodel.select(hit);
                 }
             }
             break;
@@ -247,6 +260,9 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.GHOSTING:
             clearInterval(timer);
             imodel.setGhost(null);
+            currentState = STATE.READY;
+            break;
+        case STATE.PANNING:
             currentState = STATE.READY;
             break;
     }
