@@ -79,19 +79,18 @@ Display.prototype.getEndPosition = function () {
  * @param {number} index new image index
  */
 Display.prototype.setIndex = function (index) {
-    if (!this.locked) {
-        this.index = index;
-        if (this.index < this.start) {
-            this.index = this.start;
-        } else if (this.index > this.end) {
-            this.index = this.end;
-        }
+    if (this.locked) return;
+    this.index = index;
+    if (this.index < this.start) {
+        this.index = this.start;
+    } else if (this.index > this.end) {
+        this.index = this.end;
+    }
 
-        if (this.index < 0) {
-            this.index = 0;
-        } else if (this.index >= this.getSize()) {
-            this.index = this.getSize() - 1;
-        }
+    if (this.index < 0) {
+        this.index = 0;
+    } else if (this.index >= this.getSize()) {
+        this.index = this.getSize() - 1;
     }
 }
 
@@ -100,12 +99,11 @@ Display.prototype.setIndex = function (index) {
  * @param {number} index new start index
  */
 Display.prototype.setStart = function (index) {
-    if (!this.locked) {
-        this.start = index;
-        if (this.start < 0) this.start = 0;
-        if (this.start >= this.end) this.start = this.end - 1;
-        if (this.start > this.index) this.index = this.start;
-    }
+    if (this.locked) return;
+    this.start = index;
+    if (this.start < 0) this.start = 0;
+    if (this.start >= this.end) this.start = this.end - 1;
+    if (this.start > this.index) this.index = this.start;
 }
 
 /**
@@ -113,12 +111,11 @@ Display.prototype.setStart = function (index) {
  * @param {number} index new end index
  */
 Display.prototype.setEnd = function (index) {
-    if (!this.locked) {
-        this.end = index;
-        if (this.end >= this.getSize()) this.end = this.getSize() - 1;
-        if (this.end <= this.start) this.end = this.start + 1;
-        if (this.end < this.index) this.index = this.end;
-    }
+    if (this.locked) return;
+    this.end = index;
+    if (this.end >= this.getSize()) this.end = this.getSize() - 1;
+    if (this.end <= this.start) this.end = this.start + 1;
+    if (this.end < this.index) this.index = this.end;
 }
 
 /**
@@ -160,15 +157,16 @@ Display.prototype.setLocation = function (newX, newY) {
  * @param {number} dy change to y coordinate of the viewport
  */
 Display.prototype.pan = function (dx, dy) {
+    if (this.locked) return;
 
     const left = this.x + this.padding;
     const right = this.x + this.padding + this.width;
     const top = this.y + this.padding;
     const bottom = this.y + this.padding + this.height;
-    const hPadding = this.viewportWidth * 2/3;
-    const vPadding = this.viewportHeight * 2/3;
+    const hPadding = this.viewportWidth * 2 / 3;
+    const vPadding = this.viewportHeight * 2 / 3;
 
-     /* Horizontal viewport calculations */
+    /* Horizontal viewport calculations */
     this.viewportX += dx;
     if (this.viewportX < left - hPadding) {
         this.viewportX = left - hPadding;
@@ -190,6 +188,8 @@ Display.prototype.pan = function (dx, dy) {
  * @param {number} delta zoom size
  */
 Display.prototype.zoom = function (delta) {
+    if (this.locked) return;
+
     const minWidth = this.width / 2;
     const maxWidth = this.width * 2;
     const minHeight = this.height / 2;
