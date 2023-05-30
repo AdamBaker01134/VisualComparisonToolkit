@@ -40,14 +40,14 @@ View.prototype.draw = function () {
             display.height
         );  /* Background fill */
 
-        fill("rgb(0, 0, 0)");
-        stroke("rgb(255, 255, 255)");
-        rect(
-            display.viewportX,
-            display.viewportY,
-            display.viewportWidth,
-            display.viewportHeight
-        );
+        // fill("rgb(0, 0, 0)");
+        // stroke("rgb(255, 255, 255)");
+        // rect(
+        //     display.viewportX,
+        //     display.viewportY,
+        //     display.viewportWidth,
+        //     display.viewportHeight
+        // );
 
         if (display instanceof Overlay) {
             let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
@@ -62,23 +62,27 @@ View.prototype.draw = function () {
         }
 
         let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
-        let imageX = display.viewportX === display.x + display.padding ? display.width - display.viewportWidth : 0;
-        let imageY = display.viewportY === display.y + display.padding ? display.height - display.viewportHeight : 0;
-        let widthRatio = display.images[index].width / display.width;
-        let heightRatio = display.images[index].height / display.height;
+        const left = display.x + display.padding;
+        const right = display.x + display.padding + display.width;
+        const top = display.y + display.padding;
+        const bottom = display.y + display.padding + display.height;
+        let translatedX = display.viewportX < left ? left - display.viewportX : 0;
+        let translatedY = display.viewportY < top ? top - display.viewportY : 0;
+        let imageX = display.viewportX < left ? left : display.viewportX;
+        let imageY = display.viewportY < top ? top : display.viewportY;
+        let imageWidth = display.viewportWidth + imageX > right ? right - imageX : display.viewportWidth;
+        let imageHeight = display.viewportHeight + imageY > bottom ? bottom - imageY : display.viewportHeight;
+
+        let widthRatio = display.images[index].width / display.viewportWidth;
+        let heightRatio = display.images[index].height / display.viewportHeight;
+
         let img = display.images[index].get(
-            imageX * widthRatio,
-            imageY * heightRatio,
-            display.viewportWidth * widthRatio,
-            display.viewportHeight * heightRatio
+            translatedX * widthRatio,
+            translatedY * heightRatio,
+            imageWidth * widthRatio,
+            imageHeight * heightRatio
         );
-        image(
-            img,
-            display.viewportX,
-            display.viewportY,
-            display.viewportWidth,
-            display.viewportHeight
-        );
+        image(img, imageX, imageY, imageWidth, imageHeight);
 
         /* Timestamp */
         noTint();

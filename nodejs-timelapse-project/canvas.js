@@ -164,7 +164,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (imodel.selection !== null) {
                 let dx = mouseX - previousX;
                 let dy = mouseY - previousY;
-                imodel.updateSelectionViewport(dx, dy);
+                imodel.pan(dx, dy);
             }
             previousX = mouseX;
             previousY = mouseY;
@@ -262,6 +262,19 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.PANNING:
             currentState = STATE.READY;
+            break;
+    }
+}
+
+function mouseWheel(event, mx = mouseX, my = mouseY) {
+    switch (currentState) {
+        case STATE.READY:
+            let hit;
+            if (hit = model.checkImageHit(mx, my)) {
+                event.preventDefault();
+                event.stopPropagation();
+                imodel.zoom(hit, event.delta);
+            }
             break;
     }
 }

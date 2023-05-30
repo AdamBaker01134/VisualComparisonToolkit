@@ -57,16 +57,25 @@ iModel.prototype.updateGhost = function () {
 }
 
 /**
- * Update the interaction models selection viewport location.
+ * Pan the selections viewport location.
  * @param {number} dx change in the x direction of the mouse
  * @param {number} dy change in the y direction of the mouse
  */
-iModel.prototype.updateSelectionViewport = function (dx, dy) {
+iModel.prototype.pan = function (dx, dy) {
     if (this.selection !== null) {
-        // this.selection.setViewport(this.selection.viewportX + dx, this.selection.viewportY + dy);
-        this.selection.updateViewport(dx, dy);
+        this.selection.pan(dx, dy);
         this.notifySubscribers();
     }
+}
+
+/**
+ * Zoom a display by 'delta'
+ * @param {Display} display display to zoom
+ * @param {number} delta zoom size
+ */
+iModel.prototype.zoom = function (display, delta) {
+    display.zoom(delta);
+    this.notifySubscribers();
 }
 
 /**

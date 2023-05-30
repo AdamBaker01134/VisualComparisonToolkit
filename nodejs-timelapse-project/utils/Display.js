@@ -155,70 +155,54 @@ Display.prototype.setLocation = function (newX, newY) {
 }
 
 /**
- * Update the location of the image viewport.
+ * Pan the image viewport.
  * @param {number} dx change to x coordinate of the viewport
  * @param {number} dy change to y coordinate of the viewport
  */
-Display.prototype.updateViewport = function (dx, dy) {
+Display.prototype.pan = function (dx, dy) {
 
-    const viewportLeft = this.x + this.padding;
-    const viewportRight = this.x + this.padding + this.width;
-    const viewportTop = this.y + this.padding;
-    const viewportBottom = this.y + this.padding + this.height;
-    const minWidth = this.width / 3;
-    const minHeight = this.height / 3;
+    const left = this.x + this.padding;
+    const right = this.x + this.padding + this.width;
+    const top = this.y + this.padding;
+    const bottom = this.y + this.padding + this.height;
+    const hPadding = this.viewportWidth * 2/3;
+    const vPadding = this.viewportHeight * 2/3;
 
-    /* Horizontal viewport calculations */
-    if (dx > 0) {
-        if (this.viewportX + this.viewportWidth + dx > viewportRight) {
-            this.viewportWidth -= dx;
-            this.viewportX = viewportRight - this.viewportWidth;
-            if (this.viewportWidth < minWidth) {
-                this.viewportWidth = minWidth;
-                this.viewportX = viewportRight - minWidth;
-            }
-        } else {
-            this.viewportWidth += dx;
-            this.viewportX = viewportLeft;
-        }
-    } else {
-        if (this.viewportX + dx < viewportLeft) {
-            this.viewportWidth += dx;
-            this.viewportX = viewportLeft;
-            if (this.viewportWidth < minWidth) {
-                this.viewportWidth = minWidth;
-            }
-        } else {
-            this.viewportWidth -= dx;
-            this.viewportX += dx;
-        }
+     /* Horizontal viewport calculations */
+    this.viewportX += dx;
+    if (this.viewportX < left - hPadding) {
+        this.viewportX = left - hPadding;
+    } else if (this.viewportX + this.viewportWidth > right + hPadding) {
+        this.viewportX = right + hPadding - this.viewportWidth;
     }
 
     /* Vertical viewport calculations */
-    if (dy > 0) {
-        if (this.viewportY + this.viewportHeight + dy > viewportBottom) {
-            this.viewportHeight -= dy;
-            this.viewportY = viewportBottom - this.viewportHeight;
-            if (this.viewportHeight < minHeight) {
-                this.viewportHeight = minHeight;
-                this.viewportY = viewportBottom - minHeight;
-            }
-        } else {
-            this.viewportHeight += dy;
-            this.viewportY = viewportTop;
-        }
-    } else {
-        if (this.viewportY + dy < viewportTop) {
-            this.viewportHeight += dy;
-            this.viewportY = viewportTop;
-            if (this.viewportHeight < minHeight) {
-                this.viewportHeight = minHeight;
-            }
-        } else {
-            this.viewportHeight -= dy;
-            this.viewportY += dy;
-        }
+    this.viewportY += dy;
+    if (this.viewportY < top - vPadding) {
+        this.viewportY = top - vPadding;
+    } else if (this.viewportY + this.viewportHeight > bottom + vPadding) {
+        this.viewportY = bottom + vPadding - this.viewportHeight
     }
+}
+
+/**
+ * Update the displays zoom.
+ * @param {number} delta zoom size
+ */
+Display.prototype.zoom = function (delta) {
+    const minWidth = this.width / 2;
+    const maxWidth = this.width * 2;
+    const minHeight = this.height / 2;
+    const maxHeight = this.height * 2;
+    const zoomRatio = -delta / 1000;
+
+    this.viewportWidth += (this.viewportWidth * zoomRatio);
+    if (this.viewportWidth < minWidth) this.viewportWidth = minWidth;
+    else if (this.viewportWidth > maxWidth) this.viewportWidth = maxWidth;
+
+    this.viewportHeight += (this.viewportHeight * zoomRatio);
+    if (this.viewportHeight < minHeight) this.viewportHeight = minHeight;
+    else if (this.viewportHeight > maxHeight) this.viewportHeight = maxHeight;
 }
 
 /**
