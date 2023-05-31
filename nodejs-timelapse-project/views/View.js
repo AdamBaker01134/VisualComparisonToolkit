@@ -1,6 +1,6 @@
 /* Application Canvas View */
 "use strict";
-function View () {
+function View() {
 
 }
 
@@ -16,29 +16,7 @@ View.prototype.draw = function () {
     clear();
 
     this.model.displays.forEach(display => {
-        if (display === this.imodel.selection) {
-            stroke("rgb(52, 219, 85)");
-            strokeWeight(2);
-        } else {
-            noStroke();
-        }
-        fill("rgb(190, 190, 190)");
-        rect(
-            display.x,
-            display.y,
-            display.width + display.padding * 2,
-            display.height + display.padding * 2 + display.scrollbarHeight,
-            10  /* Border radius */
-        );
-        noStroke();
-        strokeWeight(1);
-        fill("rgb(0, 0, 0)");
-        rect(
-            display.x + display.padding,
-            display.y + display.padding,
-            display.width,
-            display.height
-        );  /* Background fill */
+        renderDisplaySkeleton(display, this.imodel.selection === display);
 
         if (display instanceof Overlay) {
             let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
@@ -142,7 +120,7 @@ View.prototype.draw = function () {
                 let colourTint = 32 * index;
                 let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
                 let pos = scrollbarLeft + (lineGap * match.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-                this.renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+                renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
             }
         });
 
@@ -218,7 +196,7 @@ View.prototype.draw = function () {
             let colourTint = 32 * index;
             let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
             let pos = scrollbarLeft + (lineGap * config.globalScrollbar.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-            this.renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+            renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
         });
 
         /* Global Scrollbar main position arrow */
@@ -238,23 +216,12 @@ View.prototype.draw = function () {
     if (ghost instanceof Display || ghost instanceof Overlay) {
         let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
         let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
-        noStroke();
-        fill("rgba(190, 190, 190, 0.5)");
-        rect(
-            ghostX,
-            ghostY,
-            ghost.width + ghost.padding * 2,
-            ghost.height + ghost.padding * 2 + ghost.scrollbarHeight,
-            10  /* Border radius */
-        );
-        fill("rgba(34, 154, 34, 0.5)");
-        rect(
-            ghostX + ghost.padding,
-            ghostY + ghost.padding + ghost.height,
-            ghost.width,
-            ghost.scrollbarHeight
-        );
+        renderDisplaySkeleton(ghost, false, 0.5, ghostX, ghostY);
     }
+}
+
+View.prototype.modelChanged = function () {
+    this.draw();
 }
 
 /**
@@ -263,7 +230,7 @@ View.prototype.draw = function () {
  * @param {number} top y coordinate of the top of the object being draw on
  * @param {number} pos x coordinate of the line
  */
-function renderLine (idx, top, pos) {
+function renderLine(idx, top, pos) {
     switch (idx % 50) {
         case 0:
             line(pos, top, pos, top + 16);
@@ -294,7 +261,7 @@ function renderLine (idx, top, pos) {
  * @param {string} colour colour of the benchmark
  * @param {boolean} highlighted whether or not to highlight the benchmark
  */
-View.prototype.renderBenchmark = function (top, pos, colour, highlighted) {
+function renderBenchmark(top, pos, colour, highlighted) {
     fill(colour);
     if (highlighted) {
         stroke("rgb(255, 204, 0)");
@@ -304,6 +271,33 @@ View.prototype.renderBenchmark = function (top, pos, colour, highlighted) {
     circle(pos, top + 4, 8);
 }
 
-View.prototype.modelChanged = function () {
-    this.draw();
+/**
+ * Render the skeleton of a display (grey container, black image background, green scrollbar background)
+ * @param {Display|Overlay} display display being rendered
+ * @param {boolean} selected whether the display is selected or not
+ * @param {number=} opt_opacity optional opacity parameter
+ * @param {number|undefined} opt_x optional alternative x coordinate for the display skeleton
+ * @param {number|undefined} opt_y optional alternative y coordinate for the display skeleton
+ */
+function renderDisplaySkeleton(display, selected, opt_opacity=1.0, opt_x, opt_y) {
+    const x = opt_x || display.x;
+    const y = opt_y || display.y;
+    if (selected) {
+        stroke(`rgba(52, 219, 85, ${opt_opacity})`);
+        strokeWeight(2);
+    } else {
+        noStroke();
+    }
+    fill(`rgba(190, 190, 190, ${opt_opacity})`);
+    rect(x, y, display.width + display.padding * 2, display.height + display.padding * 2 + display.scrollbarHeight, 10);
+    noStroke();
+    strokeWeight(1);
+    fill(`rgba(0, 0, 0, ${opt_opacity})`);
+    rect(x + display.padding, y + display.padding, display.width, display.height);
+    if (display.locked) {
+        fill(`rgba(128, 128, 128, ${opt_opacity})`);
+    } else {
+        fill(`rgba(34, 154, 34, ${opt_opacity})`);
+    }
+    rect(x + display.padding, y + display.padding + display.height, display.width, display.scrollbarHeight);
 }
