@@ -1,6 +1,6 @@
 /* Application Display for Videos */
 "use strict";
-function Display(id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images) {
+function Display(id, x, y, width, height, padding, scrollbarHeight, frames, timestamps, images, filters) {
     this.id = id;
 
     this.x = x;
@@ -16,6 +16,7 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
     this.images = images;
 
     this.savedFrames = [];
+    this.filters = filters;
 
     this.viewportX = this.x + this.padding;
     this.viewportY = this.y + this.padding;
@@ -28,6 +29,11 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
     this.end = this.getSize() - 1;
 
     this.locked = false;
+}
+
+/* Set the displays images */
+Display.prototype.setImages = function (images) {
+    this.images = images;
 }
 
 /* Get the number of segments in the scrollbar */

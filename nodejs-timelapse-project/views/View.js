@@ -40,15 +40,6 @@ View.prototype.draw = function () {
             display.height
         );  /* Background fill */
 
-        // fill("rgb(0, 0, 0)");
-        // stroke("rgb(255, 255, 255)");
-        // rect(
-        //     display.viewportX,
-        //     display.viewportY,
-        //     display.viewportWidth,
-        //     display.viewportHeight
-        // );
-
         if (display instanceof Overlay) {
             let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
             image(

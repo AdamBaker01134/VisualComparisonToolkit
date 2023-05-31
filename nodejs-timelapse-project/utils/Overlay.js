@@ -1,7 +1,7 @@
 /* Application Overlay for Videos */
 "use strict";
 function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, secondaryDisplay) {
-    Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, display.frames, display.timestamps, display.images]);
+    Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, display.frames, display.timestamps, display.images, secondaryDisplay.filters]);
 
     this.images = this.images.slice(display.start, display.end);
     this.secondaryImages = secondaryDisplay.images.slice(secondaryDisplay.start, secondaryDisplay.end);
@@ -13,6 +13,11 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
 
 Overlay.prototype = Object.create(Display.prototype);
 Overlay.prototype.constructor = Overlay;
+
+/* Set the overlays secondary images */
+Overlay.prototype.setSecondaryImages = function (images) {
+    this.secondaryImages = images;
+}
 
 /* Get the number of secondary images in the overlay */
 Overlay.prototype.getSecondarySize = function () {

@@ -30,6 +30,20 @@ Model.prototype.setDatasets = function (datasets) {
 }
 
 /**
+ * Set a displays images (either primary or secondary depending on the type of display)
+ * @param {Display|Overlay} display display to set images
+ * @param {Array<p5.Image>} images new set of images
+ */
+Model.prototype.setDisplayImages = function (display, images, secondary) {
+    if (secondary && display instanceof Overlay) {
+        display.setSecondaryImages(images);
+    } else {
+        display.setImages(images);
+    }
+    this.notifySubscribers();
+}
+
+/**
  * @param {GlobalScrollbar} scrollbar global scrollbar
  */
 Model.prototype.setGlobalScrollbar = function (scrollbar) {

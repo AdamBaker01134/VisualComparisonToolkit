@@ -282,19 +282,19 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
 function _attachHeaderListeners() {
     /* Upload header functions */
     document.getElementById("uploadButton")?.addEventListener("click", e => {
-        let dataset = document.getElementById("uploadSelect")?.value;
-        if (!!dataset && dataset !== "---") {
+        let value = document.getElementById("uploadSelect")?.value;
+        if (!!value && value !== "---") {
             model.incrementLoading();
-            let dir = model.datasets.find(d => d.name === dataset).dir;
+            let dataset = model.datasets.find(d => d.name === value);
             const start = performance.now();
-            console.log(`Beginning load of ${dataset} from /${dir}...`);
+            console.log(`Beginning load of ${dataset.name} from /${dataset.dir}...`);
             loader.initDatasetLoad(
-                dataset,
-                dir,
+                dataset.name,
+                dataset.dir,
                 loadObj => {
                     model.decrementLoading();
                     console.log(
-                        `Finished loading ${dataset} in ${Math.floor(performance.now() - start)}ms. \
+                        `Finished loading ${dataset.name} in ${Math.floor(performance.now() - start)}ms. \
                         \nLoaded ${loadObj.frames.length} frames. \
                         \nLoaded ${loadObj.timestamps.length} timestamps. \
                         \nLoaded ${loadObj.images.length} images.`);
@@ -312,7 +312,7 @@ function _attachHeaderListeners() {
                         loadObj.frames,
                         loadObj.timestamps,
                         loadObj.images,
-                        model.globalScrollbar.index
+                        dataset.filters,
                     );
                     model.addDisplay(display);
                     imodel.select(display);
@@ -343,6 +343,29 @@ function _attachHeaderListeners() {
     document.getElementById("lockCheckbox").addEventListener("change", e => {
         let checked = e.target.checked;
         imodel.setLocked(checked);
+    });
+    document.getElementById("filterSelect").addEventListener("change", e => {
+        let value = e.target.value;
+        if (value !== "---" && imodel.selection !== null) {
+            model.incrementLoading();
+            let isOverlay = imodel.selection instanceof Overlay;
+            let name = isOverlay ? getSecondaryDisplayNameFromId(imodel.selection.id) : getDisplayNameFromId(imodel.selection.id);
+            if (value === "Reset") {
+                value = model.datasets.find(d => d.name === name).dir;
+            }
+            loader.initDatasetLoad(
+                name,
+                value,
+                loadObj => {
+                    model.setDisplayImages(imodel.selection, loadObj.images, isOverlay);
+                    model.decrementLoading();
+                },
+                err => {
+                    console.error(err);
+                    model.decrementLoading();
+                }
+            );
+        }
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {
         if (imodel.selection !== null) {

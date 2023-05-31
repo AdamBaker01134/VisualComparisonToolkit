@@ -5,6 +5,7 @@ function Headerview () {
     this.datasetSnapshot = [];
     this.configSnapshot = [];
     this.frameSnapshot = [];
+    this.filterSnapshot = [];
 }
 
 /**
@@ -41,6 +42,9 @@ Headerview.prototype.draw = function () {
     }
     if (!!this.imodel.selection && this.frameSnapshot !== this.imodel.selection.savedFrames) {
         this.updateFrameSelect();
+    }
+    if (!!this.imodel.selection && this.filterSnapshot !== this.imodel.selection.filters) {
+        this.updateFilterSelect();
     }
 }
 
@@ -156,6 +160,28 @@ Headerview.prototype.updateFrameSelect = function () {
             frameSelect.add(option);
         });
         this.frameSnapshot = [...this.imodel.selection.savedFrames];
+    }
+}
+
+/**
+ * Update the filter select element with filters from the selected display in the imodel.
+ */
+Headerview.prototype.updateFilterSelect = function() {
+    if (this.imodel.selection !== null) {
+        let filterSelect = document.getElementById("filterSelect");
+        filterSelect.innerHTML = "";
+        let defaultOption = document.createElement("option");
+        defaultOption.text = "---";
+        filterSelect.add(defaultOption);
+        this.imodel.selection.filters.forEach(filterName => {
+            let option = document.createElement("option");
+            option.text = filterName;
+            filterSelect.add(option);
+        });
+        let resetOption = document.createElement("option");
+        resetOption.text = "Reset";
+        filterSelect.add(resetOption);
+        this.filterSnapshot = [...this.imodel.selection.filters];
     }
 }
 
