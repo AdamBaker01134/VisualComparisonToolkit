@@ -1,5 +1,5 @@
 /*
- * "Main" file for timelapse web app.
+ * "Main" file for video comparison web app.
  */
 
 "use strict";
@@ -8,648 +8,391 @@
    Try commenting out this line when debugging. */
 p5.disableFriendlyErrors = true;
 
+let model;
+let imodel;
+let loader;
+
 /* Constants */
+const CANVAS_WIDTH = innerWidth * 0.98;
+const CANVAS_HEIGHT = innerHeight * 3;
+const HEADER_HEIGHT = 72;
+const GLOBAL_SCROLLBAR_HEIGHT = 40;
 const MAX_IMAGES = 1000;
+const IMG_PATH = "./img/";
+const PADDING = 10;
+const SCROLLBAR_HEIGHT = 30;
 const DISPLAY_WIDTH = 350;
 const DISPLAY_HEIGHT = 350;
-const OVERLAY_WIDTH = 700;
-const OVERLAY_HEIGHT = 700;
-const VIEW_TYPES = {
-    displays: "displays",
-    overlay: "overlay",
-}
-
-/* Path variables */
-const IMG_PATH = "./img/";
-let plotPath = "";
-
-/* State data */
-let currentView = VIEW_TYPES.displays;
-let datasets = [];
-let displays = [];
-let overlays = [];
-let selectedDisplays = [];
-let displayCache = {};
-let configs = {};
-let mouseIsFocused = false;
-let mouseIsFocusedOnStart = false;
-let mouseIsFocusedOnEnd = false;
-let controlsActive = false;
-let highlightedConfig = "";
-
-/* DOM variables */
-let headerDiv = null;
-let overlayButton = null;
-let bodyDiv = null;
-let controlsDiv = null;
-let overlayDiv = null;
-let displaysDiv = null;
-let masterScrollbar = null;
-let configSelect = null;
-let normalizeControl = null;
-
-/* Custom objects */
-let loader = null;
-let emptyDisplay = null;
 
 /* p5.js function that is called to load things before setup is called */
 function preload() {
-    headerDiv = createElementWithID("header", "", "headerContainer", "container");
-    bodyDiv = createElementWithID("div", "", "displayContainer", "container");
-    controlsDiv = createElementWithID("div", "", "controlsHolder", "controls");
-    overlayDiv = createElementWithID("div", "", "overlayContainer", "container");
-    overlayDiv.addClass("hidden");
+    model = new Model();
+    imodel = new iModel();
     loader = new Loader(MAX_IMAGES, IMG_PATH);
-    datasets = loader.loadDatasets();
+    loader.loadDatasets().then(datasets => model.setDatasets(datasets));
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
-    displaysDiv = createDiv();
-    displaysDiv.class("displays");
-    displaysDiv.parent(bodyDiv);
+    model.setDisplaysPerRow(Math.floor(CANVAS_WIDTH / 380));
+    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    _setupHeader();
-    _createEmptyDisplay();
-    _constructGlobalControls();
+    let view = new View();
+    model.addSubscriber(view);
+    imodel.addSubscriber(view);
+    view.setModel(model);
+    view.setInteractionModel(imodel);
 
+    let headerview = new Headerview();
+    model.addSubscriber(headerview);
+    imodel.addSubscriber(headerview);
+    headerview.setModel(model);
+    headerview.setInteractionModel(imodel);
+
+    _attachHeaderListeners();
     _attachUserEventListeners();
+    _setupGlobalScrollbar();
 
-    noCanvas(); /* Multiple canvases being drawn, so no need for default canvas. */
+    noLoop();
 }
 
 /* p5.js function that acts as the draw loop */
-function draw() {
-    if (currentView === VIEW_TYPES.displays) {
-        displays.forEach(display => display.draw());
-        masterScrollbar.draw();
-    } else if (currentView === VIEW_TYPES.overlay) {
-        overlays.forEach(overlay => overlay.draw());
-    }
-}
+function draw() {}
 
 /**
- * Populate the header DOM object with essential elements and functionality.
+ * Construct the global scrollbar.
  */
-function _setupHeader() {
-    let displayButton = createButton("Displays");
-    overlayButton = createButton("Overlay (0/2)");
-    displayButton.mouseClicked(_loadDisplaysView);
-    overlayButton.mouseClicked(_loadOverlayView);
-    overlayButton.elt.disabled = true;
-    displayButton.parent(headerDiv);
-    overlayButton.parent(headerDiv);
+function _setupGlobalScrollbar() {
+    model.setGlobalScrollbar(new GlobalScrollbar(
+        0,
+        innerHeight + scrollY - HEADER_HEIGHT - GLOBAL_SCROLLBAR_HEIGHT,
+        CANVAS_WIDTH,
+        GLOBAL_SCROLLBAR_HEIGHT,
+        0,
+        MAX_IMAGES,
+    ));
 }
 
-/**
- * Create an empty display object.
- * The header div and datasets array must both be initialized before this happens.
- */
-function _createEmptyDisplay() {
-    emptyDisplay = new EmptyDisplay(bodyDiv, datasets, _createTimelapseDisplay);
+/* Controller */
+const STATE = {
+    READY: "ready",
+    OUT_OF_BOUNDS: "oob",
+    FOCUSED: "focused",
+    START_FOCUSED: "startFocused",
+    END_FOCUSED: "endFocused",
+    GHOSTING: "ghosting",
+    PREPARE_SELECT: "prepareSelect",
+    PREPARE_MOVE: "prepareMove",
+    PREPARE_OVERLAY: "prepareOverlay",
+    PANNING: "panning",
 }
+let currentState = STATE.READY;
+let timer;
+let previousX;
+let previousY;
 
-/**
- * Loads and constructs a dataset object that will be displayed as a TimelapseDisplay.
- * @param {string} dataset name of the dataset that we want to add. If '---', function will return.
- * @param {string} directory name of the directory to look for images
- */
-function _createTimelapseDisplay(dataset, directory) {
-    if (dataset === "---") return;
-    emptyDisplay.setErrorState(false);
-
-    /* Improve performance by checking cache for display data that has already been loaded */
-    let cacheHit = displayCache[dataset];
-    if (!!cacheHit && cacheHit.directory === directory) {
-        let newDisplay = _constructDisplayObject(cacheHit.name, cacheHit.frames, cacheHit.timestamps, cacheHit.images);
-        displays.push(newDisplay);
-        _syncMasterScrollbarMarkers();
-        return;
-    }
-
-    let tempDisplay = new TempDisplay(displaysDiv, DISPLAY_WIDTH, DISPLAY_HEIGHT);
-
-    const start = performance.now();
-    /* Load frames and timestamps simultaneously. After that, load images. */
-    loader.loadFramesAndTimestamps(
-        dataset,
-        (frames, timestamps) => {
-            console.log(`Successfully loaded ${frames.length} frames and ${timestamps.length} timestamps in ${Math.floor(performance.now() - start)}ms.`);
-            /* Load images matching the "frames" names, up to MAX_IMAGES total */
-            loader.loadImages(
-                dataset,
-                frames,
-                (images) => {
-                    console.log(`Successfully loaded ${images.length} images in ${Math.floor(performance.now() - start)}ms.`);
-                    tempDisplay.remove();
-                    let newDisplay = _constructDisplayObject(dataset, frames, timestamps, images);
-                    displays.push(newDisplay);
-                    _cacheDisplay(dataset, directory, frames, timestamps, images);
-                    _syncMasterScrollbarMarkers();
-                },
-                (err) => {
-                    console.error(`Error loading images for the ${dataset} dataset.`);
-                    console.log(err);
-                    tempDisplay.remove();
-                    emptyDisplay.setErrorState(true);
-                },
-                directory,
-            );
-        },
-        (err) => {
-            console.error(`Error loading frames/timestamps for the ${dataset} dataset.`);
-            console.log(err);
-            tempDisplay.remove();
-            emptyDisplay.setErrorState(true);
-        },
-    );
-}
-
-/**
- * Reconstructs an overlay object that will be displayed as an OverlayDisplay.
- */
-function _reconstructOverlayDisplay() {
-    overlays = [];
-    let display1 = displayCache[selectedDisplays[0].getName()];
-    let display2 = displayCache[selectedDisplays[1].getName()];
-
-    let tempDisplay = new TempDisplay(overlayDiv, OVERLAY_WIDTH, OVERLAY_HEIGHT);
-
-    const start = performance.now();
-    /* Load monochrome images for one of the two selected displays. */
-    loader.loadMonochromes(
-        display2.name,
-        display2.frames,
-        (monochromes) => {
-            console.log(`Successfully loaded ${monochromes.length} monochrome images in ${Math.floor(performance.now() - start)}ms.`);
-            tempDisplay.remove();
-            overlays.push(new OverlayDisplay(
-                `overlay-${display1.name}-${display2.name}`,
-                display1.images,
-                monochromes,
-                overlayDiv,
-                OVERLAY_WIDTH,
-                OVERLAY_HEIGHT,
-            ));
-        },
-        (err) => {
-            console.error(`Error loading monochrome images for the ${display2.name} dataset.`);
-            console.log(err);
-            tempDisplay.remove();
-        },
-    );
-}
-
-/**
- * 
- * @param {string} dataset name of the dataset
- * @param {Array<string>} frames array of strings, each representing a frame in the dataset
- * @param {Array<string>} timestamps array of strings, each representing a timestamp in the dataset
- * @param {Array<p5.Image>} images array of loaded p5 images
- */
-function _constructDisplayObject(dataset, frames, timestamps, images) {
-
-    let displayCount = 1;
-    let duplicates = displays.filter((display) => display.getName() === dataset);
-    if (duplicates.length > 0) {
-        /* Find the duplicate with the highest id number. */
-        let values = duplicates.map((duplicate) => parseInt(duplicate.id.charAt(duplicate.id.length - 1)));
-        displayCount = Math.max(...values) + 1;
-    }
-
-    return new TimelapseDisplay(
-        dataset,
-        dataset + "-" + displayCount,
-        frames,
-        timestamps,
-        images,
-        displaysDiv,
-        DISPLAY_WIDTH,
-        DISPLAY_HEIGHT,
-        masterScrollbar.getIndex(),
-        _removeDisplay,
-    );
-}
-
-/**
- * Construct DOM elements that act as Global controls for all displays.
- * This includes:
- *  - the master/global scrollbar controlling indexing for all the displays
- *  - the Set All button to set all displays to the current index of the global scrollbar
- *  - the inputs that control saving and loading positions in the global scrollbar
- */
-function _constructGlobalControls() {
-    let masterControls = createDiv();
-    masterControls.class("masterControls");
-    masterControls.parent(controlsDiv);
-
-    configSelect = createSelect();
-    configSelect.id("configSelect");
-    configSelect.option("Select config");
-    configSelect.disable("Select config");
-    configSelect.parent(masterControls);
-
-    normalizeControl = createCheckbox("Normalize", true);
-    normalizeControl.id("normalizeControl");
-    normalizeControl.parent(masterControls);
-
-    let loadConfig = createButton("Load Config");
-    loadConfig.id("loadConfig");
-    loadConfig.mouseClicked((e) => _loadConfiguration(configSelect.elt.value));
-    loadConfig.parent(masterControls);
-
-    let saveConfig = createButton("Save Config");
-    saveConfig.id("saveConfig");
-    saveConfig.mouseClicked(_saveCurrentConfiguration);
-    saveConfig.parent(masterControls);
-
-    masterScrollbar = new Scrollbar(DISPLAY_WIDTH * 3, 30, "masterScrollbar", masterControls);
-    for (let i = 0; i < MAX_IMAGES; i++) {
-        masterScrollbar.addSegment(i);
-    }
-    masterScrollbar.updateParameters(DISPLAY_WIDTH * 3, 30);
-    masterControls.mouseOver(() => controlsActive = true);
-    masterControls.mouseOut(() => controlsActive = false);
-}
-
-/**
- * Add a new display to the displayCache. Cached item keyed by dataset name.
- * @param {string} dataset name of the dataset
- * @param {string} directory name of the image directory
- * @param {Array<string>} frames array of strings, each representing a frame in the dataset
- * @param {Array<string>} timestamps array of strings, each representing a timestamp in the dataset
- * @param {Array<p5.Image>} images array of loaded p5 images
- */
-function _cacheDisplay(name, directory, frames, timestamps, images) {
-    displayCache[name] = {
-        name: name,
-        directory: directory,
-        frames: frames,
-        timestamps: timestamps,
-        images: images,
-    }
-}
-
-// /**
-//  * Set the current index of each display to a specific index.
-//  * @param {number} newIndex new index to set each display to
-//  */
-// function _setAllDisplayIndexes(newIndex) {
-//     if (newIndex < 0 || newIndex > MAX_IMAGES || displays.length === 0) {
-//         return;
-//     }
-//     displays.forEach(display => display.setIndex(newIndex));
-//     console.log("Successfully set all display indexes to [" + newIndex + "].");
-// }
-
-/**
- * Update each of the timelapse displays with a new offset.
- * To be utilized only by the master scrollbar.
- * @param {number} newOffset new offset for each of the displays
- */
-function _updateDisplaysWithMaster(newOffset) {
-    /* Calculate the start-end range of the master scrollbar. */
-    let masterStart = masterScrollbar.getStart();
-    let masterEnd = masterScrollbar.getEnd();
-    let masterRange = masterEnd - masterStart;
-    if (newOffset < masterStart || newOffset > masterEnd) {
-        return;
-    }
-    displays.forEach(display => {
-        /* Calculate the start-end range of each display. */
-        let start = display.getStart();
-        let end = display.getEnd();
-        let range = end - start;
-        /* Step the displays index by a factor of range/masterRange. */
-        let stepRatio = 1;
-        if (normalizeControl.checked()) {
-            stepRatio = range / masterRange;
+/* Start an interval timer that continually checks if displays should be moved */
+function startTimerInterval() {
+    timer = setInterval(() => {
+        let hit = null;
+        if (!!imodel.ghost && (hit = model.checkImageHit(mouseX, mouseY)) && hit !== imodel.ghost) {
+            model.moveDisplay(imodel.ghost, hit);
         }
-        display.setIndexFromMaster(newOffset - masterStart, stepRatio);
-    });
+    }, 2000);
 }
 
-/**
- * Sync the master scrollbar's start, end, and index markers to the display with the smallest
- * start-end range.
- */
-function _syncMasterScrollbarMarkers() {
-    let start = -1;
-    let end = -1;
-    displays.forEach((display) => {
-        if ((start < 0 || end < 0) || ((end - start) > (display.getEnd() - display.getStart()))) {
-            start = display.getStart();
-            end = display.getEnd();
-        }
-    });
-
-    if (start >= 0 && end >= start) {
-        masterScrollbar.setStart(start);
-        masterScrollbar.setEnd(end);
-    }
-}
-
-/**
- * Attempts to find a display within the displays array with the given array and remove it.
- * @param {string} displayID id of display to be removed
- */
-function _removeDisplay(displayID) {
-    console.log("Attempting to remove timelapse display with id: " + displayID);
-
-    let displayIdx = displays.findIndex(display => display.getId() === displayID);
-    if (displayIdx > -1) {
-        let selectedIdx = selectedDisplays.findIndex(selectedDisplay => selectedDisplay.getId() === displayID);
-        if (selectedIdx > -1) {
-            selectedDisplays.splice(selectedIdx, 1); /* Remove selected display at index selectedIdx */
-        }
-        displays[displayIdx].remove();
-        displays.splice(displayIdx, 1); /* Remove display at index displayIdx */
-        console.log("Successfully removed timelapse display with id: " + displayID);
-    } else {
-        console.error("Removal Error: could not locate timelapse display with id" + displayID);
-    }
-
-    _syncMasterScrollbarMarkers();
-}
-
-/**
- * Add selected display to the array of 2 selected displays.
- * Remove oldest selected display if 2 displays already selected.
- * @param {TimelapseDisplay} display display to select
- */
-function _selectDisplay(display) {
-    /* If display is already selected, unselect it and return */
-    let selectedIdx = selectedDisplays.findIndex((selectedDisplay) => selectedDisplay.getId() === display.getId());
-    if (selectedIdx >= 0) {
-        selectedDisplays.splice(selectedIdx, 1);
-        display.toggleSelected();
-    } else {
-        /* Reduce the selected displays to 1 or less */
-        while (selectedDisplays.length >= 2) {
-            selectedDisplays[0].toggleSelected();
-            selectedDisplays.shift();
-        }
-        selectedDisplays.push(display);
-        display.toggleSelected();
-    }
-    /* Edit HTML values of header overlay button */
-    if (selectedDisplays.length === 2) {
-        overlayButton.elt.disabled = false;
-    } else {
-        overlayButton.elt.disabled = true;
-    }
-    overlayButton.elt.innerText = `Overlay (${selectedDisplays.length}/2)`;
-}
-
-/**
- * Save the current configuration of the system.
- * (i.e. save the current index of each display in a JSON)
- * Structure of configs JSON array:
- *  [
- *      configName: {
- *          displays: {
- *              displayId: { 
- *                  index: displayIdx,
- *                  start: startPos,
- *                  end: endPos,
- *              }
- *              ...
- *          }
- *          masterControls: { index: masterIdx }
- *      },
- *      ...
- *  ]
- */
-function _saveCurrentConfiguration() {
-    let config = {
-        displays: {},
-        masterControls: {},
-    };
-
-    let configName = prompt("Please entered a name for this configuration", `config-${Object.keys(configs).length}`);
-    if (!!configName) {
-        let colourTint = 32 * Object.keys(configs).length;
-        let colour = `rgb(${colourTint},${colourTint},${colourTint})`;
-
-        displays.forEach(display => {
-            let displayIdx = display.getIndex();
-            let startPos = display.getStart();
-            let endPos = display.getEnd();
-            config.displays[display.getId()] = {
-                index: displayIdx,
-                start: startPos,
-                end: endPos,
-            };
-            display.addDot(configName, displayIdx, colour);
-        });
-        let masterIdx = masterScrollbar.getIndex();
-        config.masterControls = { index: masterIdx };
-        masterScrollbar.addDot(configName, masterIdx, colour);
-
-        configs[configName] = config;
-        configSelect.option(configName);
-        configSelect.value(configName);
-        console.log(`Successfully saved the [${configName}] configuration.`);
-    }
-}
-
-/**
- * Load a saved configuration.
- * @param {string} config name of the configuration we want to load.
- */
-function _loadConfiguration(config) {
-    let configuration = configs[config];
-    if (!!configuration) {
-        let configDisplays = Object.keys(configuration.displays);
-        configDisplays.forEach(id => {
-            let display = displays.find((display) => display.getId() === id);
-            /* IMPORTANT: Must set start/end positions before the index! */
-            display.setStart(configuration.displays[id].start);
-            display.setEnd(configuration.displays[id].end);
-            display.setIndex(configuration.displays[id].index);
-        });
-        /* IMPORTANT: Likewise, must sync master scrollbar markers before setting index! */
-        _syncMasterScrollbarMarkers();
-        masterScrollbar.setIndex(configuration.masterControls.index);
-        console.log(`Succesfully loaded the [${config}] configuration.`)
-    }
-}
-
-/**
- * Highlight a saved configuration.
- * @param {string} config name of the configuration we want to highlight.
- */
-function _highlightConfiguration(config) {
-    let configuration = configs[config];
-    if (!!configuration) {
-        let configDisplays = Object.keys(configuration.displays);
-        configDisplays.forEach(id => {
-            let display = displays.find((display) => display.getId() === id);
-            display.highlightDotAtIndex(configuration.displays[id].index);
-        });
-        masterScrollbar.highlightDotAtIndex(configuration.masterControls.index);
-        highlightedConfig = config;
-    }
-}
-
-/**
- * Unhighlight all dots in each display.
- */
-function _unhighlightConfigurations() {
-    displays.forEach((display) => display.unhighlightConfigs());
-    masterScrollbar.unhighlightConfigs();
-    highlightedConfig = "";
-}
-
-//// Switching Views ////
-
-/**
- * Hide all currentView-specific elements in the DOM.
- */
-function _clearView() {
-    if (currentView === VIEW_TYPES.displays) {
-        bodyDiv.addClass("hidden");
-        controlsDiv.addClass("hidden");
-    } else if (currentView === VIEW_TYPES.overlay) {
-        overlayDiv.addClass("hidden");
-        overlayDiv.elt.innerHTML = "";
-    }
-}
-
-/**
- * Set the currently displayed view to the displays view.
- */
-function _loadDisplaysView() {
-    if (currentView === VIEW_TYPES.displays) return;
-    _clearView();
-    console.log("Loading displays view...");
-    bodyDiv.removeClass("hidden");
-    controlsDiv.removeClass("hidden");
-    currentView = VIEW_TYPES.displays;
-}
-
-/**
- * Set the currently displayed view to the overlay view.
- */
-function _loadOverlayView() {
-    if (currentView === VIEW_TYPES.overlay) return;
-    _clearView();
-    console.log("Loading overlay view...");
-    overlayDiv.removeClass("hidden");
-    currentView = VIEW_TYPES.overlay;
-    _reconstructOverlayDisplay();
-}
-
-//// User Event Handling ////
-
-/**
- * Attach following event listeners to the document:
- *  - mousemove event
- *  - mousedown event
- *  - mouseup event
- */
-function _attachUserEventListeners() {
-    document.addEventListener("mousemove", handleMouseMoved);
-    document.addEventListener("mousedown", handleMousePressed);
-    document.addEventListener("mouseup", handleMouseReleased);
-}
-
-/**
- * Mouse moved event handler.
- * @param {Event} e
- * @param {number} mx x coordinate of the cursor
- */
-function handleMouseMoved(e, mx = mouseX) {
-    if (currentView === VIEW_TYPES.displays) {
-        if (!mouseIsFocused) {
-            // If the mouse is not focused in a display/scrollbar, check for highlighting configs
-            let hoverDot = null;
-            for (let i = 0; i <= displays.length; i++) {
-                // Check if hovering over display/master scrollbar configs
-                if (i < displays.length && (hoverDot = displays[i].getDotOnMouse(mx)) ||
-                    i === displays.length && (hoverDot = masterScrollbar.getDotOnMouse(mx))) break;
+function mouseMoved(event, mx = mouseX, my = mouseY) {
+    // console.log(`Mouse moved at ${mx}, ${my}`)
+    let hit = null;
+    switch (currentState) {
+        case STATE.READY:
+            if (my < scrollY) {
+                currentState = STATE.OUT_OF_BOUNDS;
+            } else if (hit = model.checkBenchmarkHit(mx, my)) {
+                imodel.highlightConfig(hit.name);
+            } else {
+                imodel.unhighlightConfig();
             }
-            if (hoverDot !== null) {
-                // If hovering over a dot in any display/scrollbar, highlight all configs
-                let configName = hoverDot.configName;
-                _highlightConfiguration(configName);
-            } else if (highlightedConfig !== "") {
-                // If moved out of the dot, unhighlight all displays/scrollbar dots
-                _unhighlightConfigurations();
-            }
-            return;
-        };
+            break;
+        case STATE.OUT_OF_BOUNDS:
+            if (my > scrollY) currentState = STATE.READY;
+            break;
+    }
+}
 
-        // First check if the controls bar is active (overwrites other behaviour)
-        if (controlsActive) {
-            if (masterScrollbar.hasMouseInScrollbar()) {
-                let index = masterScrollbar.setIndexFromMouse(mx);
-                if (index >= 0) {
-                    _updateDisplaysWithMaster(index);
+function mouseDragged(event, mx = mouseX, my = mouseY) {
+    // console.log(`Mouse dragged at ${mx}, ${my}`)
+    let hit = null;
+    switch (currentState) {
+        case STATE.FOCUSED:
+            model.setIndexFromMouse(imodel.focused, mx);
+            break;
+        case STATE.START_FOCUSED:
+            model.setStartFromMouse(imodel.focused, mx);
+            break;
+        case STATE.END_FOCUSED:
+            model.setEndFromMouse(imodel.focused, mx);
+            break;
+        case STATE.PREPARE_SELECT:
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.setGhost(hit);
+                currentState = STATE.GHOSTING;
+                clearInterval(timer);
+                startTimerInterval();
+            } else {
+                currentState = STATE.READY;
+            }
+            break;
+        case STATE.PREPARE_MOVE:
+        case STATE.PREPARE_OVERLAY:
+            if (!(hit = model.checkImageHit(mx, my))) {
+                currentState = STATE.GHOSTING;
+            }
+            imodel.updateGhost();
+            break;
+        case STATE.GHOSTING:
+            if (hit = model.checkImageHit(mx, my)) {
+                if (imodel.ghost instanceof Overlay || hit instanceof Overlay) {
+                    currentState = STATE.PREPARE_MOVE;
+                } else if (hit instanceof Display) {
+                    currentState = STATE.PREPARE_OVERLAY;
                 }
             }
-            return;
-        }
-
-        // Then, check if display is focused
-        let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
-        if (focusedDisplay instanceof TimelapseDisplay) {
-            focusedDisplay.handleMouseEvent(mx, mouseIsFocusedOnStart, mouseIsFocusedOnEnd);
-            if (mouseIsFocusedOnStart || mouseIsFocusedOnEnd) {
-                _syncMasterScrollbarMarkers();
+            imodel.updateGhost();
+            break;
+        case STATE.PANNING:
+            if (imodel.selection !== null) {
+                let dx = mouseX - previousX;
+                let dy = mouseY - previousY;
+                imodel.pan(dx, dy);
             }
-        }
-    } else if (currentView === VIEW_TYPES.overlay) {
-        if (mouseIsFocused) {
-            // Check if overlay scrollbar is focused
-            let focusedDisplay = overlays.find((overlay) => overlay.hasMouseInScrollbar());
-            if (focusedDisplay instanceof OverlayDisplay) {
-                focusedDisplay.setIndexFromMouse(mx);
-            }
-        }
+            previousX = mouseX;
+            previousY = mouseY;
+            break;
     }
 }
 
-/**
- * Mouse pressed event handler.
- * @param {Event} e
- * @param {number} mx x coordinate of the cursor
- */
-function handleMousePressed(e, mx = mouseX) {
-    if (currentView === VIEW_TYPES.overlay) {
-        /* Handle overlay mouse pressed events */
-        mouseIsFocused = overlays[0].hasMouseInScrollbar();
-        handleMouseMoved(e, mx);
-        return;
+function mousePressed(event, mx = mouseX, my = mouseY) {
+    // console.log(`Mouse pressed at ${mx}, ${my}`);
+    let hit = null;
+    switch (currentState) {
+        case STATE.READY:
+            if (imodel.highlightedConfig) {
+                model.loadConfig(imodel.highlightedConfig);
+            } else if (hit = model.checkScrollbarHit(mx, my)) {
+                imodel.setFocused(hit);
+                let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
+                let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
+                if (startFocused) {
+                    currentState = STATE.START_FOCUSED;
+                } else if (endFocused) {
+                    currentState = STATE.END_FOCUSED;
+                } else {
+                    currentState = STATE.FOCUSED;
+                }
+            } else if (hit = model.checkImageHit(mx, my)) {
+                if (event.which === 1) {
+                    currentState = STATE.PREPARE_SELECT;
+                } else if (event.which === 2) {
+                    event.preventDefault();
+                    previousX = mouseX;
+                    previousY = mouseY;
+                    currentState = STATE.PANNING;
+                    if (imodel.selection !== hit) imodel.select(hit);
+                }
+            }
+            break;
     }
-    /* Handle mouse over scrollbar events */
-    let focusedDisplay = displays.find((display) => display.hasMouseInScrollbar());
-    if (controlsActive || focusedDisplay instanceof TimelapseDisplay) {
-        mouseIsFocused = true;
-        if (focusedDisplay instanceof TimelapseDisplay) {
-            mouseIsFocusedOnStart = focusedDisplay.hasMouseFocusedOnStart(mx);
-            mouseIsFocusedOnEnd = focusedDisplay.hasMouseFocusedOnEnd(mx);
-        }
-        if (!(mouseIsFocusedOnStart || mouseIsFocusedOnEnd) && highlightedConfig !== "") {
-            /* Giving start/end positions mouse priority over configurations. */
-            _loadConfiguration(highlightedConfig);
-        } else {
-            handleMouseMoved(e, mx);
-        }
-        return;
-    }
-    /* Handle mouse over image events */
-    focusedDisplay = displays.find((display) => display.hasMouseOnImage());
-    if (focusedDisplay instanceof TimelapseDisplay) {
-        _selectDisplay(focusedDisplay);
+
+}
+
+function mouseReleased(event, mx = mouseX, my = mouseY) {
+    // console.log(`Mouse released at ${mx}, ${my}`);
+    let hit = null;
+    switch (currentState) {
+        case STATE.FOCUSED:
+        case STATE.START_FOCUSED:
+        case STATE.END_FOCUSED:
+            imodel.setFocused(null);
+            currentState = STATE.READY;
+            break;
+        case STATE.PREPARE_SELECT:
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.select(hit);
+            }
+            currentState = STATE.READY;
+            break;
+        case STATE.PREPARE_MOVE:
+            if (hit = model.checkImageHit(mx, my)) {
+                if (hit !== imodel.ghost) {
+                    model.moveDisplay(imodel.ghost, hit);
+                }
+            }
+            clearInterval(timer);
+            imodel.setGhost(null);
+            currentState = STATE.READY;
+            break;
+        case STATE.PREPARE_OVERLAY:
+            if (hit = model.checkImageHit(mx, my)) {
+                if (hit !== imodel.ghost) {
+                    let column = model.displays.length % model.displaysPerRow;
+                    let row = Math.floor(model.displays.length / model.displaysPerRow);
+                    let overlay = new Overlay(
+                        generateOverlayId(model, getDisplayNameFromId(imodel.ghost.id), getDisplayNameFromId(hit.id)),
+                        PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
+                        PADDING + row * (PADDING * 3 + DISPLAY_HEIGHT + SCROLLBAR_HEIGHT),
+                        DISPLAY_WIDTH,
+                        DISPLAY_HEIGHT,
+                        PADDING,
+                        SCROLLBAR_HEIGHT,
+                        imodel.ghost,
+                        hit,
+                    );
+                    model.addOverlay(overlay, hit);
+                    imodel.select(overlay);
+                }
+            }
+            clearInterval(timer);
+            imodel.setGhost(null);
+            currentState = STATE.READY;
+        case STATE.GHOSTING:
+            clearInterval(timer);
+            imodel.setGhost(null);
+            currentState = STATE.READY;
+            break;
+        case STATE.PANNING:
+            currentState = STATE.READY;
+            break;
     }
 }
 
-/**
- * Mouse released event handler.
- */
-function handleMouseReleased() {
-    mouseIsFocused = false;
-    mouseIsFocusedOnStart = false;
-    mouseIsFocusedOnEnd = false;
+function mouseWheel(event, mx = mouseX, my = mouseY) {
+    switch (currentState) {
+        case STATE.READY:
+            let hit;
+            if (hit = model.checkImageHit(mx, my)) {
+                event.preventDefault();
+                event.stopPropagation();
+                imodel.zoom(hit, event.delta);
+            }
+            break;
+    }
+}
+
+function _attachHeaderListeners() {
+    /* Upload header functions */
+    document.getElementById("uploadButton")?.addEventListener("click", e => {
+        let value = document.getElementById("uploadSelect")?.value;
+        if (!!value && value !== "---") {
+            model.incrementLoading();
+            let dataset = model.datasets.find(d => d.name === value);
+            const start = performance.now();
+            console.log(`Beginning load of ${dataset.name} from /${dataset.dir}...`);
+            loader.initDatasetLoad(
+                dataset.name,
+                dataset.dir,
+                loadObj => {
+                    model.decrementLoading();
+                    console.log(
+                        `Finished loading ${dataset.name} in ${Math.floor(performance.now() - start)}ms. \
+                        \nLoaded ${loadObj.frames.length} frames. \
+                        \nLoaded ${loadObj.timestamps.length} timestamps. \
+                        \nLoaded ${loadObj.images.length} images.`);
+
+                    let column = model.displays.length % model.displaysPerRow;
+                    let row = Math.floor(model.displays.length / model.displaysPerRow);
+                    let display = new Display(
+                        generateDisplayId(model, loadObj.name),
+                        PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
+                        PADDING + row * (PADDING * 3 + DISPLAY_HEIGHT + SCROLLBAR_HEIGHT),
+                        DISPLAY_WIDTH,
+                        DISPLAY_HEIGHT,
+                        PADDING,
+                        SCROLLBAR_HEIGHT,
+                        loadObj.frames,
+                        loadObj.timestamps,
+                        loadObj.images,
+                        dataset.filters,
+                    );
+                    model.addDisplay(display);
+                    imodel.select(display);
+                },
+                err => {
+                    console.error(err);
+                    model.decrementLoading();
+                }
+            )
+        }
+    });
+
+    /* Global header functions */
+    document.getElementById("loadConfigButton")?.addEventListener("click", e => {
+        let configName = document.getElementById("configSelect")?.value;
+        if (!!configName) {
+            model.loadConfig(configName);
+        }
+    });
+    document.getElementById("saveConfigButton")?.addEventListener("click", e => {
+        model.addConfig();
+    });
+    document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
+        model.setNormalized(e.target.checked);
+    });
+
+    /* Individual display header functions */
+    document.getElementById("lockCheckbox").addEventListener("change", e => {
+        let checked = e.target.checked;
+        imodel.setLocked(checked);
+    });
+    document.getElementById("filterSelect").addEventListener("change", e => {
+        let value = e.target.value;
+        if (value !== "---" && imodel.selection !== null) {
+            model.incrementLoading();
+            let isOverlay = imodel.selection instanceof Overlay;
+            let name = isOverlay ? getSecondaryDisplayNameFromId(imodel.selection.id) : getDisplayNameFromId(imodel.selection.id);
+            if (value === "Reset") {
+                value = model.datasets.find(d => d.name === name).dir;
+            }
+            loader.initDatasetLoad(
+                name,
+                value,
+                loadObj => {
+                    model.setDisplayImages(imodel.selection, loadObj.images, isOverlay);
+                    model.decrementLoading();
+                },
+                err => {
+                    console.error(err);
+                    model.decrementLoading();
+                }
+            );
+        }
+    });
+    document.getElementById("removeButton")?.addEventListener("click", e => {
+        if (imodel.selection !== null) {
+            console.log(`Removing ${imodel.selection.id}...`);
+            model.removeDisplay(imodel.selection);
+            imodel.select(imodel.selection); /* Need to unselect display */
+        }
+    });
+    document.getElementById("opacityInput")?.addEventListener("input", e => {
+        if (imodel.selection !== null) {
+            imodel.setOpacity(e.target.value);
+        }
+    });
+    document.getElementById("loadFrameButton")?.addEventListener("click", e => {
+        let name = document.getElementById("frameSelect").value;
+        let frame = imodel?.selection.savedFrames.find(savedFrame => savedFrame.name === name);
+        if (!!frame) {
+            model.setIndex(imodel.selection, frame.index);
+        }
+    });
+    document.getElementById("saveFrameButton")?.addEventListener("click", e => {
+        imodel.saveFrame();
+    });
+}
+
+function _attachUserEventListeners() {
+    document.addEventListener("scroll", e => {
+        model.setGlobalScrollbarLocation(0, innerHeight + scrollY - HEADER_HEIGHT - 40);
+    });
 }
