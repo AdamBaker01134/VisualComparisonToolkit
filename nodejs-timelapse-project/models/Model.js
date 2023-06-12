@@ -33,12 +33,14 @@ Model.prototype.setDatasets = function (datasets) {
  * Set a displays images (either primary or secondary depending on the type of display)
  * @param {Display|Overlay} display display to set images
  * @param {Array<p5.Image>} images new set of images
+ * @param {boolean} secondary true if we want to set secondary images instead of primary
+ * @param {string} filter filter name
  */
-Model.prototype.setDisplayImages = function (display, images, secondary) {
+Model.prototype.setDisplayImages = function (display, images, secondary, filter="") {
     if (secondary && display instanceof Overlay) {
-        display.setSecondaryImages(images);
+        display.setSecondaryImages(images, filter);
     } else {
-        display.setImages(images);
+        display.setImages(images, filter);
     }
     this.notifySubscribers();
 }

@@ -8,6 +8,8 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
     this.secondarySize = this.secondaryImages.length;
     this.secondaryIndex = 0;
 
+    this.secondaryFilter = secondaryDisplay.filter;
+
     this.opacity = "128";
 }
 
@@ -15,8 +17,9 @@ Overlay.prototype = Object.create(Display.prototype);
 Overlay.prototype.constructor = Overlay;
 
 /* Set the overlays secondary images */
-Overlay.prototype.setSecondaryImages = function (images) {
+Overlay.prototype.setSecondaryImages = function (images, filter="") {
     this.secondaryImages = images;
+    this.secondaryFilter = filter;
 }
 
 /* Get the number of secondary images in the overlay */

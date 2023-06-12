@@ -1,6 +1,6 @@
 /* Application Header View */
 "use strict";
-function Headerview () {
+function Headerview() {
     /* Snapshot arrays to avoid redrawing select elements and improve performance */
     this.datasetSnapshot = [];
     this.configSnapshot = [];
@@ -166,22 +166,43 @@ Headerview.prototype.updateFrameSelect = function () {
 /**
  * Update the filter select element with filters from the selected display in the imodel.
  */
-Headerview.prototype.updateFilterSelect = function() {
-    if (this.imodel.selection !== null) {
+Headerview.prototype.updateFilterSelect = function () {
+    let selection = this.imodel.selection;
+    if (selection !== null) {
         let filterSelect = document.getElementById("filterSelect");
         filterSelect.innerHTML = "";
-        let defaultOption = document.createElement("option");
-        defaultOption.text = "---";
-        filterSelect.add(defaultOption);
-        this.imodel.selection.filters.forEach(filterName => {
-            let option = document.createElement("option");
-            option.text = filterName;
-            filterSelect.add(option);
-        });
-        let resetOption = document.createElement("option");
-        resetOption.text = "Reset";
-        filterSelect.add(resetOption);
-        this.filterSnapshot = [...this.imodel.selection.filters];
+
+        let selectedFilter = "";
+        if (selection instanceof Overlay) {
+            if (selection.secondaryFilter !== "") selectedFilter = selection.secondaryFilter;
+        } else if (selection.filter !== "") {
+            selectedFilter = selection.filter;
+        }
+
+        if (selectedFilter !== "") {
+            let currentOption = document.createElement("option");
+            currentOption.text = selectedFilter;
+            filterSelect.add(currentOption);
+            selection.filters.filter(name => name !== selectedFilter)
+                .forEach(filterName => {
+                    let option = document.createElement("option");
+                    option.text = filterName;
+                    filterSelect.add(option);
+                });
+            let resetOption = document.createElement("option");
+            resetOption.text = "Reset";
+            filterSelect.add(resetOption);
+        } else {
+            let defaultOption = document.createElement("option");
+            defaultOption.text = "---";
+            filterSelect.add(defaultOption);
+            selection.filters.forEach(filterName => {
+                let option = document.createElement("option");
+                option.text = filterName;
+                filterSelect.add(option);
+            });
+        }
+        this.filterSnapshot = [...selection.filters];
     }
 }
 

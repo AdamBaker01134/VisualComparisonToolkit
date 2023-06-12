@@ -10,6 +10,7 @@ header {
     border-bottom: 1px solid grey;
     justify-content: space-evenly;
     position: sticky;
+    height: 100px;
     top: 0px;
 }
 

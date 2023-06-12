@@ -15,7 +15,7 @@ let loader;
 /* Constants */
 const CANVAS_WIDTH = innerWidth * 0.98;
 const CANVAS_HEIGHT = innerHeight * 3;
-const HEADER_HEIGHT = 72;
+const HEADER_HEIGHT = 100;
 const GLOBAL_SCROLLBAR_HEIGHT = 40;
 const MAX_IMAGES = 1000;
 const IMG_PATH = "./img/";
@@ -346,18 +346,20 @@ function _attachHeaderListeners() {
     });
     document.getElementById("filterSelect").addEventListener("change", e => {
         let value = e.target.value;
+        let filterName = e.target.value;
         if (value !== "---" && imodel.selection !== null) {
             model.incrementLoading();
             let isOverlay = imodel.selection instanceof Overlay;
             let name = isOverlay ? getSecondaryDisplayNameFromId(imodel.selection.id) : getDisplayNameFromId(imodel.selection.id);
             if (value === "Reset") {
                 value = model.datasets.find(d => d.name === name).dir;
+                filterName = "";
             }
             loader.initDatasetLoad(
                 name,
                 value,
                 loadObj => {
-                    model.setDisplayImages(imodel.selection, loadObj.images, isOverlay);
+                    model.setDisplayImages(imodel.selection, loadObj.images, isOverlay, filterName);
                     model.decrementLoading();
                 },
                 err => {

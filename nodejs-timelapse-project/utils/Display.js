@@ -17,6 +17,7 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
 
     this.savedFrames = [];
     this.filters = filters;
+    this.filter = "";
 
     this.viewportX = this.x + this.padding;
     this.viewportY = this.y + this.padding;
@@ -32,8 +33,9 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
 }
 
 /* Set the displays images */
-Display.prototype.setImages = function (images) {
+Display.prototype.setImages = function (images, filter="") {
     this.images = images;
+    this.filter = filter;
 }
 
 /* Get the number of segments in the scrollbar */
