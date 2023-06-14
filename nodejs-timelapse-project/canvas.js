@@ -12,30 +12,16 @@ let model;
 let imodel;
 let loader;
 
-/* Constants */
-const CANVAS_WIDTH = innerWidth * 0.98;
-const CANVAS_HEIGHT = innerHeight * 3;
-const HEADER_HEIGHT = 100;
-const GLOBAL_SCROLLBAR_HEIGHT = 40;
-const MAX_IMAGES = 1000;
-const IMG_PATH = "./img/";
-const PADDING = 10;
-const SCROLLBAR_HEIGHT = 30;
-const DISPLAY_WIDTH = 350;
-const DISPLAY_HEIGHT = 350;
-
 /* p5.js function that is called to load things before setup is called */
 function preload() {
     model = new Model();
     imodel = new iModel();
-    loader = new Loader(MAX_IMAGES, IMG_PATH);
-    loader.loadDatasets().then(datasets => model.setDatasets(datasets));
+    model.loadDatasets();
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
 function setup() {
-    model.setDisplaysPerRow(Math.floor(CANVAS_WIDTH / 380));
-    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    createCanvas(model.canvasWidth, model.canvasHeight);
 
     let view = new View();
     model.addSubscriber(view);
@@ -51,27 +37,12 @@ function setup() {
 
     _attachHeaderListeners();
     _attachUserEventListeners();
-    _setupGlobalScrollbar();
 
     noLoop();
 }
 
 /* p5.js function that acts as the draw loop */
 function draw() {}
-
-/**
- * Construct the global scrollbar.
- */
-function _setupGlobalScrollbar() {
-    model.setGlobalScrollbar(new GlobalScrollbar(
-        0,
-        innerHeight + scrollY - HEADER_HEIGHT - GLOBAL_SCROLLBAR_HEIGHT,
-        CANVAS_WIDTH,
-        GLOBAL_SCROLLBAR_HEIGHT,
-        0,
-        MAX_IMAGES,
-    ));
-}
 
 /* Controller */
 const STATE = {
@@ -239,12 +210,12 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     let row = Math.floor(model.displays.length / model.displaysPerRow);
                     let overlay = new Overlay(
                         generateOverlayId(model, getDisplayNameFromId(imodel.ghost.id), getDisplayNameFromId(hit.id)),
-                        PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
-                        PADDING + row * (PADDING * 3 + DISPLAY_HEIGHT + SCROLLBAR_HEIGHT),
-                        DISPLAY_WIDTH,
-                        DISPLAY_HEIGHT,
-                        PADDING,
-                        SCROLLBAR_HEIGHT,
+                        model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth),
+                        model.displayPadding + row * (model.displayPadding * 3 + model.displayHeight + model.displayScrollbarHeight),
+                        model.displayWidth,
+                        model.displayHeight,
+                        model.displayPadding,
+                        model.displayScrollbarHeight,
                         imodel.ghost,
                         hit,
                     );
@@ -283,46 +254,9 @@ function _attachHeaderListeners() {
     /* Upload header functions */
     document.getElementById("uploadButton")?.addEventListener("click", e => {
         let value = document.getElementById("uploadSelect")?.value;
-        if (!!value && value !== "---") {
-            model.incrementLoading();
-            let dataset = model.datasets.find(d => d.name === value);
-            const start = performance.now();
-            console.log(`Beginning load of ${dataset.name} from /${dataset.dir}...`);
-            loader.initDatasetLoad(
-                dataset.name,
-                dataset.dir,
-                loadObj => {
-                    model.decrementLoading();
-                    console.log(
-                        `Finished loading ${dataset.name} in ${Math.floor(performance.now() - start)}ms. \
-                        \nLoaded ${loadObj.frames.length} frames. \
-                        \nLoaded ${loadObj.timestamps.length} timestamps. \
-                        \nLoaded ${loadObj.images.length} images.`);
-
-                    let column = model.displays.length % model.displaysPerRow;
-                    let row = Math.floor(model.displays.length / model.displaysPerRow);
-                    let display = new Display(
-                        generateDisplayId(model, loadObj.name),
-                        PADDING + column * (PADDING * 3 + DISPLAY_WIDTH),
-                        PADDING + row * (PADDING * 3 + DISPLAY_HEIGHT + SCROLLBAR_HEIGHT),
-                        DISPLAY_WIDTH,
-                        DISPLAY_HEIGHT,
-                        PADDING,
-                        SCROLLBAR_HEIGHT,
-                        loadObj.frames,
-                        loadObj.timestamps,
-                        loadObj.images,
-                        dataset.filters,
-                    );
-                    model.addDisplay(display);
-                    imodel.select(display);
-                },
-                err => {
-                    console.error(err);
-                    model.decrementLoading();
-                }
-            )
-        }
+        model.loadDataset(value, {
+            callback: display => imodel.select(display),
+        });
     });
 
     /* Global header functions */
@@ -348,25 +282,17 @@ function _attachHeaderListeners() {
         let value = e.target.value;
         let filterName = e.target.value;
         if (value !== "---" && imodel.selection !== null) {
-            model.incrementLoading();
             let isOverlay = imodel.selection instanceof Overlay;
             let name = isOverlay ? getSecondaryDisplayNameFromId(imodel.selection.id) : getDisplayNameFromId(imodel.selection.id);
             if (value === "Reset") {
                 value = model.datasets.find(d => d.name === name).dir;
                 filterName = "";
             }
-            loader.initDatasetLoad(
-                name,
-                value,
-                loadObj => {
-                    model.setDisplayImages(imodel.selection, loadObj.images, isOverlay, filterName);
-                    model.decrementLoading();
-                },
-                err => {
-                    console.error(err);
-                    model.decrementLoading();
-                }
-            );
+            model.loadDataset(name, {
+                dir: value,
+                display: imodel.selection,
+                filter: filterName,
+            });
         }
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {
@@ -395,6 +321,6 @@ function _attachHeaderListeners() {
 
 function _attachUserEventListeners() {
     document.addEventListener("scroll", e => {
-        model.setGlobalScrollbarLocation(0, innerHeight + scrollY - HEADER_HEIGHT - 40);
+        model.setGlobalScrollbarLocation(0, innerHeight + scrollY - model.headerHeight - model.globalScrollbarHeight);
     });
 }

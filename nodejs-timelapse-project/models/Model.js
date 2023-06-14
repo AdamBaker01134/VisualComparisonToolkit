@@ -1,12 +1,32 @@
 /* Application Model */
 "use strict";
 function Model() {
+    this.imagePath = "./img/";
+    this.maxImages = 1000;
+    this.headerHeight = 100;
+    this.canvasWidth = innerWidth * 0.98;
+    this.canvasHeight = innerHeight * 3;
+    this.displayWidth = 350;
+    this.displayHeight = 350;
+    this.displayPadding = 10;
+    this.displayScrollbarHeight = 30;
+    this.displaysPerRow = Math.floor(this.canvasWidth / 380);
+
+    this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
     this.normalized = true;
     this.loading = 0;
     this.displays = [];
     this.configs = [];
-    this.globalScrollbar = null;
+    this.globalScrollbarHeight = 40;
+    this.globalScrollbar = new GlobalScrollbar(
+        0,
+        innerHeight + scrollY - this.headerHeight - this.globalScrollbarHeight,
+        this.canvasWidth,
+        this.globalScrollbarHeight,
+        0,
+        this.maxImages,
+    );
     this.offset = 0;
     this.subscribers = [];
 }
@@ -17,15 +37,6 @@ function Model() {
  */
 Model.prototype.setDisplaysPerRow = function (size) {
     this.displaysPerRow = size;
-    this.notifySubscribers();
-}
-
-/**
- * Set known datasets in the system
- * @param {Array<string>} datasets a list of dataset names
- */
-Model.prototype.setDatasets = function (datasets) {
-    this.datasets = datasets;
     this.notifySubscribers();
 }
 
@@ -311,9 +322,11 @@ Model.prototype.addConfig = function () {
         };
         this.displays.forEach(display => {
             let secondaryName = null;
+            let secondaryFilter = null;
             let opacity = null;
             if (display instanceof Overlay) {
                 secondaryName = getSecondaryDisplayNameFromId(display.id);
+                secondaryFilter = display.secondaryFilter;
                 opacity = display.opacity;
             }
             config.displays.push({
@@ -323,8 +336,11 @@ Model.prototype.addConfig = function () {
                 start: display.start,
                 end: display.end,
                 savedFrames: display.savedFrames,
+                filters: display.filters,
+                filter: display.filter,
                 locked: display.locked,
                 secondaryName: secondaryName,
+                secondaryFilter: secondaryFilter,
                 opacity: opacity,
             });
         });
@@ -355,6 +371,76 @@ Model.prototype.loadConfig = function (configName) {
         });
         this.setNormalized(config.normalized);
         this.notifySubscribers();
+    }
+}
+
+/**
+ * Load in pre-processed dataset configurations.
+ */
+Model.prototype.loadDatasets = function () {
+    this.loader.loadDatasets().then(datasets => {
+        this.datasets = datasets;
+        this.notifySubscribers();
+    });
+}
+
+/**
+ * Load in a dataset from the list of datasets.
+ * @param {string} name name of dataset to load.
+ * @param {Object} options optional attributes to alter the loading process.
+ */
+Model.prototype.loadDataset = function (name, options={}) {
+    let dataset = this.datasets.find(d => d.name === name);
+    if (!!dataset) {
+        /* All possible options */
+        const dir = options.dir || dataset.dir;
+        const callback = options.callback || (() => {});
+        const filter = options.filter || "";
+        let display = options.display || null;
+
+        this.incrementLoading();
+        const start = performance.now();
+        console.log(`Beginning load of ${name} from /${dir}...`);
+        this.loader.initDatasetLoad(
+            name,
+            dir,
+            loadObj => {
+                this.decrementLoading();
+                console.log(
+                    `Finished loading ${name} in ${Math.floor(performance.now() - start)}ms. \
+                    \nLoaded ${loadObj.frames.length} frames. \
+                    \nLoaded ${loadObj.timestamps.length} timestamps. \
+                    \nLoaded ${loadObj.images.length} images.`
+                );
+                if (!!display) {
+                    /* If display is already created, simply replace display images */
+                    this.setDisplayImages(display, loadObj.images, display instanceof Overlay, filter);
+                } else {
+                    /* If display is not defined, create a new one populated with loaded information */
+                    let column = this.displays.length % this.displaysPerRow;
+                    let row = Math.floor(this.displays.length / this.displaysPerRow);
+                    display = new Display(
+                        generateDisplayId(this, loadObj.name),
+                        this.displayPadding + column * (this.displayPadding * 3 + this.displayWidth),
+                        this.displayPadding + row * (this.displayPadding * 3 + this.displayHeight + this.displayScrollbarHeight),
+                        this.displayWidth,
+                        this.displayHeight,
+                        this.displayPadding,
+                        this.displayScrollbarHeight,
+                        loadObj.frames,
+                        loadObj.timestamps,
+                        loadObj.images,
+                        dataset.filters,
+                    );
+                    this.addDisplay(display);
+                }
+                callback(display);
+            },
+            err => {
+                console.error(err);
+                this.decrementLoading();
+            }
+        );
     }
 }
 
