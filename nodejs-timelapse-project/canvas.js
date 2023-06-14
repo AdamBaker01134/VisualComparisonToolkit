@@ -307,15 +307,15 @@ function _attachHeaderListeners() {
             imodel.setOpacity(e.target.value);
         }
     });
-    document.getElementById("loadFrameButton")?.addEventListener("click", e => {
-        let name = document.getElementById("frameSelect").value;
-        let frame = imodel?.selection.savedFrames.find(savedFrame => savedFrame.name === name);
-        if (!!frame) {
-            model.setIndex(imodel.selection, frame.index);
+    document.getElementById("loadAnnotationButton")?.addEventListener("click", e => {
+        let name = document.getElementById("annotationSelect").value;
+        let annotation = imodel?.selection.annotations.find(annotation => annotation.name === name);
+        if (!!annotation) {
+            model.setIndex(imodel.selection, annotation.index);
         }
     });
-    document.getElementById("saveFrameButton")?.addEventListener("click", e => {
-        imodel.saveFrame();
+    document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {
+        imodel.saveAnnotation();
     });
 }
 

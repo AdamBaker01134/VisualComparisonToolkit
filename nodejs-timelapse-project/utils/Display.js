@@ -15,7 +15,7 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
     this.timestamps = timestamps;
     this.images = images;
 
-    this.savedFrames = [];
+    this.annotations = [];
     this.filters = filters;
     this.filter = "";
 
@@ -257,13 +257,13 @@ Display.prototype.checkEndHit = function (mx) {
 }
 
 /**
- * Add a saved frame to this display.
- * @param {string} name customized frame name
- * @param {number} index index of frame
+ * Add an annotation to this display.
+ * @param {string} name customized annotation name
+ * @param {number} index index of annotation
  */
-Display.prototype.addSavedFrame = function (name, index) {
+Display.prototype.addAnnotation = function (name, index) {
     if (index >= 0 && index <= this.getSize()) {
-        this.savedFrames.push({
+        this.annotations.push({
             name: name,
             index: index,
         });

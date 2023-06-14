@@ -104,13 +104,20 @@ iModel.prototype.setOpacity = function (opacity) {
 }
 
 /**
- * Add a saved frame with a custom name to the selected display.
+ * Add an annotation with a custom name to the selected display.
  */
-iModel.prototype.saveFrame = function () {
+iModel.prototype.saveAnnotation = function () {
     if (this.selection !== null) {
-        let name = prompt("Enter a name for this frame:", `frame-${this.selection.savedFrames.length}`);
-        if (!!name) {
-            this.selection.addSavedFrame(name, this.selection.index);
+        let index = Math.floor(this.selection.index);
+        let defaultName;
+        if (index > this.selection.timestamps.length - 1) {
+            defaultName = this.selection.frames[index];
+        } else {
+            defaultName = this.selection.timestamps[index];
+        }
+        let name = prompt("Enter a name for this annotation:", defaultName);
+        if (!!name && !(this.selection.annotations.includes(name))) {
+            this.selection.addAnnotation(name, this.selection.index);
         }
         this.notifySubscribers();
     }

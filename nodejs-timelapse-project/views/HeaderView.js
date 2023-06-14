@@ -4,7 +4,7 @@ function Headerview() {
     /* Snapshot arrays to avoid redrawing select elements and improve performance */
     this.datasetSnapshot = [];
     this.configSnapshot = [];
-    this.frameSnapshot = [];
+    this.annotationSnapshot = [];
     this.filterSnapshot = [];
 }
 
@@ -40,8 +40,8 @@ Headerview.prototype.draw = function () {
     if (this.configSnapshot !== this.model.configs) {
         this.updateConfigSelect();
     }
-    if (!!this.imodel.selection && this.frameSnapshot !== this.imodel.selection.savedFrames) {
-        this.updateFrameSelect();
+    if (!!this.imodel.selection && this.annotationSnapshot !== this.imodel.selection.annotations) {
+        this.updateAnnotationSelect();
     }
     if (!!this.imodel.selection && this.filterSnapshot !== this.imodel.selection.filters) {
         this.updateFilterSelect();
@@ -144,22 +144,22 @@ Headerview.prototype.updateConfigSelect = function () {
 }
 
 /**
- * Update the frame select element with saved frames from the selected display in the imodel.
+ * Update the annotation select element with annotations from the selected display in the imodel.
  */
-Headerview.prototype.updateFrameSelect = function () {
+Headerview.prototype.updateAnnotationSelect = function () {
     if (this.imodel.selection !== null) {
-        let frameSelect = document.getElementById("frameSelect");
-        frameSelect.innerHTML = "";
+        let annotationSelect = document.getElementById("annotationSelect");
+        annotationSelect.innerHTML = "";
         let defaultOption = document.createElement("option");
-        defaultOption.text = "Select Frame";
+        defaultOption.text = "Select Annotation";
         defaultOption.disabled = true;
-        frameSelect.add(defaultOption);
-        this.imodel.selection.savedFrames.forEach(savedFrame => {
+        annotationSelect.add(defaultOption);
+        this.imodel.selection.annotations.forEach(annotation => {
             let option = document.createElement("option");
-            option.text = savedFrame.name;
-            frameSelect.add(option);
+            option.text = annotation.name;
+            annotationSelect.add(option);
         });
-        this.frameSnapshot = [...this.imodel.selection.savedFrames];
+        this.annotationSnapshot = [...this.imodel.selection.annotations];
     }
 }
 

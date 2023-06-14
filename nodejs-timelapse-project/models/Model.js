@@ -335,7 +335,7 @@ Model.prototype.addConfig = function () {
                 index: display.index,
                 start: display.start,
                 end: display.end,
-                savedFrames: display.savedFrames,
+                annotations: display.annotations,
                 filters: display.filters,
                 filter: display.filter,
                 locked: display.locked,
