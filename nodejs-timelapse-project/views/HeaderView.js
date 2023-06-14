@@ -132,8 +132,7 @@ Headerview.prototype.updateConfigSelect = function () {
     let configSelect = document.getElementById("configSelect");
     configSelect.innerHTML = "";
     let defaultOption = document.createElement("option");
-    defaultOption.text = "Select Config";
-    defaultOption.disabled = true;
+    defaultOption.text = "---";
     configSelect.add(defaultOption);
     this.model.configs.forEach(config => {
         let option = document.createElement("option");
@@ -151,8 +150,7 @@ Headerview.prototype.updateAnnotationSelect = function () {
         let annotationSelect = document.getElementById("annotationSelect");
         annotationSelect.innerHTML = "";
         let defaultOption = document.createElement("option");
-        defaultOption.text = "Select Annotation";
-        defaultOption.disabled = true;
+        defaultOption.text = "---";
         annotationSelect.add(defaultOption);
         this.imodel.selection.annotations.forEach(annotation => {
             let option = document.createElement("option");
