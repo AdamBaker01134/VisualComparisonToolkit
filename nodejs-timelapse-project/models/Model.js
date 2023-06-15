@@ -4,13 +4,13 @@ function Model() {
     this.imagePath = "./img/";
     this.maxImages = 1000;
     this.headerHeight = 100;
-    this.canvasWidth = innerWidth * 0.98;
-    this.canvasHeight = innerHeight * 3;
+    this.canvasWidth = windowWidth * 0.98;
+    this.canvasHeight = windowHeight * 3;
     this.displayWidth = 350;
     this.displayHeight = 350;
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
-    this.displaysPerRow = Math.floor(this.canvasWidth / 380);
+    this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
 
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
@@ -21,7 +21,7 @@ function Model() {
     this.globalScrollbarHeight = 40;
     this.globalScrollbar = new GlobalScrollbar(
         0,
-        innerHeight + scrollY - this.headerHeight - this.globalScrollbarHeight,
+        windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight,
         this.canvasWidth,
         this.globalScrollbarHeight,
         0,
@@ -32,11 +32,24 @@ function Model() {
 }
 
 /**
- * Set the number of displays that are allowed to be drawn in a single row
- * @param {number} size number of displays allowed per row
+ * Update the dimensions of the canvas in the model (and update any objects within the canvas that may be affected).
+ * @param {number} width new canvas width
+ * @param {number} height new canvas height
  */
-Model.prototype.setDisplaysPerRow = function (size) {
-    this.displaysPerRow = size;
+Model.prototype.updateCanvasDimensions = function () {
+    this.canvasWidth = windowWidth * 0.98;
+    this.canvasHeight = windowHeight * 3;;
+    this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
+    this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
+    this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
+    this.displays.forEach((display, index) => {
+        let column = index % this.displaysPerRow;
+        let row = Math.floor(index / this.displaysPerRow);
+        display.setLocation(
+            this.displayPadding + column * (this.displayPadding * 3 + this.displayWidth),
+            this.displayPadding + row * (this.displayPadding * 3 + this.displayHeight + this.displayScrollbarHeight));
+    });
+    resizeCanvas(this.canvasWidth, this.canvasHeight);
     this.notifySubscribers();
 }
 

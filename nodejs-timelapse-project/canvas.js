@@ -255,6 +255,10 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
     }
 }
 
+function windowResized (event) {
+    model.updateCanvasDimensions();
+}
+
 function _attachHeaderListeners() {
     /* Upload header functions */
     document.getElementById("uploadButton")?.addEventListener("click", e => {

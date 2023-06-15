@@ -146,6 +146,20 @@ Display.prototype.checkImageHit = function (mx, my) {
 }
 
 /**
+ * Update the dimensions of the display.
+ * @param {number} newWidth new width for the display
+ * @param {number} newHeight new height for the display
+ */
+Display.prototype.setDimensions = function (newWidth, newHeight) {
+    let dw = newWidth - this.width;
+    let dh = newHeight - this.height;
+    this.width = newWidth;
+    this.height = newHeight;
+    this.viewportWidth += dw;
+    this.viewportHeight += dh;
+}
+
+/**
  * Update the location parameters in the display.
  * @param {number} newX new x coordinate for the display
  * @param {number} newY new y coordinate for the display

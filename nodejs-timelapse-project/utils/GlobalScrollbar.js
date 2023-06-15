@@ -96,9 +96,19 @@ GlobalScrollbar.prototype.checkScrollbarHit = function (mx, my) {
 }
 
 /**
- * Update the location parameters in the display.
- * @param {number} newX new x coordinate for the display
- * @param {number} newY new y coordinate for the display
+ * Update the dimensions of the scrollbar.
+ * @param {number} newWidth new width for the scrollbar
+ * @param {number} newHeight new height for the scrollbar
+ */
+GlobalScrollbar.prototype.setDimensions = function (newWidth, newHeight) {
+    this.width = newWidth;
+    this.height = newHeight;
+}
+
+/**
+ * Update the location parameters in the scrollbar.
+ * @param {number} newX new x coordinate for the scrollbar
+ * @param {number} newY new y coordinate for the scrollbar
  */
 GlobalScrollbar.prototype.setLocation = function (newX, newY) {
     this.x = newX;
