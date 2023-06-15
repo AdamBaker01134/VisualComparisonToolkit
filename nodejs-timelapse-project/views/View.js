@@ -109,7 +109,7 @@ View.prototype.draw = function () {
         stroke("rgb(25, 25, 25)");
         for (let idx = 0; idx < display.getSize(); idx++) {
             let pos = display.getPositionOfIndex(idx);
-            renderSegment(idx, scrollbarTop, pos);
+            renderSegment(idx, scrollbarTop, pos, display.getLineGap());
         }
 
         /* Display Annotations */
@@ -174,22 +174,15 @@ View.prototype.draw = function () {
         let scrollbarLeft = scrollbar.getScrollbarLeft();
         let scrollbarTop = scrollbar.getScrollbarTop();
         let trianglePos = scrollbar.getMainPosition();
-        noStroke();
-        fill("rgb(190, 190, 190)");
-        rect(
-            scrollbar.x,
-            scrollbar.y,
-            scrollbar.width + scrollbar.padding * 2,
-            scrollbar.height + scrollbar.padding * 2
-        );
-
         fill("rgb(34, 154, 34)");
+        stroke("rgb(0, 0, 0)");
         rect(
             scrollbarLeft,
             scrollbarTop,
             scrollbar.width,
             scrollbar.height
         );
+        noStroke();
 
         /* Global Scrollbar Segments */
         fill(0);
@@ -197,7 +190,7 @@ View.prototype.draw = function () {
         for (let idx = 0; idx < scrollbar.getSize(); idx++) {
             let top = scrollbarTop;
             let pos = scrollbar.getPositionOfIndex(idx);
-            renderSegment(idx, top, pos);
+            renderSegment(idx, top, pos, scrollbar.getLineGap());
         }
 
         /* Global Scrollbar Config Benchmark */
@@ -239,27 +232,31 @@ View.prototype.modelChanged = function () {
  * @param {number} idx index of the line
  * @param {number} top y coordinate of the top of the object being draw on
  * @param {number} pos x coordinate of the line
+ * @param {number} lineGap length of the gap between each segment
  */
-function renderSegment(idx, top, pos) {
-    switch (idx % 50) {
+function renderSegment(idx, top, pos, lineGap) {
+    const controlNum = 50;
+    switch (idx % controlNum) {
         case 0:
             line(pos, top, pos, top + 16);
             break;
-        case 25:
+        case Math.floor(controlNum * 1 / 2):
             line(pos, top, pos, top + 12);
             break;
-        case 12:
-        case 18:
+        case Math.floor(controlNum * 1 / 4):
+        case Math.floor(controlNum * 3 / 4):
             line(pos, top, pos, top + 8);
             break;
-        case 6:
-        case 18:
-        case 32:
-        case 44:
+        case Math.floor(controlNum * 1 / 8):
+        case Math.floor(controlNum * 3 / 8):
+        case Math.floor(controlNum * 5 / 8):
+        case Math.floor(controlNum * 7 / 8):
             line(pos, top, pos, top + 5);
             break;
         default:
-            line(pos, top, pos, top + 1);
+            if (lineGap > 1) {
+                line(pos, top, pos, top + 1);
+            }
             break;
     }
 }
@@ -309,5 +306,7 @@ function renderDisplaySkeleton(display, selected, opt_opacity=1.0, opt_x, opt_y)
     } else {
         fill(`rgba(34, 154, 34, ${opt_opacity})`);
     }
+    stroke("rgb(0, 0, 0)");
     rect(x + display.padding, y + display.padding + display.height, display.width, display.scrollbarHeight);
+    noStroke();
 }
