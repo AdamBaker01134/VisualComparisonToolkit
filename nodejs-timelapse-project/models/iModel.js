@@ -3,6 +3,7 @@
 function iModel () {
     this.focused = null;
     this.selection = null;
+    this.highlightedAnnotation = null;
     this.highlightedConfig = null;
     this.ghost = null;
     this.subscribers = [];
@@ -21,21 +22,22 @@ iModel.prototype.setFocused = function (focusedObject) {
 
 /**
  * Highlight a configuration
- * @param {string} configName name of configuration
+ * @param {Object} config name of configuration
  */
-iModel.prototype.highlightConfig = function (configName) {
-    if (this.highlightedConfig !== configName) {
-        this.highlightedConfig = configName;
+iModel.prototype.highlightConfig = function (config) {
+    if (this.highlightedConfig !== config) {
+        this.highlightedConfig = config;
         this.notifySubscribers();
     }
 }
 
 /**
- * Unhighlight a configuration
+ * Toggle highlighting of an annotation in a scrollbar.
+ * @param {Object} annotation annotation to highlight
  */
-iModel.prototype.unhighlightConfig = function () {
-    if (this.highlightedConfig !== null) {
-        this.highlightedConfig = null;
+iModel.prototype.highlightAnnotation = function (annotation) {
+    if (this.highlightedAnnotation !== annotation) {
+        this.highlightedAnnotation = annotation;
         this.notifySubscribers();
     }
 }

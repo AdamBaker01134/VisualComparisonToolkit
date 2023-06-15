@@ -47,7 +47,7 @@ Model.prototype.setDisplaysPerRow = function (size) {
  * @param {boolean} secondary true if we want to set secondary images instead of primary
  * @param {string} filter filter name
  */
-Model.prototype.setDisplayImages = function (display, images, secondary, filter="") {
+Model.prototype.setDisplayImages = function (display, images, secondary, filter = "") {
     if (secondary && display instanceof Overlay) {
         display.setSecondaryImages(images, filter);
     } else {
@@ -209,6 +209,40 @@ Model.prototype.checkScrollbarHit = function (mx, my) {
 }
 
 /**
+ * Model check if either the main, start, or end position marker was hit in a mouse event.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {boolean}
+ */
+Model.prototype.checkPositionMarkerHit = function (mx, my) {
+    let target = this.checkScrollbarHit(mx, my);
+    if (target !== null) {
+        return target.checkMainPositionHit(mx) || target.checkStartHit(mx) || target.checkEndHit(mx);
+    }
+    return false;
+}
+
+/**
+ * Model check if an annotation was hit in a mouse event.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Object}
+ */
+Model.prototype.checkAnnotationHit = function (mx, my) {
+    let target = this.checkScrollbarHit(mx, my);
+    let hitMargin = 5;
+    if (target instanceof Display || target instanceof Overlay) {
+        for (let i = 0; i < target.annotations.length; i++) {
+            let pos = target.getPositionOfIndex(target.annotations[i].index);
+            if (mx > pos - hitMargin && mx < pos + hitMargin) {
+                return target.annotations[i];
+            }
+        }
+    }
+    return null;
+}
+
+/**
  * Model check if a config benchmark was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
@@ -216,12 +250,13 @@ Model.prototype.checkScrollbarHit = function (mx, my) {
  */
 Model.prototype.checkBenchmarkHit = function (mx, my) {
     let target = this.checkScrollbarHit(mx, my);
+    let hitMargin = 5;
     if (target instanceof Display || target instanceof Overlay) {
         for (let i = 0; i < this.configs.length; i++) {
             let match = this.configs[i].displays.find(display => display.id === target.id);
             if (match) {
                 let pos = target.getPositionOfIndex(match.index);
-                if (mx > pos - 2 && mx < pos + 2 && my < target.getScrollbarTop() + 4) {
+                if (mx > pos - 2 - hitMargin && mx < pos + 2 + hitMargin && my < target.getScrollbarTop() + 4 + hitMargin) {
                     return this.configs[i];
                 }
             }
@@ -230,7 +265,7 @@ Model.prototype.checkBenchmarkHit = function (mx, my) {
         for (let i = 0; i < this.configs.length; i++) {
             let index = this.configs[i].globalScrollbar.index;
             let pos = target.getPositionOfIndex(index);
-            if (mx > pos - 2 && mx < pos + 2 && my < target.getScrollbarTop() + 4) {
+            if (mx > pos - 2 - hitMargin && mx < pos + 2 + hitMargin && my < target.getScrollbarTop() + 4 + hitMargin) {
                 return this.configs[i];
             }
         }
@@ -351,27 +386,24 @@ Model.prototype.addConfig = function () {
 
 /**
  * Load a saved config
- * @param {string} configName name of configuration
+ * @param {Object} config configuration
  */
-Model.prototype.loadConfig = function (configName) {
-    let config = this.configs.find(config => config.name === configName);
-    if (config) {
-        this.globalScrollbar.setIndex(config.globalScrollbar.index);
-        this.offset = this.globalScrollbar.index;
-        config.displays.forEach(configDisplay => {
-            let display = this.displays.find(display => display.id === configDisplay.id);
-            if (display) {
-                display.setStart(configDisplay.start);
-                display.setEnd(configDisplay.end);
-                display.setIndex(configDisplay.index);
-                if (display instanceof Overlay) {
-                    display.setOpacity(configDisplay.opacity);
-                }
+Model.prototype.loadConfig = function (config) {
+    this.globalScrollbar.setIndex(config.globalScrollbar.index);
+    this.offset = this.globalScrollbar.index;
+    config.displays.forEach(configDisplay => {
+        let display = this.displays.find(display => display.id === configDisplay.id);
+        if (display) {
+            display.setStart(configDisplay.start);
+            display.setEnd(configDisplay.end);
+            display.setIndex(configDisplay.index);
+            if (display instanceof Overlay) {
+                display.setOpacity(configDisplay.opacity);
             }
-        });
-        this.setNormalized(config.normalized);
-        this.notifySubscribers();
-    }
+        }
+    });
+    this.setNormalized(config.normalized);
+    this.notifySubscribers();
 }
 
 /**
@@ -389,12 +421,12 @@ Model.prototype.loadDatasets = function () {
  * @param {string} name name of dataset to load.
  * @param {Object} options optional attributes to alter the loading process.
  */
-Model.prototype.loadDataset = function (name, options={}) {
+Model.prototype.loadDataset = function (name, options = {}) {
     let dataset = this.datasets.find(d => d.name === name);
     if (!!dataset) {
         /* All possible options */
         const dir = options.dir || dataset.dir;
-        const callback = options.callback || (() => {});
+        const callback = options.callback || (() => { });
         const filter = options.filter || "";
         let display = options.display || null;
 

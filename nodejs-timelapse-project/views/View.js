@@ -73,7 +73,6 @@ View.prototype.draw = function () {
         }
 
         /* Scrollbar */
-        let lineGap = display.getLineGap();
         let scrollbarLeft = display.getScrollbarLeft();
         let scrollbarTop = display.getScrollbarTop();
         let trianglePos = display.getMainPosition();
@@ -109,18 +108,29 @@ View.prototype.draw = function () {
         fill("rgb(0, 0, 0)");
         stroke("rgb(25, 25, 25)");
         for (let idx = 0; idx < display.getSize(); idx++) {
-            let pos = scrollbarLeft + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-            renderLine(idx, scrollbarTop, pos);
+            let pos = display.getPositionOfIndex(idx);
+            renderSegment(idx, scrollbarTop, pos);
         }
 
-        /* Config Benchmark */
+        /* Display Annotations */
+        stroke("rgb(255, 255, 0)");
+        display.annotations.forEach(annotation => {
+            if (this.imodel.highlightedAnnotation === annotation) {
+                strokeWeight(3);
+            }
+            let pos = display.getPositionOfIndex(annotation.index);
+            line(pos, scrollbarTop, pos, scrollbarTop + display.scrollbarHeight);
+            strokeWeight(1);
+        });
+
+        /* Display Config Benchmarks */
         this.model.configs.forEach((config, index) => {
             let match = config.displays.find(d => d.id === display.id);
             if (match) {
                 let colourTint = 32 * index;
                 let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-                let pos = scrollbarLeft + (lineGap * match.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-                renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+                let pos = display.getPositionOfIndex(match.index);
+                renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config);
             }
         });
 
@@ -161,7 +171,6 @@ View.prototype.draw = function () {
     /* Global Scrollbar */
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof GlobalScrollbar) {
-        let lineGap = scrollbar.getLineGap();
         let scrollbarLeft = scrollbar.getScrollbarLeft();
         let scrollbarTop = scrollbar.getScrollbarTop();
         let trianglePos = scrollbar.getMainPosition();
@@ -187,19 +196,20 @@ View.prototype.draw = function () {
         stroke("rgb(25, 25, 25)");
         for (let idx = 0; idx < scrollbar.getSize(); idx++) {
             let top = scrollbarTop;
-            let pos = scrollbarLeft + (lineGap * idx) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-            renderLine(idx, top, pos);
+            let pos = scrollbar.getPositionOfIndex(idx);
+            renderSegment(idx, top, pos);
         }
 
         /* Global Scrollbar Config Benchmark */
         this.model.configs.forEach((config, index) => {
             let colourTint = 32 * index;
             let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-            let pos = scrollbarLeft + (lineGap * config.globalScrollbar.index) + (lineGap * 0.1) + (lineGap / 2) - 0.5;
-            renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config.name);
+            let pos = scrollbar.getPositionOfIndex(config.globalScrollbar.index);
+            renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config);
         });
 
         /* Global Scrollbar main position arrow */
+        fill("rgb(0, 0, 0)");
         stroke("rgb(25, 25, 25)");
         triangle(
             trianglePos,
@@ -230,7 +240,7 @@ View.prototype.modelChanged = function () {
  * @param {number} top y coordinate of the top of the object being draw on
  * @param {number} pos x coordinate of the line
  */
-function renderLine(idx, top, pos) {
+function renderSegment(idx, top, pos) {
     switch (idx % 50) {
         case 0:
             line(pos, top, pos, top + 16);
@@ -256,7 +266,7 @@ function renderLine(idx, top, pos) {
 
 /**
  * Draw a benchmark with a given colour
- * @param {number} top y coordinate of the top of the object being draw on
+ * @param {number} top y coordinate of the top of the object being drawn on
  * @param {number} pos x coordinate of the benchmark
  * @param {string} colour colour of the benchmark
  * @param {boolean} highlighted whether or not to highlight the benchmark

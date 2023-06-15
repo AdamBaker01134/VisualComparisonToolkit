@@ -79,10 +79,12 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
         case STATE.READY:
             if (my < scrollY) {
                 currentState = STATE.OUT_OF_BOUNDS;
-            } else if (hit = model.checkBenchmarkHit(mx, my)) {
-                imodel.highlightConfig(hit.name);
             } else {
-                imodel.unhighlightConfig();
+                hit = model.checkBenchmarkHit(mx, my);
+                imodel.highlightConfig(hit);
+                /* Only want to highlight annotation if no configs are highlighted */
+                hit = hit === null ? model.checkAnnotationHit(mx, my) : null;
+                imodel.highlightAnnotation(hit);
             }
             break;
         case STATE.OUT_OF_BOUNDS:
@@ -148,9 +150,12 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     let hit = null;
     switch (currentState) {
         case STATE.READY:
-            if (imodel.highlightedConfig) {
-                model.loadConfig(imodel.highlightedConfig);
-            } else if (hit = model.checkScrollbarHit(mx, my)) {
+            if (hit = model.checkScrollbarHit(mx, my)) {
+                if (imodel.highlightedConfig) {
+                    model.loadConfig(imodel.highlightedConfig);
+                } else if (imodel.highlightedAnnotation) {
+                    model.setIndex(hit, imodel.highlightedAnnotation.index);
+                }
                 imodel.setFocused(hit);
                 let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
@@ -262,8 +267,9 @@ function _attachHeaderListeners() {
     /* Global header functions */
     document.getElementById("loadConfigButton")?.addEventListener("click", e => {
         let configName = document.getElementById("configSelect")?.value;
-        if (!!configName) {
-            model.loadConfig(configName);
+        let config = model.configs.find(configuration => configuration.name === configName);
+        if (!!config) {
+            model.loadConfig(config);
         }
     });
     document.getElementById("saveConfigButton")?.addEventListener("click", e => {
