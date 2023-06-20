@@ -152,12 +152,13 @@ Headerview.prototype.updateAnnotationSelect = function () {
         let defaultOption = document.createElement("option");
         defaultOption.text = "---";
         annotationSelect.add(defaultOption);
-        this.imodel.selection.annotations.forEach(annotation => {
+        let scrollbar = this.imodel.focused || this.imodel.selection.scrollbars[0];
+        scrollbar.annotations.forEach(annotation => {
             let option = document.createElement("option");
             option.text = annotation.name;
             annotationSelect.add(option);
         });
-        this.annotationSnapshot = [...this.imodel.selection.annotations];
+        this.annotationSnapshot = [...scrollbar.annotations];
     }
 }
 

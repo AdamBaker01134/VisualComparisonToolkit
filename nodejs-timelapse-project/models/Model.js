@@ -19,15 +19,13 @@ function Model() {
     this.displays = [];
     this.configs = [];
     this.globalScrollbarHeight = 40;
-    this.globalScrollbar = new GlobalScrollbar(
+    this.globalScrollbar = new Scrollbar(
         0,
         windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight,
         this.canvasWidth,
         this.globalScrollbarHeight,
-        0,
         this.maxImages,
     );
-    this.offset = 0;
     this.subscribers = [];
 }
 
@@ -127,17 +125,7 @@ Model.prototype.setIndexFromMouse = function (focusedObject, mx) {
  * @param {number} index index to set in the display
  */
 Model.prototype.setIndex = function (focusedObject, index) {
-    focusedObject.setIndex(index);
-    if (focusedObject instanceof GlobalScrollbar) {
-        this.displays.forEach(display => {
-            let step = 1; /* Normalizing ratio */
-            if (this.normalized) {
-                step = (display.end - display.start) / focusedObject.getSize();
-            }
-            display.setIndex(display.index + (this.globalScrollbar.index - this.offset) * step);
-        });
-        this.offset = this.globalScrollbar.index;
-    }
+    focusedObject.setIndex(index, this.normalized);
     this.notifySubscribers();
 }
 
@@ -187,7 +175,7 @@ Model.prototype.setEnd = function (focusedObject, index) {
  */
 Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
     return getIndexFromMouse(
-        focusedObject.x + focusedObject.padding,
+        focusedObject.x,
         mx,
         focusedObject.getSize(),
         focusedObject.width
@@ -208,15 +196,16 @@ Model.prototype.checkImageHit = function (mx, my) {
 }
 
 /**
- * Model check if a display/global scrollbar was hit in a mouse event
+ * Model check if a scrollbar was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
- * @returns {Display|Overlay|GlobalScrollbar|null}
+ * @returns {Scrollbar|null}
  */
 Model.prototype.checkScrollbarHit = function (mx, my) {
     if (this.globalScrollbar?.checkScrollbarHit(mx, my)) return this.globalScrollbar;
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkScrollbarHit(mx, my)) return this.displays[i];
+        let index = this.displays[i].checkScrollbarHit(mx, my);
+        if (index >= 0) return this.displays[i].scrollbars[index];
     }
     return null;
 }
@@ -274,7 +263,7 @@ Model.prototype.checkBenchmarkHit = function (mx, my) {
                 }
             }
         }
-    } else if (target instanceof GlobalScrollbar) {
+    } else if (target instanceof Scrollbar) {
         for (let i = 0; i < this.configs.length; i++) {
             let index = this.configs[i].globalScrollbar.index;
             let pos = target.getPositionOfIndex(index);
@@ -292,6 +281,7 @@ Model.prototype.checkBenchmarkHit = function (mx, my) {
  */
 Model.prototype.addDisplay = function (display) {
     this.displays.push(display);
+    this.globalScrollbar.addChild(display.scrollbars[display.scrollbars.length-1]);
     this.notifySubscribers();
 }
 
@@ -303,12 +293,13 @@ Model.prototype.addDisplay = function (display) {
 Model.prototype.addOverlay = function (overlay, target) {
     this.displays.push(overlay);
     this.moveDisplay(overlay, target);
+    this.globalScrollbar.addChild(overlay.scrollbars[overlay.scrollbars.length-1]);
     this.notifySubscribers();
 }
 
 /**
  * Move a display to the position of a target display and update the locations of all affected displays.
- * @param {Display} display display to move
+ * @param {Display|Overlay} display display to move
  * @param {Display} target target with the displays new location
  */
 Model.prototype.moveDisplay = function (display, target) {
@@ -403,7 +394,6 @@ Model.prototype.addConfig = function () {
  */
 Model.prototype.loadConfig = function (config) {
     this.globalScrollbar.setIndex(config.globalScrollbar.index);
-    this.offset = this.globalScrollbar.index;
     config.displays.forEach(configDisplay => {
         let display = this.displays.find(display => display.id === configDisplay.id);
         if (display) {
