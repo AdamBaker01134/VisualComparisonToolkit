@@ -13,6 +13,8 @@ function Scrollbar(x, y, width, height, size, children=[]) {
     this.start = 0;
     this.end = this.getSize() - 1;
 
+    this.locked = false;
+
     this.annotations = [];
 
     this.children = children;
@@ -108,6 +110,8 @@ Scrollbar.prototype.checkEndHit = function (mx) {
  * @param {boolean} normalize whether or not to normalize children
  */
 Scrollbar.prototype.setIndex = function (index, normalize) {
+    if (this.locked) return;
+
     let saved = this.index;
     this.index = index;
     if (this.index < this.start) {
@@ -134,7 +138,8 @@ Scrollbar.prototype.setIndex = function (index, normalize) {
  * @param {number} index new start index
  */
 Scrollbar.prototype.setStart = function (index) {
-    if (this.children.length > 0) return;
+    if (this.children.length > 0 || this.locked) return;
+
     this.start = index;
     if (this.start < 0) this.start = 0;
     if (this.start >= this.end) this.start = this.end - 1;
@@ -146,11 +151,20 @@ Scrollbar.prototype.setStart = function (index) {
  * @param {number} index new end index
  */
 Scrollbar.prototype.setEnd = function (index) {
-    if (this.children.length > 0) return;
+    if (this.children.length > 0 || this.locked) return;
+
     this.end = index;
     if (this.end >= this.getSize()) this.end = this.getSize() - 1;
     if (this.end <= this.start) this.end = this.start + 1;
     if (this.end < this.index) this.index = this.end;
+}
+
+/**
+ * Set the locked state of the scrollbar.
+ * @param {boolean} locked whether or not the scrollbar is locked
+ */
+Scrollbar.prototype.setLocked = function (locked) {
+    this.locked = locked;
 }
 
 /**

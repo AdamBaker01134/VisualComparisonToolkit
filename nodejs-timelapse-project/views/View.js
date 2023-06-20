@@ -77,10 +77,11 @@ View.prototype.draw = function () {
             let trianglePos = scrollbar.getMainPosition();
             let startPos = scrollbar.getStartPosition();
             let endPos = scrollbar.getEndPosition();
-            if (this.imodel.focused === scrollbar) strokeWeight(2);
-            else strokeWeight(1);
+            stroke("rgb(0, 0, 0)");
             if (display.locked) {
                 fill("rgb(128, 128, 128)");
+            } else if (this.imodel.focused === scrollbar) {
+                fill("rgb(34, 200, 34)");
             } else {
                 fill("rgb(34, 154, 34)");
             }
@@ -90,7 +91,6 @@ View.prototype.draw = function () {
                 scrollbar.width,
                 scrollbar.height
             );
-            strokeWeight(1);
             noStroke();
             fill("rgb(255, 255, 255)");
             if (startPos >= 0 && endPos >= 0) {
@@ -179,16 +179,18 @@ View.prototype.draw = function () {
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof Scrollbar) {
         let trianglePos = scrollbar.getMainPosition();
-        fill("rgb(34, 154, 34)");
-        if (this.imodel.focused === scrollbar) strokeWeight(2);
-        else strokeWeight(1);
+        if (this.imodel.focused === scrollbar) {
+            fill("rgb(34, 200, 34)");
+        } else {
+            fill("rgb(34, 154, 34)");
+        }
+        stroke("rgb(0, 0, 0)");
         rect(
             scrollbar.x,
             scrollbar.y,
             scrollbar.width,
             scrollbar.height
         );
-        strokeWeight(1);
         noStroke();
 
         /* Global Scrollbar Segments */
@@ -260,8 +262,8 @@ function renderSegment(idx, top, pos, lineGap) {
             line(pos, top, pos, top + 5);
             break;
         default:
-            if (lineGap > 1) {
-                line(pos, top, pos, top + 1);
+            if (lineGap > 3) {
+                line(pos, top, pos, top + 3);
             }
             break;
     }

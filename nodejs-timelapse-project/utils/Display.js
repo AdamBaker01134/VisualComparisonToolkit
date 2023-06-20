@@ -154,6 +154,7 @@ Display.prototype.getIndex = function (scrollbarPos) {
  */
 Display.prototype.setLocked = function (locked) {
     this.locked = locked;
+    this.scrollbars.forEach(scrollbar => scrollbar.setLocked(locked));
 }
 
 /**

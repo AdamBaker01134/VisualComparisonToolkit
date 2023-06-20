@@ -108,7 +108,7 @@ Model.prototype.decrementLoading = function () {
 
 /**
  * Set the index of the focused display/scrollbar based on the position of the cursor
- * @param {Display|Overlay|GlobalScrollbar} focusedObject focused display/scrollbar
+ * @param {Scrollbar} focusedObject focused display/scrollbar
  * @param {number} mx x coordinate of the cursor
  */
 Model.prototype.setIndexFromMouse = function (focusedObject, mx) {
@@ -117,7 +117,7 @@ Model.prototype.setIndexFromMouse = function (focusedObject, mx) {
 
 /**
  * Set the index of a specific display/scrollbar
- * @param {Display|Overlay|GlobalScrollbar} focusedObject relevant display/scrollbar
+ * @param {Scrollbar} focusedObject relevant display/scrollbar
  * @param {number} index index to set in the display
  */
 Model.prototype.setIndex = function (focusedObject, index) {
@@ -127,7 +127,7 @@ Model.prototype.setIndex = function (focusedObject, index) {
 
 /**
  * Set the start index of thefocused display/scrollbar based on the position of the cursor
- * @param {Display} focusedObject focused display/scrollbar
+ * @param {Scrollbar} focusedObject focused display/scrollbar
  * @param {number} mx x coordinate of the cursor
  */
 Model.prototype.setStartFromMouse = function (focusedObject, mx) {
@@ -136,7 +136,7 @@ Model.prototype.setStartFromMouse = function (focusedObject, mx) {
 
 /**
  * Set the start index of a specific display/scrollbar
- * @param {Display} focusedObject relevant display/scrollbar
+ * @param {Scrollbar} focusedObject relevant display/scrollbar
  * @param {number} index start index to set in the display
  */
 Model.prototype.setStart = function (focusedObject, index) {
@@ -146,7 +146,7 @@ Model.prototype.setStart = function (focusedObject, index) {
 
 /**
  * Set the end index of the focused display/scrollbar based on the position of the cursor
- * @param {Display} focusedObject focused display/scrollbar
+ * @param {Scrollbar} focusedObject focused display/scrollbar
  * @param {number} mx x coordinate of the cursor
  */
 Model.prototype.setEndFromMouse = function (focusedObject, mx) {
@@ -155,7 +155,7 @@ Model.prototype.setEndFromMouse = function (focusedObject, mx) {
 
 /**
  * Set the end index of a specific display/scrollbar
- * @param {Display} focusedObject relevant display/scrollbar
+ * @param {Scrollbar} focusedObject relevant display/scrollbar
  * @param {number} index end index to set in the display
  */
 Model.prototype.setEnd = function (focusedObject, index) {
@@ -165,7 +165,7 @@ Model.prototype.setEnd = function (focusedObject, index) {
 
 /**
  * Map the mouses x coordinate to an index in the display/scrollbar
- * @param {Display|Overlay|GlobalScrollbar} focusedObject object mouse is focused on
+ * @param {Scrollbar} focusedObject object mouse is focused on
  * @param {number} mx x coordinate of the cursor
  * @returns {number}
  */
