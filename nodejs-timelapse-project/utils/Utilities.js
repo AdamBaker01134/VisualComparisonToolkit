@@ -75,6 +75,36 @@ function getSecondaryDisplayNameFromId(id) {
 }
 
 /**
+ * Generate the x position of a new (or existing) display in the model
+ * @param {Model} model
+ * @param {number} position display position in the model (within the displays array)
+ */
+function generateDisplayX (model, position) {
+    let column = position % model.displaysPerRow;
+    return model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth);
+}
+
+/**
+ * Generate the y position of a new (or existing) display in the model
+ * @param {Model} model
+ * @param {number} position display position in the model (within the displays array)
+ */
+function generateDisplayY (model, position) {
+    let y = model.displayPadding;
+    let row = Math.floor(position / model.displaysPerRow);
+    for (let i = 0; i < row; i++) {
+        let maxHeight = 0;
+        for (let j = 0; j < model.displaysPerRow; j++) {
+            let display = model.displays[i * model.displaysPerRow + j];
+            let height = display.padding * 3 + display.height + display.scrollbarHeight * display.scrollbars.length;
+            if (height > maxHeight) maxHeight = height;
+        }
+        y += maxHeight;
+    }
+    return y;
+}
+
+/**
  * Get index in a scrollbar based on the x coordinate of the cursor
  * @param {number} x x coordinate of the scrollbar
  * @param {number} mx x coordinate of the cursor

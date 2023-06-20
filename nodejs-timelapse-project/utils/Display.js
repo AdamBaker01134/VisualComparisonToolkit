@@ -188,6 +188,7 @@ Display.prototype.setDimensions = function (newWidth, newHeight) {
  * @param {number} newY new y coordinate for the display
  */
 Display.prototype.setLocation = function (newX, newY) {
+    if (isNaN(newX) || isNaN(newY)) return;
     let dx = newX - this.x;
     let dy = newY - this.y;
     this.x = newX;

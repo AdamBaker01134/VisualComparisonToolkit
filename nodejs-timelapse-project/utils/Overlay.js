@@ -28,7 +28,7 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
         this.y + this.padding + this.height + this.scrollbarHeight * 2,
         this.width,
         this.scrollbarHeight,
-        1000,
+        Math.max(this.images.length, this.secondaryImages.length),
         [scrollbar1, scrollbar2]
     ));
 

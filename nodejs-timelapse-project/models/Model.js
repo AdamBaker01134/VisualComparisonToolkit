@@ -34,18 +34,14 @@ function Model() {
  * @param {number} width new canvas width
  * @param {number} height new canvas height
  */
-Model.prototype.updateCanvasDimensions = function () {
+Model.prototype.updateCanvas = function () {
     this.canvasWidth = windowWidth * 0.98;
     this.canvasHeight = windowHeight * 3;;
     this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
     this.displays.forEach((display, index) => {
-        let column = index % this.displaysPerRow;
-        let row = Math.floor(index / this.displaysPerRow);
-        display.setLocation(
-            this.displayPadding + column * (this.displayPadding * 3 + this.displayWidth),
-            this.displayPadding + row * (this.displayPadding * 3 + this.displayHeight + this.displayScrollbarHeight));
+        display.setLocation(generateDisplayX(this, index), generateDisplayY(this, index));
     });
     resizeCanvas(this.canvasWidth, this.canvasHeight);
     this.notifySubscribers();
@@ -306,24 +302,9 @@ Model.prototype.moveDisplay = function (display, target) {
     let index = this.displays.findIndex(d => d === display);
     let targetIndex = this.displays.findIndex(d => d === target);
     if (index >= 0 && targetIndex >= 0 && index !== targetIndex) {
-        let savedTargetX = this.displays[targetIndex].x;
-        let savedTargetY = this.displays[targetIndex].y;
-        if (index < targetIndex) {
-            for (let i = targetIndex; i > index; i--) {
-                let newX = this.displays[i - 1].x;
-                let newY = this.displays[i - 1].y;
-                this.displays[i].setLocation(newX, newY);
-            }
-        } else {
-            for (let i = targetIndex; i < index; i++) {
-                let newX = this.displays[i + 1].x;
-                let newY = this.displays[i + 1].y;
-                this.displays[i].setLocation(newX, newY);
-            }
-        }
-        display.setLocation(savedTargetX, savedTargetY);
         this.displays.splice(index, 1);
         this.displays.splice(targetIndex, 0, display);
+        this.updateCanvas();
     }
     this.notifySubscribers();
 }
@@ -335,12 +316,8 @@ Model.prototype.moveDisplay = function (display, target) {
 Model.prototype.removeDisplay = function (display) {
     let index = this.displays.findIndex(d => d === display);
     if (index >= 0) {
-        for (let i = this.displays.length - 1; i > index; i--) {
-            let newX = this.displays[i - 1].x;
-            let newY = this.displays[i - 1].y;
-            this.displays[i].setLocation(newX, newY);
-        }
         this.displays.splice(index, 1);
+        this.updateCanvas();
     }
     this.notifySubscribers();
 }
@@ -452,12 +429,10 @@ Model.prototype.loadDataset = function (name, options = {}) {
                     this.setDisplayImages(display, loadObj.images, display instanceof Overlay, filter);
                 } else {
                     /* If display is not defined, create a new one populated with loaded information */
-                    let column = this.displays.length % this.displaysPerRow;
-                    let row = Math.floor(this.displays.length / this.displaysPerRow);
                     display = new Display(
                         generateDisplayId(this, loadObj.name),
-                        this.displayPadding + column * (this.displayPadding * 3 + this.displayWidth),
-                        this.displayPadding + row * (this.displayPadding * 3 + this.displayHeight + this.displayScrollbarHeight),
+                        generateDisplayX(this, this.displays.length),
+                        generateDisplayY(this, this.displays.length),
                         this.displayWidth,
                         this.displayHeight,
                         this.displayPadding,

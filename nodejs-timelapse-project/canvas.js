@@ -211,12 +211,10 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
                 if (hit !== imodel.ghost) {
-                    let column = model.displays.length % model.displaysPerRow;
-                    let row = Math.floor(model.displays.length / model.displaysPerRow);
                     let overlay = new Overlay(
                         generateOverlayId(model, getDisplayNameFromId(imodel.ghost.id), getDisplayNameFromId(hit.id)),
-                        model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth),
-                        model.displayPadding + row * (model.displayPadding * 3 + model.displayHeight + model.displayScrollbarHeight),
+                        generateDisplayX(model, model.displays.length),
+                        generateDisplayY(model, model.displays.length),
                         model.displayWidth,
                         model.displayHeight,
                         model.displayPadding,
@@ -256,7 +254,7 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
 }
 
 function windowResized (event) {
-    model.updateCanvasDimensions();
+    model.updateCanvas();
 }
 
 function _attachHeaderListeners() {
