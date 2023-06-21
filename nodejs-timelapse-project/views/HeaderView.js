@@ -186,10 +186,12 @@ Headerview.prototype.updateFilterSelect = function () {
                 .forEach(filterName => {
                     let option = document.createElement("option");
                     option.text = filterName;
+                    option.disabled = selection.locked;
                     filterSelect.add(option);
                 });
             let resetOption = document.createElement("option");
             resetOption.text = "Reset";
+            resetOption.disabled = selection.locked;
             filterSelect.add(resetOption);
         } else {
             let defaultOption = document.createElement("option");
@@ -198,6 +200,7 @@ Headerview.prototype.updateFilterSelect = function () {
             selection.filters.forEach(filterName => {
                 let option = document.createElement("option");
                 option.text = filterName;
+                option.disabled = selection.locked;
                 filterSelect.add(option);
             });
         }
