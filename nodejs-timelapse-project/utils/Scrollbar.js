@@ -289,8 +289,37 @@ Scrollbar.prototype.hasAnnotation = function (name) {
 
 /* Convert scrollbar to JSON */
 Scrollbar.prototype.toJSON = function () {
-    let result = convertClassObjectToJSON(this);
-    result.links = this.links.map(link => link.id);
-    result.children = this.children.map(child => child.id);
-    return result;
+    return {
+        id: this.id,
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        size: this.size,
+        index: this.index,
+        start: this.start,
+        end: this.end,
+        locked: this.locked,
+        annotations: this.annotations,
+        links: this.links.map(link => link.id),
+        children: this.children.map(child => child.id),
+    }
+}
+
+/* Load scrollbar from JSON */
+Scrollbar.prototype.fromJSON = function (json) {
+    this.id = json.id;
+    this.x = json.x;
+    this.y = json.y;
+    this.width = json.width;
+    this.height = json.height;
+    this.size = json.size;
+    this.index = json.index;
+    this.start = json.start;
+    this.end = json.end;
+    this.locked = json.locked;
+    this.annotations = json.annotations;
+    this.links = json.links;
+    this.children = json.children;
+    return this;
 }

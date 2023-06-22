@@ -335,13 +335,51 @@ Display.prototype.addAnnotation = function (scrollbarPos, name) {
     }
 }
 
-/* Convert overlay to JSON */
+/* Convert display to JSON */
 Display.prototype.toJSON = function () {
-    let result = convertClassObjectToJSON(this);
-    result.dataset = getDisplayNameFromId(this.id),
-        result.scrollbars = this.scrollbars.map(scrollbar => scrollbar.toJSON());
-    result.frames = [];
-    result.timestamps = [];
-    result.images = [];
-    return result;
+    return {
+        id: this.id,
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        paddding: this.padding,
+        scrollbarHeight: this.scrollbarHeight,
+        frames: [],
+        timestamps: [],
+        images: [],
+        filters: this.filters,
+        filter: this.filter,
+        viewportX: this.viewportX,
+        viewportY: this.viewportY,
+        viewportWidth: this.viewportWidth,
+        viewportHeight: this.viewportHeight,
+        scrollbars: this.scrollbars.map(scrollbar => scrollbar.toJSON()),
+        mainScrollbarIndex: this.mainScrollbarIndex,
+        locked: this.locked,
+    }
+}
+
+/* Load display from JSON */
+Display.prototype.fromJSON = function (json) {
+    this.id = json.id;
+    this.x = json.x;
+    this.y = json.y;
+    this.width = json.width;
+    this.height = json.height;
+    this.padding = json.padding;
+    this.scrollbarHeight = json.scrollbarHeight;
+    this.frames = json.frames;
+    this.timestamps = json.timestamps;
+    this.images = json.images;
+    this.filters = json.filters;
+    this.filter = json.filter;
+    this.viewportX = json.viewportX;
+    this.viewportY = json.viewportY;
+    this.viewportWidth = json.viewportWidth;
+    this.viewportHeight = json.viewportHeight;
+    this.scrollbars = json.scrollbars.map(scrollbar => scrollbar.fromJSON());
+    this.mainScrollbarIndex = json.mainScrollbarIndex;
+    this.locked = json.locked;
+    return this;
 }

@@ -388,7 +388,12 @@ Model.prototype.loadConfig = function (config) {
     //         }
     //     }
     // });
-    // this.setNormalized(config.normalized);
+
+    /* Load global scrollbar from JSON */
+    /* Load each existing display from JSON */
+    /* Create any non-existing displays from JSON */
+    this.setNormalized(config.normalized);
+    this.updateCanvas();
     this.notifySubscribers();
 }
 

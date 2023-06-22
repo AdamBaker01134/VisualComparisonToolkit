@@ -1,6 +1,6 @@
 /* Application Overlay for Videos */
 "use strict";
-function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, secondaryDisplay) {
+function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, secondaryDisplay) {
     Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, display.frames, display.timestamps, display.images, secondaryDisplay.filters]);
 
     this.images = this.images.slice(display.start, display.end);
@@ -52,7 +52,7 @@ Overlay.prototype = Object.create(Display.prototype);
 Overlay.prototype.constructor = Overlay;
 
 /* Set the overlays secondary images */
-Overlay.prototype.setSecondaryImages = function (images, filter="") {
+Overlay.prototype.setSecondaryImages = function (images, filter = "") {
     this.secondaryImages = images;
     this.scrollbars[1].setSize(this.secondaryImages.length);
     this.secondaryFilter = filter;
@@ -135,4 +135,59 @@ Overlay.prototype.setSecondaryImages = function (images, filter="") {
  */
 Overlay.prototype.setOpacity = function (opacity) {
     this.opacity = opacity;
+}
+
+/* Convert overlay to JSON */
+Overlay.prototype.toJSON = function () {
+    return {
+        id: this.id,
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        paddding: this.padding,
+        scrollbarHeight: this.scrollbarHeight,
+        frames: [],
+        timestamps: [],
+        images: [],
+        secondaryImages: [],
+        filters: this.filters,
+        filter: this.filter,
+        secondaryFilter: this.secondaryFilter,
+        viewportX: this.viewportX,
+        viewportY: this.viewportY,
+        viewportWidth: this.viewportWidth,
+        viewportHeight: this.viewportHeight,
+        scrollbars: this.scrollbars.map(scrollbar => scrollbar.toJSON()),
+        mainScrollbarIndex: this.mainScrollbarIndex,
+        locked: this.locked,
+        opacity: this.opacity,
+    }
+}
+
+/* Load overlay from JSON */
+Overlay.prototype.fromJSON = function (json) {
+    this.id = json.id;
+    this.x = json.x;
+    this.y = json.y;
+    this.width = json.width;
+    this.height = json.height;
+    this.padding = json.padding;
+    this.scrollbarHeight = json.scrollbarHeight;
+    this.frames = json.frames;
+    this.timestamps = json.timestamps;
+    this.images = json.images;
+    this.secondaryImages = json.secondaryImages;
+    this.filters = json.filters;
+    this.filter = json.filter;
+    this.secondaryFilter = json.secondaryFilter;
+    this.viewportX = json.viewportX;
+    this.viewportY = json.viewportY;
+    this.viewportWidth = json.viewportWidth;
+    this.viewportHeight = json.viewportHeight;
+    this.scrollbars = json.scrollbars.map(scrollbar => scrollbar.fromJSON());
+    this.mainScrollbarIndex = json.mainScrollbarIndex;
+    this.locked = json.locked;
+    this.opacity = json.opacity;
+    return this;
 }

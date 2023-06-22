@@ -196,16 +196,3 @@ Array.prototype.fillWith = function (value = false, start = 0, end = this.length
     this.fill(value, start, end);
     return this;
 }
-
-/**
- * Convert the properties of an object class to a JSON
- * @param {Object} obj object to convert to json
- * @returns {Object}
- */
-function convertClassObjectToJSON (obj) {
-    const keys = Object.keys(obj);
-    const values = Object.values(obj);
-    let result = {};
-    keys.forEach((key, index) => result[key] = values[index]);
-    return result;
-} 
