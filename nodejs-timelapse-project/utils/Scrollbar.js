@@ -319,7 +319,5 @@ Scrollbar.prototype.fromJSON = function (json) {
     this.end = json.end;
     this.locked = json.locked;
     this.annotations = json.annotations;
-    this.links = json.links;
-    this.children = json.children;
     return this;
 }

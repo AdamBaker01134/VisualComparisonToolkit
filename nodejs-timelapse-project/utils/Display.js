@@ -343,7 +343,7 @@ Display.prototype.toJSON = function () {
         y: this.y,
         width: this.width,
         height: this.height,
-        paddding: this.padding,
+        padding: this.padding,
         scrollbarHeight: this.scrollbarHeight,
         frames: [],
         timestamps: [],
@@ -378,7 +378,7 @@ Display.prototype.fromJSON = function (json) {
     this.viewportY = json.viewportY;
     this.viewportWidth = json.viewportWidth;
     this.viewportHeight = json.viewportHeight;
-    this.scrollbars = json.scrollbars.map(scrollbar => scrollbar.fromJSON());
+    this.scrollbars = this.scrollbars.map((scrollbar, index) => scrollbar.fromJSON(json.scrollbars[index]));
     this.mainScrollbarIndex = json.mainScrollbarIndex;
     this.locked = json.locked;
     return this;

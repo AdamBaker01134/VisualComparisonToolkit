@@ -375,26 +375,67 @@ Model.prototype.addConfig = function () {
  * Load a saved config
  * @param {Object} config configuration
  */
-Model.prototype.loadConfig = function (config) {
-    // this.globalScrollbar.setIndex(config.globalScrollbar.index);
-    // config.displays.forEach(configDisplay => {
-    //     let display = this.displays.find(display => display.id === configDisplay.id);
-    //     if (display) {
-    //         display.setStart(configDisplay.start);
-    //         display.setEnd(configDisplay.end);
-    //         display.setIndex(configDisplay.index);
-    //         if (display instanceof Overlay) {
-    //             display.setOpacity(configDisplay.opacity);
-    //         }
-    //     }
-    // });
-
+Model.prototype.loadConfig = async function (config) {
     /* Load global scrollbar from JSON */
-    /* Load each existing display from JSON */
-    /* Create any non-existing displays from JSON */
+    this.globalScrollbar.fromJSON(config.globalScrollbar);
+    for (let i = 0; i < config.displays.length; i++) {
+        let display = this.displays.find(display => display.id === config.displays[i].id);
+        if (display) {
+            /* Load existing display from JSON */
+            let json = {...config.displays[i]};
+            json.frames = display.frames;
+            json.timestamps = display.timestamps;
+            json.images = display.images;
+            json.secondaryImages = display.secondaryImages;
+            display.fromJSON(json);
+        } else {
+            /* Create new display from JSON */
+        }
+    }
+    /* Link up all global scrollbar links and children */
+    const allScrollbars = this.findAllScrollbars();
+    this.globalScrollbar.children = [];
+    config.globalScrollbar.children.forEach(id => {
+        let foundChild = allScrollbars.find(s => s.id === id);
+        if (foundChild) this.globalScrollbar.children.push(foundChild);
+    });
+    this.globalScrollbar.links = [];
+    config.globalScrollbar.links.forEach(id => {
+        let foundLink = allScrollbars.find(s => s.id === id);
+        if (foundLink) this.globalScrollbar.links.push(foundLink);
+    });
+    /* Link up all other scrollbar links and children */
+    config.displays.forEach(configDisplay => {
+        configDisplay.scrollbars.forEach(configScrollbar => {
+            let scrollbar = allScrollbars.find(scrollbar => scrollbar.id === configScrollbar.id);
+            scrollbar.children = [];
+            configScrollbar.children.forEach(id => {
+                let foundChild = allScrollbars.find(s => s.id === id);
+                if (foundChild) scrollbar.children.push(foundChild);
+            });
+            scrollbar.links = [];
+            configScrollbar.children.forEach(id => {
+                let foundLink = allScrollbars.find(s => s.id === id);
+                if (foundLink) scrollbar.links.push(foundLink);
+            });
+        });
+    });
     this.setNormalized(config.normalized);
+    window.scrollTo(config.scrollPos[0], config.scrollPos[1]);
     this.updateCanvas();
     this.notifySubscribers();
+}
+
+/**
+ * Gather all scrollbars from the model into an array.
+ * @returns {Array<Scrollbar>}
+ */
+Model.prototype.findAllScrollbars = function () {
+    let result = [this.globalScrollbar];
+    this.displays.forEach(display => {
+        display.scrollbars.forEach(scrollbar => result.push(scrollbar));
+    });
+    return result;
 }
 
 /**
