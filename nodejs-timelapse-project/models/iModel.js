@@ -110,17 +110,30 @@ iModel.prototype.setOpacity = function (opacity) {
  */
 iModel.prototype.saveAnnotation = function () {
     if (this.selection !== null) {
-        let index = Math.floor(this.selection.index);
-        let defaultName;
-        if (index > this.selection.timestamps.length - 1) {
-            defaultName = this.selection.frames[index];
+        const defaultValue = "Enter valid name";
+        const name = prompt("Enter a name for this annotation:", defaultValue);
+        if (!!name && name !== defaultValue) {
+            if (this.selection.addAnnotation(this.selection.mainScrollbarIndex, name)) {
+                alert(`Successfully created annotation with the name "${name}"`);
+                this.notifySubscribers();
+            } else {
+                alert("Error: annotation name already exists in scrollbar")
+            }
         } else {
-            defaultName = this.selection.timestamps[index];
+            alert("Error: invalid annotation name")
         }
-        let name = prompt("Enter a name for this annotation:", defaultName);
-        if (!!name && !(this.selection.annotations.includes(name))) {
-            this.selection.addAnnotation(name, this.selection.index);
-        }
+    }
+}
+
+/**
+ * Load an annotation in a scrollbar
+ * @param {Scrollbar} scrollbar scrollbar that contains the annotation
+ * @param {string} name name of the annotation
+ */
+iModel.prototype.loadAnnotation = function (scrollbar, name) {
+    const id = scrollbar.annotations.find(annotation => annotation.name === name)?.id;
+    if (id) {
+        scrollbar.loadAnnotation(id);
         this.notifySubscribers();
     }
 }

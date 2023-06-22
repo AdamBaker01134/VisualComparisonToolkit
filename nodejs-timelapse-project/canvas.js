@@ -143,6 +143,9 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             previousY = mouseY;
             break;
     }
+    /* Highlighted objects are unhighlighted on drag */
+    imodel.highlightConfig(null);
+    imodel.highlightAnnotation(null);
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
@@ -151,11 +154,6 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     switch (currentState) {
         case STATE.READY:
             if (hit = model.checkScrollbarHit(mx, my)) {
-                if (imodel.highlightedConfig) {
-                    model.loadConfig(imodel.highlightedConfig);
-                } else if (imodel.highlightedAnnotation) {
-                    model.setIndex(hit, imodel.highlightedAnnotation.index);
-                }
                 imodel.setFocused(hit);
                 let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
@@ -189,6 +187,13 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.FOCUSED:
         case STATE.START_FOCUSED:
         case STATE.END_FOCUSED:
+            if (hit = model.checkScrollbarHit(mx, my)) {
+                if (imodel.highlightedConfig) {
+                    model.loadConfig(imodel.highlightedConfig);
+                } else if (imodel.highlightedAnnotation) {
+                    imodel.loadAnnotation(hit, imodel.highlightedAnnotation.name);
+                }
+            }
             imodel.setFocused(null);
             currentState = STATE.READY;
             break;
@@ -317,9 +322,8 @@ function _attachHeaderListeners() {
     });
     document.getElementById("loadAnnotationButton")?.addEventListener("click", e => {
         let name = document.getElementById("annotationSelect").value;
-        let annotation = imodel?.selection.annotations.find(annotation => annotation.name === name);
-        if (!!annotation) {
-            model.setIndex(imodel.selection, annotation.index);
+        if (imodel.selection !== null) {
+            imodel.loadAnnotation(imodel.selection.getMainScrollbar(), name);
         }
     });
     document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {

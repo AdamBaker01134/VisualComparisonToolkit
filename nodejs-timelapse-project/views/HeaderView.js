@@ -40,7 +40,7 @@ Headerview.prototype.draw = function () {
     if (this.configSnapshot !== this.model.configs) {
         this.updateConfigSelect();
     }
-    if (!!this.imodel.selection && this.annotationSnapshot !== this.imodel.selection.annotations) {
+    if (!!this.imodel.selection && this.annotationSnapshot !== this.imodel.selection.getMainScrollbar().annotations) {
         this.updateAnnotationSelect();
     }
     if (!!this.imodel.selection && this.filterSnapshot !== this.imodel.selection.filters) {
@@ -152,7 +152,7 @@ Headerview.prototype.updateAnnotationSelect = function () {
         let defaultOption = document.createElement("option");
         defaultOption.text = "---";
         annotationSelect.add(defaultOption);
-        let scrollbar = this.imodel.focused || this.imodel.selection.scrollbars[0];
+        let scrollbar = this.imodel.selection.getMainScrollbar();
         scrollbar.annotations.forEach(annotation => {
             let option = document.createElement("option");
             option.text = annotation.name;

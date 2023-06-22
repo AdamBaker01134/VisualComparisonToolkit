@@ -32,6 +32,7 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
         this.scrollbarHeight,
         this.images.length
     ));
+    this.mainScrollbarIndex = 0;
 
     // this.index = 0;
 
@@ -58,6 +59,11 @@ Display.prototype.getIndex = function (scrollbarPos) {
         return this.scrollbars[scrollbarPos].index;
     }
     return -1;
+}
+
+/* Retrieve the main scrollbar in the display */
+Display.prototype.getMainScrollbar = function () {
+    return this.scrollbars[this.mainScrollbarIndex];
 }
 
 // /* Get the number of segments in the scrollbar */
@@ -306,10 +312,13 @@ Display.prototype.checkEndHit = function (mx) {
  * Add an annotation to a scrollbar.
  * @param {number} scrollbarPos index of the desired scrollbar
  * @param {string} name customized annotation name
- * @param {number} index index of annotation
  */
-Display.prototype.addAnnotation = function (scrollbarPos, name, index) {
+Display.prototype.addAnnotation = function (scrollbarPos, name) {
     if (scrollbarPos >= 0 && scrollbarPos < this.scrollbars.length) {
-        this.scrollbars[scrollbarPos].addAnnotation(name, index);
+        return this.scrollbars[scrollbarPos].addAnnotation(
+            generateAnnotationId(name),
+            name,
+            generateAnnotationColour(),
+        );
     }
 }

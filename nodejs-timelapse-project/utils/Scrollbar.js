@@ -1,6 +1,6 @@
 /* Global Application Scrollbar */
 "use strict";
-function Scrollbar(x, y, width, height, size, children=[]) {
+function Scrollbar(x, y, width, height, size, annotations = [], children = []) {
     this.x = x;
     this.y = y;
 
@@ -15,9 +15,15 @@ function Scrollbar(x, y, width, height, size, children=[]) {
 
     this.locked = false;
 
-    this.annotations = [];
+    /* Need to make a copy of each annotation to keep them disconnected */
+    this.annotations = annotations.map(annotation => {
+        let copy = JSON.parse(JSON.stringify(annotation));
+        copy.id = generateAnnotationId(annotation.name);
+        return copy;
+    });
 
-    this.children = children;
+    this.links = [];            // deals with annotations & ranges
+    this.children = children;   // deals with index updating & normalization
 }
 
 /* Get the number of segments in the scrollbar */
@@ -196,6 +202,14 @@ Scrollbar.prototype.setSize = function (size) {
 }
 
 /**
+ * Add a linked scrollbar to this scrollbar
+ * @param {Scrollbar} link linked scrollbar
+ */
+Scrollbar.prototype.addLink = function (link) {
+    this.links.push(link);
+}
+
+/**
  * Add a child scrollbar to this scrollbar
  * @param {Scrollbar} child child scrollbar
  */
@@ -205,14 +219,69 @@ Scrollbar.prototype.addChild = function (child) {
 
 /**
  * Add an annotation to this scrollbar
+ * @param {string} id id of the annotation
  * @param {string} name customized annotation name
- * @param {number} index index of annotation
+ * @param {Array<number>} colour array of numbers representing an hsl colour value
+ * @param {number?} opt_index optionally set index for the annotation (otherwise current index is used)
  */
-Scrollbar.prototype.addAnnotation = function (name, index) {
-    if (index >= 0 && index <= this.getSize()) {
+Scrollbar.prototype.addAnnotation = function (id, name, colour, opt_index) {
+    let index = opt_index || this.index;
+    if (index >= 0 && index <= this.getSize() && !this.hasAnnotation(name)) {
         this.annotations.push({
+            id: id,
             name: name,
             index: index,
+            colour: colour,
         });
+        /* Linked scrollbars receive identical annotation names/colours/index but are disconnected */
+        this.links.forEach(link => link.addAnnotation(generateAnnotationId(name), name, colour, index));
+        /* Child scrollbars receive identical annotations, but not necessarily same index */
+        this.children.forEach(child => child.addAnnotation(id, name, colour));
+        return true;
+    } else {
+        return false;
     }
+}
+
+/**
+ * Load in an annotation from the scrollbar
+ * @param {string} id id of the annotation to load in
+ */
+Scrollbar.prototype.loadAnnotation = function (id) {
+    if (this.locked) return;
+
+    const annotation = this.annotations.find(annotation => annotation.id === id);
+    if (annotation) {
+        const index = annotation.index;
+        this.index = index;
+        if (this.index < this.start) {
+            this.index = this.start;
+        } else if (this.index > this.end) {
+            this.index = this.end;
+        }
+        if (this.index < 0) {
+            this.index = 0;
+        } else if (this.index >= this.getSize()) {
+            this.index = this.getSize() - 1;
+        }
+        this.children.forEach(child => child.loadAnnotation(id));
+    }
+}
+
+/**
+ * Search annotations and child scrollbar annotations for annotations that have the same name
+ * @param {string} name name of annotation to search for
+ * @returns {boolean}
+ */
+Scrollbar.prototype.hasAnnotation = function (name) {
+    /* Check if any of this scrollbars annotations contain the annotation name */
+    for (let i = 0; i < this.annotations.length; i++) {
+        let annotation = this.annotations[i];
+        if (annotation.name === name) return true;
+    }
+    /* Check if any of this scrollbars children contain the annotation name */
+    for (let j = 0; j < this.children.length; j++) {
+        if (this.children[j].hasAnnotation(name)) return true;
+    }
+    return false;
 }

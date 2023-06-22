@@ -79,7 +79,7 @@ function getSecondaryDisplayNameFromId(id) {
  * @param {Model} model
  * @param {number} position display position in the model (within the displays array)
  */
-function generateDisplayX (model, position) {
+function generateDisplayX(model, position) {
     let column = position % model.displaysPerRow;
     return model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth);
 }
@@ -89,7 +89,7 @@ function generateDisplayX (model, position) {
  * @param {Model} model
  * @param {number} position display position in the model (within the displays array)
  */
-function generateDisplayY (model, position) {
+function generateDisplayY(model, position) {
     let y = model.displayPadding;
     let row = Math.floor(position / model.displaysPerRow);
     for (let i = 0; i < row; i++) {
@@ -105,13 +105,33 @@ function generateDisplayY (model, position) {
 }
 
 /**
+ * Generate a personal id for an annotation
+ * @param {string} name name of the annotation
+ * @returns {string}
+ */
+function generateAnnotationId(name) {
+    return `${name}-${Math.floor(Math.random() * 1000000)}`;
+}
+
+/**
+ * Generate an hsl colour value for an annotation
+ * @returns {Array<number>}
+ */
+function generateAnnotationColour() {
+    let hue = Math.random() * 360;
+    let saturation = 100;
+    let lightness = 50;
+    return [hue, saturation, lightness];
+}
+
+/**
  * Get index in a scrollbar based on the x coordinate of the cursor
  * @param {number} x x coordinate of the scrollbar
  * @param {number} mx x coordinate of the cursor
  * @param {number} segments number of segments in the scrollbar
  * @param {number} width width of the scrollbar
  */
-function getIndexFromMouse (x, mx, segments, width) {
+function getIndexFromMouse(x, mx, segments, width) {
     let idx = (int)(map(
         mx,                 // value to map
         x,                  // min value of mx
@@ -138,7 +158,7 @@ function getIndexFromMouse (x, mx, segments, width) {
  * Callback function should be of similar form to the Array.findIndex()
  *  standard library function.
  */
-Array.prototype.findFirst = function(callback, fromIndex = 0, thisArg) {
+Array.prototype.findFirst = function (callback, fromIndex = 0, thisArg) {
     while (fromIndex < this.length &&
         !callback.call(thisArg, this[fromIndex], fromIndex, this)) {
         fromIndex++;
@@ -157,7 +177,7 @@ Array.prototype.findFirst = function(callback, fromIndex = 0, thisArg) {
  * Callback function should be of similar form to the Array.findIndex()
  *  standard library function.
  */
-Array.prototype.findLast = function(callback, fromIndex = this.length, thisArg) {
+Array.prototype.findLast = function (callback, fromIndex = this.length, thisArg) {
     while (fromIndex >= 0 &&
         !callback.call(thisArg, this[fromIndex], fromIndex, this)) {
         fromIndex--;

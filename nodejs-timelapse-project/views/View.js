@@ -117,15 +117,17 @@ View.prototype.draw = function () {
             }
 
             /* Scrollbar Annotations */
-            stroke("rgb(255, 255, 0)");
+            colorMode(HSL, 360, 100, 100);
             scrollbar.annotations.forEach(annotation => {
-                if (this.imodel.highlightedAnnotation === annotation) {
+                stroke(annotation.colour);
+                if (this.imodel.highlightedAnnotation?.id === annotation.id) {
                     strokeWeight(3);
                 }
                 let pos = scrollbar.getPositionOfIndex(annotation.index);
                 line(pos, scrollbar.y, pos, scrollbar.y + scrollbar.height);
                 strokeWeight(1);
             });
+            colorMode(RGB, 255);
 
             /* Display Config Benchmarks */
             this.model.configs.forEach((config, index) => {

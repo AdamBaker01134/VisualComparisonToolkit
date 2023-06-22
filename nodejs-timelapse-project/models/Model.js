@@ -229,7 +229,7 @@ Model.prototype.checkPositionMarkerHit = function (mx, my) {
 Model.prototype.checkAnnotationHit = function (mx, my) {
     let target = this.checkScrollbarHit(mx, my);
     let hitMargin = 5;
-    if (target instanceof Display || target instanceof Overlay) {
+    if (target instanceof Scrollbar) {
         for (let i = 0; i < target.annotations.length; i++) {
             let pos = target.getPositionOfIndex(target.annotations[i].index);
             if (mx > pos - hitMargin && mx < pos + hitMargin) {
@@ -277,7 +277,7 @@ Model.prototype.checkBenchmarkHit = function (mx, my) {
  */
 Model.prototype.addDisplay = function (display) {
     this.displays.push(display);
-    this.globalScrollbar.addChild(display.scrollbars[display.scrollbars.length-1]);
+    this.globalScrollbar.addChild(display.getMainScrollbar());
     this.notifySubscribers();
 }
 
@@ -289,7 +289,7 @@ Model.prototype.addDisplay = function (display) {
 Model.prototype.addOverlay = function (overlay, target) {
     this.displays.push(overlay);
     this.moveDisplay(overlay, target);
-    this.globalScrollbar.addChild(overlay.scrollbars[overlay.scrollbars.length-1]);
+    this.globalScrollbar.addChild(overlay.getMainScrollbar());
     this.notifySubscribers();
 }
 
@@ -351,7 +351,7 @@ Model.prototype.addConfig = function () {
                 index: display.index,
                 start: display.start,
                 end: display.end,
-                annotations: display.annotations,
+                // annotations: display.annotations,
                 filters: display.filters,
                 filter: display.filter,
                 locked: display.locked,

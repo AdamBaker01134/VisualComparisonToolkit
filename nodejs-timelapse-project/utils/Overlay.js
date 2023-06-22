@@ -14,23 +14,31 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
         this.y + this.padding + this.height,
         this.width,
         this.scrollbarHeight,
-        this.images.length
+        this.images.length,
+        display.getMainScrollbar().annotations,
     );
+    display.getMainScrollbar().addLink(scrollbar1);
+
     let scrollbar2 = new Scrollbar(
         this.x + this.padding,
         this.y + this.padding + this.height + this.scrollbarHeight,
         this.width,
         this.scrollbarHeight,
-        this.secondaryImages.length
+        this.secondaryImages.length,
+        secondaryDisplay.getMainScrollbar().annotations,
     );
+    secondaryDisplay.getMainScrollbar().addLink(scrollbar2);
+
     this.scrollbars.push(scrollbar1, scrollbar2, new Scrollbar(
         this.x + this.padding,
         this.y + this.padding + this.height + this.scrollbarHeight * 2,
         this.width,
         this.scrollbarHeight,
         Math.max(this.images.length, this.secondaryImages.length),
+        [],
         [scrollbar1, scrollbar2]
     ));
+    this.mainScrollbarIndex = 2;
 
     this.secondaryFilter = secondaryDisplay.filter;
 
