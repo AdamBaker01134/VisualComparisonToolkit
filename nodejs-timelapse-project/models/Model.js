@@ -180,6 +180,19 @@ Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
 }
 
 /**
+ * Model check if a display was hit in a mouse event
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Display|null}
+ */
+Model.prototype.checkDisplayHit = function (mx, my) {
+    for (let i = 0; i < this.displays.length; i++) {
+        if (this.displays[i].checkHit(mx, my)) return this.displays[i];
+    }
+    return null;
+}
+
+/**
  * Model check if a display image was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
@@ -248,28 +261,42 @@ Model.prototype.checkAnnotationHit = function (mx, my) {
  * @returns {Object|null}
  */
 Model.prototype.checkBenchmarkHit = function (mx, my) {
-    let target = this.checkScrollbarHit(mx, my);
-    let hitMargin = 5;
-    if (target instanceof Display || target instanceof Overlay) {
+    const target = this.checkScrollbarHit(mx, my);
+    const hitMargin = 5;
+    if (target instanceof Scrollbar) {
         for (let i = 0; i < this.configs.length; i++) {
-            let match = this.configs[i].displays.find(display => display.id === target.id);
-            if (match) {
-                let pos = target.getPositionOfIndex(match.index);
-                if (mx > pos - 2 - hitMargin && mx < pos + 2 + hitMargin && my < target.getScrollbarTop() + 4 + hitMargin) {
+            const index = this.findConfigIndex(target.id, this.configs[i]);
+            if (index >= 0) {
+                let pos = target.getPositionOfIndex(index);
+                if (mx > pos - 2 - hitMargin && mx < pos + 2 + hitMargin && my < target.y + 4 + hitMargin) {
                     return this.configs[i];
                 }
             }
         }
-    } else if (target instanceof Scrollbar) {
-        for (let i = 0; i < this.configs.length; i++) {
-            let index = this.configs[i].globalScrollbar.index;
-            let pos = target.getPositionOfIndex(index);
-            if (mx > pos - 2 - hitMargin && mx < pos + 2 + hitMargin && my < target.getScrollbarTop() + 4 + hitMargin) {
-                return this.configs[i];
+    }
+    return null;
+}
+
+/**
+ * Find the index of a scrollbar within a configuration
+ * @param {string} id id of scrollbar you want to find
+ * @param {Object} config config to search
+ * @returns {number}
+ */
+Model.prototype.findConfigIndex = function (id, config) {
+    if (config.globalScrollbar.id === id) {
+        return config.globalScrollbar.index;
+    } else {
+        for (let i = 0; i < config.displays.length; i++) {
+            const display = config.displays[i];
+            for (let j = 0; j < display.scrollbars.length; j++) {
+                if (display.scrollbars[j].id === id) {
+                    return display.scrollbars[j].index;
+                }
             }
         }
     }
-    return null;
+    return -1;
 }
 
 /**

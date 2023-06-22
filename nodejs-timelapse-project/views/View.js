@@ -131,11 +131,11 @@ View.prototype.draw = function () {
 
             /* Display Config Benchmarks */
             this.model.configs.forEach((config, index) => {
-                let match = config.displays.find(d => d.id === display.id);
-                if (match) {
+                let configIndex = this.model.findConfigIndex(scrollbar.id, config);
+                if (configIndex >= 0) {
                     let colourTint = 32 * index;
                     let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-                    let pos = scrollbar.getPositionOfIndex(match.index);
+                    let pos = scrollbar.getPositionOfIndex(configIndex);
                     renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedConfig === config);
                 }
             });

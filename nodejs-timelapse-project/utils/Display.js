@@ -44,7 +44,7 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
 }
 
 /* Set the displays images */
-Display.prototype.setImages = function (images, filter="") {
+Display.prototype.setImages = function (images, filter = "") {
     this.images = images;
     this.scrollbars[0].setSize(this.images.length);
     this.filter = filter;
@@ -162,6 +162,17 @@ Display.prototype.getMainScrollbar = function () {
 Display.prototype.setLocked = function (locked) {
     this.locked = locked;
     this.scrollbars.forEach(scrollbar => scrollbar.setLocked(locked));
+}
+
+/**
+ * Check to see if mouse is on the display
+ * @param {number} mx x coordinate of cursor
+ * @param {number} my y coordinate of cursor
+ * @returns {boolean}
+ */
+Display.prototype.checkHit = function (mx, my) {
+    return mx > this.x && my > this.y &&
+        mx < this.x + this.padding * 2 + this.width && my < this.y + this.padding * 2 + this.height;
 }
 
 /**
@@ -328,7 +339,7 @@ Display.prototype.addAnnotation = function (scrollbarPos, name) {
 Display.prototype.toJSON = function () {
     let result = convertClassObjectToJSON(this);
     result.dataset = getDisplayNameFromId(this.id),
-    result.scrollbars = this.scrollbars.map(scrollbar => scrollbar.toJSON());
+        result.scrollbars = this.scrollbars.map(scrollbar => scrollbar.toJSON());
     result.frames = [];
     result.timestamps = [];
     result.images = [];
