@@ -10,6 +10,7 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
 
     this.scrollbars = [];
     let scrollbar1 = new Scrollbar(
+        `${this.id}-0`,
         this.x + this.padding,
         this.y + this.padding + this.height,
         this.width,
@@ -20,6 +21,7 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
     display.getMainScrollbar().addLink(scrollbar1);
 
     let scrollbar2 = new Scrollbar(
+        `${this.id}-1`,
         this.x + this.padding,
         this.y + this.padding + this.height + this.scrollbarHeight,
         this.width,
@@ -30,6 +32,7 @@ function Overlay (id, x, y, width, height, padding, scrollbarHeight, display, se
     secondaryDisplay.getMainScrollbar().addLink(scrollbar2);
 
     this.scrollbars.push(scrollbar1, scrollbar2, new Scrollbar(
+        `${this.id}-2`,
         this.x + this.padding,
         this.y + this.padding + this.height + this.scrollbarHeight * 2,
         this.width,

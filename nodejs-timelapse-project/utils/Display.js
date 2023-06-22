@@ -26,6 +26,7 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
 
     this.scrollbars = [];
     this.scrollbars.push(new Scrollbar(
+        `${this.id}-0`,
         this.x + this.padding,
         this.y + this.padding + this.height,
         this.width,
@@ -321,4 +322,15 @@ Display.prototype.addAnnotation = function (scrollbarPos, name) {
             generateAnnotationColour(),
         );
     }
+}
+
+/* Convert overlay to JSON */
+Display.prototype.toJSON = function () {
+    let result = convertClassObjectToJSON(this);
+    result.dataset = getDisplayNameFromId(this.id),
+    result.scrollbars = this.scrollbars.map(scrollbar => scrollbar.toJSON());
+    result.frames = [];
+    result.timestamps = [];
+    result.images = [];
+    return result;
 }

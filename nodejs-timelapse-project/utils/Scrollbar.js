@@ -1,6 +1,7 @@
 /* Global Application Scrollbar */
 "use strict";
-function Scrollbar(x, y, width, height, size, annotations = [], children = []) {
+function Scrollbar(id, x, y, width, height, size, annotations = [], children = []) {
+    this.id = id;
     this.x = x;
     this.y = y;
 
@@ -284,4 +285,12 @@ Scrollbar.prototype.hasAnnotation = function (name) {
         if (this.children[j].hasAnnotation(name)) return true;
     }
     return false;
+}
+
+/* Convert scrollbar to JSON */
+Scrollbar.prototype.toJSON = function () {
+    let result = convertClassObjectToJSON(this);
+    result.links = this.links.map(link => link.id);
+    result.children = this.children.map(child => child.id);
+    return result;
 }

@@ -20,6 +20,7 @@ function Model() {
     this.configs = [];
     this.globalScrollbarHeight = 40;
     this.globalScrollbar = new Scrollbar(
+        "global",
         0,
         windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight,
         this.canvasWidth,
@@ -327,41 +328,19 @@ Model.prototype.removeDisplay = function (display) {
  */
 Model.prototype.addConfig = function () {
     let name = prompt("Enter a name for this config:", `config-${this.configs.length}`);
-    if (!!name) {
+    if (!!name && !this.configs.some(config => config.name === name)) {
         let config = {
             name: name,
-            displays: [],
-            globalScrollbar: {
-                index: this.globalScrollbar.index,
-            },
+            displays: this.displays.map(display => display.toJSON()),
+            globalScrollbar: this.globalScrollbar.toJSON(),
+            scrollPos: [scrollX, scrollY],
             normalized: this.normalized,
         };
-        this.displays.forEach(display => {
-            let secondaryName = null;
-            let secondaryFilter = null;
-            let opacity = null;
-            if (display instanceof Overlay) {
-                secondaryName = getSecondaryDisplayNameFromId(display.id);
-                secondaryFilter = display.secondaryFilter;
-                opacity = display.opacity;
-            }
-            config.displays.push({
-                id: display.id,
-                name: getDisplayNameFromId(display.id),
-                index: display.index,
-                start: display.start,
-                end: display.end,
-                // annotations: display.annotations,
-                filters: display.filters,
-                filter: display.filter,
-                locked: display.locked,
-                secondaryName: secondaryName,
-                secondaryFilter: secondaryFilter,
-                opacity: opacity,
-            });
-        });
         this.configs.push(config);
+        alert(`Successfully created configuration with name "${name}"`);
         this.notifySubscribers();
+    } else {
+        alert(`Error: invalid configuration name`);
     }
 }
 
@@ -370,19 +349,19 @@ Model.prototype.addConfig = function () {
  * @param {Object} config configuration
  */
 Model.prototype.loadConfig = function (config) {
-    this.globalScrollbar.setIndex(config.globalScrollbar.index);
-    config.displays.forEach(configDisplay => {
-        let display = this.displays.find(display => display.id === configDisplay.id);
-        if (display) {
-            display.setStart(configDisplay.start);
-            display.setEnd(configDisplay.end);
-            display.setIndex(configDisplay.index);
-            if (display instanceof Overlay) {
-                display.setOpacity(configDisplay.opacity);
-            }
-        }
-    });
-    this.setNormalized(config.normalized);
+    // this.globalScrollbar.setIndex(config.globalScrollbar.index);
+    // config.displays.forEach(configDisplay => {
+    //     let display = this.displays.find(display => display.id === configDisplay.id);
+    //     if (display) {
+    //         display.setStart(configDisplay.start);
+    //         display.setEnd(configDisplay.end);
+    //         display.setIndex(configDisplay.index);
+    //         if (display instanceof Overlay) {
+    //             display.setOpacity(configDisplay.opacity);
+    //         }
+    //     }
+    // });
+    // this.setNormalized(config.normalized);
     this.notifySubscribers();
 }
 
