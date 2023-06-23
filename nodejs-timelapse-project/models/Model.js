@@ -380,17 +380,31 @@ Model.prototype.loadConfig = async function (config) {
     this.globalScrollbar.fromJSON(config.globalScrollbar);
     for (let i = 0; i < config.displays.length; i++) {
         let display = this.displays.find(display => display.id === config.displays[i].id);
-        if (display) {
-            /* Load existing display from JSON */
-            let json = {...config.displays[i]};
-            json.frames = display.frames;
-            json.timestamps = display.timestamps;
-            json.images = display.images;
-            json.secondaryImages = display.secondaryImages;
-            display.fromJSON(json);
-        } else {
+        let json = {...config.displays[i]};
+        if (!display) {
             /* Create new display from JSON */
+            display = await new Promise((resolve, reject) => {this.loadDataset(getDisplayNameFromId(json.id), {
+                dir: json.filter !== "" ? json.filter : undefined,
+                filter: json.filter,
+                callback: (display) => { resolve(display) },
+                errCallback: () => { reject(null) },
+            })});
+            if (display === null) return;
+        } 
+        json.frames = display.frames;
+        json.timestamps = display.timestamps;
+        if (display.filter !== json.filter) {
+            /* If primary filter is different, need to load in primary filter images */
+            await new Promise((resolve, reject) => {this.loadDataset(getDisplayNameFromId(json.id), {
+                dir: json.filter !== "" ? json.filter : undefined,
+                filter: json.filter,
+                display: display,
+                callback: (display) => { resolve(display) },
+                errCallback: () => { reject(null) },
+            })});
         }
+        json.images = display.images;
+        display.fromJSON(json);
     }
     /* Link up all global scrollbar links and children */
     const allScrollbars = this.findAllScrollbars();
@@ -420,9 +434,11 @@ Model.prototype.loadConfig = async function (config) {
             });
         });
     });
+    /* TODO: Update positions to match config */
     this.setNormalized(config.normalized);
     window.scrollTo(config.scrollPos[0], config.scrollPos[1]);
     this.updateCanvas();
+    console.log(`Successfully loaded config "${config.name}"`);
     this.notifySubscribers();
 }
 
@@ -454,14 +470,15 @@ Model.prototype.loadDatasets = function () {
  * @param {Object} options optional attributes to alter the loading process.
  */
 Model.prototype.loadDataset = function (name, options = {}) {
+    /* Callback options */
+    const callback = options.callback || (() => { });
+    const errCallback = options.errCallback || (() => { });
     let dataset = this.datasets.find(d => d.name === name);
     if (!!dataset) {
-        /* All possible options */
+        /* All other options */
         const dir = options.dir || dataset.dir;
-        const callback = options.callback || (() => { });
         const filter = options.filter || "";
         let display = options.display || null;
-
         this.incrementLoading();
         const start = performance.now();
         console.log(`Beginning load of ${name} from /${dir}...`);
@@ -501,8 +518,11 @@ Model.prototype.loadDataset = function (name, options = {}) {
             err => {
                 console.error(err);
                 this.decrementLoading();
+                errCallback("Error: could not load dataset");
             }
         );
+    } else {
+        errCallback("Error: dataset does not exist in model");
     }
 }
 
