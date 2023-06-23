@@ -216,19 +216,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
                 if (hit !== imodel.ghost) {
-                    let overlay = new Overlay(
-                        generateOverlayId(model, getDisplayNameFromId(imodel.ghost.id), getDisplayNameFromId(hit.id)),
-                        generateDisplayX(model, model.displays.length),
-                        generateDisplayY(model, model.displays.length),
-                        model.displayWidth,
-                        model.displayHeight,
-                        model.displayPadding,
-                        model.displayScrollbarHeight,
-                        imodel.ghost,
-                        hit,
-                    );
-                    model.addOverlay(overlay, hit);
-                    imodel.select(overlay);
+                    model.addOverlay(imodel.ghost.id, hit.id).then(overlay => imodel.select(overlay));
                 }
             }
             clearInterval(timer);
@@ -266,9 +254,7 @@ function _attachHeaderListeners() {
     /* Upload header functions */
     document.getElementById("uploadButton")?.addEventListener("click", e => {
         let value = document.getElementById("uploadSelect")?.value;
-        model.loadDataset(value, {
-            callback: display => imodel.select(display),
-        });
+        model.addDisplay(value, "").then(display => imodel.select(display));
     });
 
     /* Global header functions */
@@ -295,17 +281,10 @@ function _attachHeaderListeners() {
         let value = e.target.value;
         let filterName = e.target.value;
         if (value !== "---" && imodel.selection !== null) {
-            let isOverlay = imodel.selection instanceof Overlay;
-            let name = isOverlay ? getSecondaryDisplayNameFromId(imodel.selection.id) : getDisplayNameFromId(imodel.selection.id);
             if (value === "Reset") {
-                value = model.datasets.find(d => d.name === name).dir;
                 filterName = "";
             }
-            model.loadDataset(name, {
-                dir: value,
-                display: imodel.selection,
-                filter: filterName,
-            });
+            model.filterImages(imodel.selection, filterName);
         }
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {

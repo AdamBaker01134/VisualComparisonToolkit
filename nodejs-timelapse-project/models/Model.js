@@ -300,26 +300,134 @@ Model.prototype.findConfigIndex = function (id, config) {
 }
 
 /**
- * Add a display to the model
- * @param {Display} display new display
+ * Load in and add a new display to the model.
+ * @param {string} name name of the display to load and add
+ * @param {string} filter filter to initialize display with
+ * @returns {Display|null}
  */
-Model.prototype.addDisplay = function (display) {
-    this.displays.push(display);
-    this.globalScrollbar.addChild(display.getMainScrollbar());
-    this.notifySubscribers();
+Model.prototype.addDisplay = async function (name, filter) {
+    const dataset = this.datasets.find(d => d.name === name);
+    let display = null;
+    if (dataset) {
+        const dir = filter !== "" ? filter : dataset.dir;
+        const loadObj = await new Promise((resolve, reject) => {
+            this.loadDataset({
+                dataset: dataset,
+                dir: dir,
+                callback: (loadObj) => resolve(loadObj),
+                errCallback: () => reject(null),
+            });
+        });
+        if (loadObj !== null) {
+            display = new Display(
+                generateDisplayId(this, loadObj.name),
+                generateDisplayX(this, this.displays.length),
+                generateDisplayY(this, this.displays.length),
+                this.displayWidth,
+                this.displayHeight,
+                this.displayPadding,
+                this.displayScrollbarHeight,
+                loadObj.frames,
+                loadObj.timestamps,
+                loadObj.images,
+                dataset.filters,
+            );
+            this.displays.push(display);
+            this.globalScrollbar.addChild(display.getMainScrollbar());
+            this.notifySubscribers();
+        }
+    }
+    return display;
 }
 
 /**
- * Add an overlay to the model
- * @param {Overlay} overlay new overlay
- * @param {Display} target target display to move overlay to
+ * Add a new overlay to the model. Load in required displays if necessary.
+ * @param {string} id1 id of top display
+ * @param {string} id2 id of bottom display
+ * @param {string} filter1 filter of top display
+ * @param {string} filter2 filter of bottom display
+ * @returns {Overlay|null}
  */
-Model.prototype.addOverlay = function (overlay, target) {
-    this.displays.push(overlay);
-    this.moveDisplay(overlay, target);
-    this.globalScrollbar.addChild(overlay.getMainScrollbar());
-    this.notifySubscribers();
+Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
+    let overlay = null;
+    let display1 = await new Promise((resolve, reject) => {
+        const found = this.displays.find(display => display.id === id1);
+        if (found) {
+            resolve(found);
+        } else {
+            this.addDisplay(getDisplayNameFromId(id1), filter1).then(display => {
+                this.removeDisplay(display); // ¯\_(ツ)_/¯
+                resolve(display);
+            }).catch(() => reject(null));
+        }
+    });
+    let display2 = await new Promise((resolve, reject) => {
+        const found = this.displays.find(display => display.id === id2);
+        if (found) {
+            resolve(found);
+        } else {
+            this.addDisplay(getDisplayNameFromId(id2), filter2).then(display => {
+                this.removeDisplay(display); // ¯\_(ツ)_/¯
+                resolve(display);
+            }).catch(() => reject(null));
+        }
+    })
+    if (display1 && display2) {
+        overlay = new Overlay(
+            generateOverlayId(this, getDisplayNameFromId(id1), getDisplayNameFromId(id2)),
+            generateDisplayX(this, this.displays.length),
+            generateDisplayY(this, this.displays.length),
+            this.displayWidth,
+            this.displayHeight,
+            this.displayPadding,
+            this.displayScrollbarHeight,
+            display1,
+            display2,
+        );
+        this.displays.push(overlay);
+        this.moveDisplay(overlay, display2);
+        this.globalScrollbar.addChild(overlay.getMainScrollbar());
+        this.notifySubscribers();
+    }
+    return overlay;
 }
+
+/**
+ * Load in filtered images and set in an display existing
+ * @param {Display|Overlay} display display to filter
+ * @param {string} filter name of the filter
+ */
+Model.prototype.filterImages = async function (display, filter) {
+    const isOverlay = display instanceof Overlay;
+    const name = isOverlay ? getSecondaryDisplayNameFromId(display.id) : getDisplayNameFromId(display.id);
+    const dataset = this.datasets.find(d => d.name === name);
+    if (dataset) {
+        const dir = filter !== "" ? filter : dataset.dir;
+        const loadObj = await new Promise((resolve, reject) => {
+            this.loadDataset({
+                dataset: dataset,
+                dir: dir,
+                callback: (loadObj) => resolve(loadObj),
+                errCallback: () => resolve(null),
+            });
+        });
+        if (loadObj !== null) {
+            this.setDisplayImages(display, loadObj.images, isOverlay, filter);
+        }
+    }
+}
+
+// /**
+//  * Add an overlay to the model
+//  * @param {Overlay} overlay new overlay
+//  * @param {Display} target target display to move overlay to
+//  */
+// Model.prototype.addOverlay = function (overlay, target) {
+//     this.displays.push(overlay);
+//     this.moveDisplay(overlay, target);
+//     this.globalScrollbar.addChild(overlay.getMainScrollbar());
+//     this.notifySubscribers();
+// }
 
 /**
  * Move a display to the position of a target display and update the locations of all affected displays.
@@ -380,28 +488,32 @@ Model.prototype.loadConfig = async function (config) {
     this.globalScrollbar.fromJSON(config.globalScrollbar);
     for (let i = 0; i < config.displays.length; i++) {
         let display = this.displays.find(display => display.id === config.displays[i].id);
-        let json = {...config.displays[i]};
+        let json = { ...config.displays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await new Promise((resolve, reject) => {this.loadDataset(getDisplayNameFromId(json.id), {
-                dir: json.filter !== "" ? json.filter : undefined,
-                filter: json.filter,
-                callback: (display) => { resolve(display) },
-                errCallback: () => { reject(null) },
-            })});
+            display = await new Promise((resolve, reject) => {
+                this.loadDataset(getDisplayNameFromId(json.id), {
+                    dir: json.filter !== "" ? json.filter : undefined,
+                    filter: json.filter,
+                    callback: (display) => { resolve(display) },
+                    errCallback: () => { reject(null) },
+                })
+            });
             if (display === null) return;
-        } 
+        }
         json.frames = display.frames;
         json.timestamps = display.timestamps;
         if (display.filter !== json.filter) {
             /* If primary filter is different, need to load in primary filter images */
-            await new Promise((resolve, reject) => {this.loadDataset(getDisplayNameFromId(json.id), {
-                dir: json.filter !== "" ? json.filter : undefined,
-                filter: json.filter,
-                display: display,
-                callback: (display) => { resolve(display) },
-                errCallback: () => { reject(null) },
-            })});
+            await new Promise((resolve, reject) => {
+                this.loadDataset(getDisplayNameFromId(json.id), {
+                    dir: json.filter !== "" ? json.filter : undefined,
+                    filter: json.filter,
+                    display: display,
+                    callback: (display) => { resolve(display) },
+                    errCallback: () => { reject(null) },
+                })
+            });
         }
         json.images = display.images;
         display.fromJSON(json);
@@ -466,54 +578,28 @@ Model.prototype.loadDatasets = function () {
 
 /**
  * Load in a dataset from the list of datasets.
- * @param {string} name name of dataset to load.
  * @param {Object} options optional attributes to alter the loading process.
  */
-Model.prototype.loadDataset = function (name, options = {}) {
-    /* Callback options */
-    const callback = options.callback || (() => { });
-    const errCallback = options.errCallback || (() => { });
-    let dataset = this.datasets.find(d => d.name === name);
-    if (!!dataset) {
-        /* All other options */
-        const dir = options.dir || dataset.dir;
-        const filter = options.filter || "";
-        let display = options.display || null;
+Model.prototype.loadDataset = function (options = {}) {
+    const callback = options.callback || (() => {});
+    const errCallback = options.errCallback || (() => {});
+    if (!!options.dataset) {
+        const dir = options.dir || options.dataset.dir;
         this.incrementLoading();
         const start = performance.now();
-        console.log(`Beginning load of ${name} from /${dir}...`);
+        console.log(`Beginning load of ${options.dataset.name} from /${dir}...`);
         this.loader.initDatasetLoad(
-            name,
+            options.dataset.name,
             dir,
             loadObj => {
                 this.decrementLoading();
                 console.log(
-                    `Finished loading ${name} in ${Math.floor(performance.now() - start)}ms. \
+                    `Finished loading ${options.dataset.name} in ${Math.floor(performance.now() - start)}ms. \
                     \nLoaded ${loadObj.frames.length} frames. \
                     \nLoaded ${loadObj.timestamps.length} timestamps. \
                     \nLoaded ${loadObj.images.length} images.`
                 );
-                if (!!display) {
-                    /* If display is already created, simply replace display images */
-                    this.setDisplayImages(display, loadObj.images, display instanceof Overlay, filter);
-                } else {
-                    /* If display is not defined, create a new one populated with loaded information */
-                    display = new Display(
-                        generateDisplayId(this, loadObj.name),
-                        generateDisplayX(this, this.displays.length),
-                        generateDisplayY(this, this.displays.length),
-                        this.displayWidth,
-                        this.displayHeight,
-                        this.displayPadding,
-                        this.displayScrollbarHeight,
-                        loadObj.frames,
-                        loadObj.timestamps,
-                        loadObj.images,
-                        dataset.filters,
-                    );
-                    this.addDisplay(display);
-                }
-                callback(display);
+                callback(loadObj);
             },
             err => {
                 console.error(err);
