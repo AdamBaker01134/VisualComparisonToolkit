@@ -137,10 +137,14 @@ Overlay.prototype.setOpacity = function (opacity) {
     this.opacity = opacity;
 }
 
-/* Convert overlay to JSON */
+/**
+ * Convert overlay to JSON
+ * @returns {Object}
+ */
 Overlay.prototype.toJSON = function () {
     return {
         id: this.id,
+        type: "OVERLAY",
         x: this.x,
         y: this.y,
         width: this.width,

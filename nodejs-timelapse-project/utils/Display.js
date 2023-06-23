@@ -335,10 +335,14 @@ Display.prototype.addAnnotation = function (scrollbarPos, name) {
     }
 }
 
-/* Convert display to JSON */
+/**
+ * Convert display to JSON
+ * @returns {Object}
+ */
 Display.prototype.toJSON = function () {
     return {
         id: this.id,
+        type: "DISPLAY",
         x: this.x,
         y: this.y,
         width: this.width,

@@ -417,18 +417,6 @@ Model.prototype.filterImages = async function (display, filter) {
     }
 }
 
-// /**
-//  * Add an overlay to the model
-//  * @param {Overlay} overlay new overlay
-//  * @param {Display} target target display to move overlay to
-//  */
-// Model.prototype.addOverlay = function (overlay, target) {
-//     this.displays.push(overlay);
-//     this.moveDisplay(overlay, target);
-//     this.globalScrollbar.addChild(overlay.getMainScrollbar());
-//     this.notifySubscribers();
-// }
-
 /**
  * Move a display to the position of a target display and update the locations of all affected displays.
  * @param {Display|Overlay} display display to move
@@ -466,7 +454,11 @@ Model.prototype.addConfig = function () {
     if (!!name && !this.configs.some(config => config.name === name)) {
         let config = {
             name: name,
-            displays: this.displays.map(display => display.toJSON()),
+            displays: this.displays.map((display, position) => {
+                let json = display.toJSON();
+                json.position = position;
+                return json;
+            }),
             globalScrollbar: this.globalScrollbar.toJSON(),
             scrollPos: [scrollX, scrollY],
             normalized: this.normalized,
@@ -486,37 +478,43 @@ Model.prototype.addConfig = function () {
 Model.prototype.loadConfig = async function (config) {
     /* Load global scrollbar from JSON */
     this.globalScrollbar.fromJSON(config.globalScrollbar);
-    for (let i = 0; i < config.displays.length; i++) {
-        let display = this.displays.find(display => display.id === config.displays[i].id);
-        let json = { ...config.displays[i] };
+    const configDisplays = config.displays.filter(displayJSON => displayJSON.type === "DISPLAY");
+    const configOverlays = config.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
+    /* Load in all displays from JSON */
+    for (let i = 0; i < configDisplays.length; i++) {
+        let display = this.displays.find(display => display.id === configDisplays[i].id);
+        const json = { ...configDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await new Promise((resolve, reject) => {
-                this.loadDataset(getDisplayNameFromId(json.id), {
-                    dir: json.filter !== "" ? json.filter : undefined,
-                    filter: json.filter,
-                    callback: (display) => { resolve(display) },
-                    errCallback: () => { reject(null) },
-                })
-            });
-            if (display === null) return;
+            display = await this.addDisplay(getDisplayNameFromId(json.id), json.filter);
         }
-        json.frames = display.frames;
-        json.timestamps = display.timestamps;
-        if (display.filter !== json.filter) {
-            /* If primary filter is different, need to load in primary filter images */
-            await new Promise((resolve, reject) => {
-                this.loadDataset(getDisplayNameFromId(json.id), {
-                    dir: json.filter !== "" ? json.filter : undefined,
-                    filter: json.filter,
-                    display: display,
-                    callback: (display) => { resolve(display) },
-                    errCallback: () => { reject(null) },
-                })
-            });
+        if (display instanceof Display) {
+            json.frames = display.frames;
+            json.timestamps = display.timestamps;
+            json.images = display.images;
+            display.fromJSON(json);
+        } else {
+            console.error(`Failed to create display with id "${json.id}`);
         }
-        json.images = display.images;
-        display.fromJSON(json);
+    }
+    /* Load in all overlays from JSON */
+    for (let j = 0; j < configOverlays.length; j++) {
+        let overlay = this.displays.find(overlay => overlay.id === configOverlays[j].id);
+        const json = { ...configOverlays[j] };
+        if (!overlay) {
+            /* Create new overlay from JSON */
+            /* TODO: Getting an error here, json.id is incorrect */
+            overlay = await this.addOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
+        }
+        if (overlay instanceof Overlay) {
+            json.frames = overlay.frames;
+            json.timestamps = overlay.timestamps;
+            json.images = overlay.images;
+            json.secondaryImages = overlay.secondaryImages;
+            overlay.fromJSON(json);
+        } else {
+            console.error(`Failed to create overlay with id "${json.id}"`);
+        }
     }
     /* Link up all global scrollbar links and children */
     const allScrollbars = this.findAllScrollbars();

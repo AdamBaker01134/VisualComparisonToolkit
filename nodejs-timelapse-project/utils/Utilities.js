@@ -32,19 +32,21 @@ function generateDisplayId(model, name) {
 /**
  * generate a unique overlay id
  * @param {Model} model model from which to generate a new display id
+ * @param {string} id1 id of primary display
+ * @param {string} id2 id of secondary display
  * @returns {string}
  */
-function generateOverlayId(model, name, secondaryName) {
+function generateOverlayId(model, id1, id2) {
     let idNum = 1;
     model.displays.forEach(display => {
         if (display instanceof Overlay) {
-            let displayName = getDisplayNameFromId(display.id);
-            let secondaryDisplayName = getSecondaryDisplayNameFromId(display.id);
+            let primaryId = getPrimaryIdFromId(display.id);
+            let secondaryId = getSecondaryIdFromId(display.id);
             let displayIdNum = getDisplayIdNumberFromId(display.id);
-            if (displayName === name && secondaryDisplayName === secondaryName) idNum = displayIdNum + 1;
+            if (primaryId === id1 && secondaryId === id2) idNum = displayIdNum + 1;
         }
     });
-    return name + ID_DELIMITER + idNum + ID_DELIMITER + secondaryName;
+    return id1 + ID_DELIMITER + id2 + ID_DELIMITER + idNum;
 }
 
 /**
@@ -53,7 +55,50 @@ function generateOverlayId(model, name, secondaryName) {
  * @returns {string}
  */
 function getDisplayNameFromId(id) {
-    return id.split(ID_DELIMITER)[0];
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 3 || idTokens.length === 5) {
+        return idTokens[0];
+    }
+    return "";
+}
+
+/**
+ * Get the display name of the secondary display of an overlay
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getSecondaryDisplayNameFromId(id) {
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 5) {
+        return id.split(ID_DELIMITER)[2];
+    }
+    return "";
+}
+
+/**
+ * Get the primary id from a display id
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getPrimaryIdFromId(id) {
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 2 || idTokens.length === 5) {
+        return idTokens[0] + ID_DELIMITER + idTokens[1];
+    }
+    return "";
+}
+
+/**
+ * Get the secondary id from a display id
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getSecondaryIdFromId(id) {
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 5) {
+        return idTokens[2] + ID_DELIMITER + idTokens[3];
+    }
+    return "";
 }
 
 /**
@@ -62,16 +107,13 @@ function getDisplayNameFromId(id) {
  * @returns {number}
  */
 function getDisplayIdNumberFromId(id) {
-    return parseInt(id.split(ID_DELIMITER)[1]);
-}
-
-/**
- * Get the display id number of the secondary display of an overlay
- * @param {string} id display id
- * @returns {string}
- */
-function getSecondaryDisplayNameFromId(id) {
-    return id.split(ID_DELIMITER)[2];
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 2) {
+        return parseInt(id.split(ID_DELIMITER)[1]);
+    } else if (idTokens.length === 5) {
+        return parseInt(id.split(ID_DELIMITER)[4]);
+    }
+    return -1;
 }
 
 /**
