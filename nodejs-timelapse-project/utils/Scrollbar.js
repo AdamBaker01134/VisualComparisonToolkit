@@ -211,11 +211,33 @@ Scrollbar.prototype.addLink = function (link) {
 }
 
 /**
+ * Remove a linked scrollbar from this scrollbar
+ * @param {Scrollbar} link linked scrollbar to remove
+ */
+Scrollbar.prototype.removeLink = function (link) {
+    const index = this.links.findIndex(linked => linked.id === link.id);
+    if (index >= 0) {
+        this.links.splice(index, 1);
+    }
+}
+
+/**
  * Add a child scrollbar to this scrollbar
  * @param {Scrollbar} child child scrollbar
  */
 Scrollbar.prototype.addChild = function (child) {
     this.children.push(child);
+}
+
+/**
+ * Remove a child scrollbar from this scrollbar
+ * @param {Scrollbar} child child scrollbar to remove
+ */
+Scrollbar.prototype.removeChild = function (child) {
+    const index = this.children.findIndex(knownChild => knownChild.id === child.id);
+    if (index >= 0) {
+        this.children.splice(index, 1);
+    }
 }
 
 /**

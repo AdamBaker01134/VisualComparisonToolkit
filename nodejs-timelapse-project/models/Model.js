@@ -518,29 +518,37 @@ Model.prototype.loadConfig = async function (config) {
     }
     /* Link up all global scrollbar links and children */
     const allScrollbars = this.findAllScrollbars();
-    this.globalScrollbar.children = [];
     config.globalScrollbar.children.forEach(id => {
         let foundChild = allScrollbars.find(s => s.id === id);
-        if (foundChild) this.globalScrollbar.children.push(foundChild);
+        if (foundChild) {
+            this.globalScrollbar.removeChild(foundChild);
+            this.globalScrollbar.addChild(foundChild);
+        }
     });
-    this.globalScrollbar.links = [];
     config.globalScrollbar.links.forEach(id => {
         let foundLink = allScrollbars.find(s => s.id === id);
-        if (foundLink) this.globalScrollbar.links.push(foundLink);
+        if (foundLink) {
+            this.globalScrollbar.removeLink(foundLink);
+            this.globalScrollbar.addLink(foundLink);
+        }
     });
     /* Link up all other scrollbar links and children */
     config.displays.forEach(configDisplay => {
         configDisplay.scrollbars.forEach(configScrollbar => {
             let scrollbar = allScrollbars.find(scrollbar => scrollbar.id === configScrollbar.id);
-            scrollbar.children = [];
             configScrollbar.children.forEach(id => {
                 let foundChild = allScrollbars.find(s => s.id === id);
-                if (foundChild) scrollbar.children.push(foundChild);
+                if (foundChild) {
+                    scrollbar.removeChild(foundChild);
+                    scrollbar.addChild(foundChild);
+                }
             });
-            scrollbar.links = [];
             configScrollbar.children.forEach(id => {
                 let foundLink = allScrollbars.find(s => s.id === id);
-                if (foundLink) scrollbar.links.push(foundLink);
+                if (foundLink) {
+                    scrollbar.removeLink(foundLink);
+                    scrollbar.addLink(foundLink);
+                }
             });
         });
     });
