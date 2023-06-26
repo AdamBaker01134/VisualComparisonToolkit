@@ -5,3 +5,5 @@
 /nodejs-timelapse-project/node_modules/
 
 /nodejs-timelapse-project/package-lock.json
+
+/nodejs-timelapse-project/snapshots.json

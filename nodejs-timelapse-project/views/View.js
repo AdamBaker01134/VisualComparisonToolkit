@@ -19,7 +19,7 @@ View.prototype.draw = function () {
         renderDisplaySkeleton(display, this.imodel.selection === display);
 
         if (display instanceof Overlay) {
-            let secondaryIndex = Math.floor(display.secondaryIndex); /* Floor index in case index has been affected by ratio */
+            let secondaryIndex = Math.floor(display.getIndex(1)); /* Floor index in case index has been affected by ratio */
             image(
                 display.secondaryImages[secondaryIndex].get(),
                 display.x + display.padding,
@@ -30,7 +30,7 @@ View.prototype.draw = function () {
             tint(255, parseInt(display.opacity));
         }
 
-        let index = Math.floor(display.index); /* Floor index in case index has been affected by ratio */
+        let index = Math.floor(display.getIndex(0)); /* Floor index in case index has been affected by ratio */
         const left = display.x + display.padding;
         const right = display.x + display.padding + display.width;
         const top = display.y + display.padding;
@@ -72,113 +72,124 @@ View.prototype.draw = function () {
             );
         }
 
-        /* Scrollbar */
-        let scrollbarLeft = display.getScrollbarLeft();
-        let scrollbarTop = display.getScrollbarTop();
-        let trianglePos = display.getMainPosition();
-        let startPos = display.getStartPosition();
-        let endPos = display.getEndPosition();
-        noStroke();
-        if (display.locked) {
-            fill("rgb(128, 128, 128)");
-        } else {
-            fill("rgb(34, 154, 34)");
-        }
-        rect(
-            scrollbarLeft,
-            scrollbarTop,
-            display.width,
-            display.scrollbarHeight
-        );
-        fill("rgb(255, 255, 255)");
-        rect(
-            scrollbarLeft,
-            scrollbarTop,
-            startPos - scrollbarLeft,
-            display.scrollbarHeight
-        );
-        rect(
-            endPos,
-            scrollbarTop,
-            scrollbarLeft + display.width - endPos,
-            display.scrollbarHeight
-        );
-
-        /* Scrollbar Segments */
-        fill("rgb(0, 0, 0)");
-        stroke("rgb(25, 25, 25)");
-        for (let idx = 0; idx < display.getSize(); idx++) {
-            let pos = display.getPositionOfIndex(idx);
-            renderSegment(idx, scrollbarTop, pos, display.getLineGap());
-        }
-
-        /* Display Annotations */
-        stroke("rgb(255, 255, 0)");
-        display.annotations.forEach(annotation => {
-            if (this.imodel.highlightedAnnotation === annotation) {
-                strokeWeight(3);
+        /* Scrollbars */
+        display.scrollbars.forEach(scrollbar => {
+            let trianglePos = scrollbar.getMainPosition();
+            let startPos = scrollbar.getStartPosition();
+            let endPos = scrollbar.getEndPosition();
+            stroke("rgb(0, 0, 0)");
+            if (display.locked) {
+                fill("rgb(128, 128, 128)");
+            } else if (this.imodel.focused === scrollbar) {
+                fill("rgb(34, 200, 34)");
+            } else {
+                fill("rgb(34, 154, 34)");
             }
-            let pos = display.getPositionOfIndex(annotation.index);
-            line(pos, scrollbarTop, pos, scrollbarTop + display.scrollbarHeight);
-            strokeWeight(1);
-        });
-
-        /* Display Config Benchmarks */
-        this.model.configs.forEach((config, index) => {
-            let match = config.displays.find(d => d.id === display.id);
-            if (match) {
-                let colourTint = 32 * index;
-                let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-                let pos = display.getPositionOfIndex(match.index);
-                renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config);
+            rect(
+                scrollbar.x,
+                scrollbar.y,
+                scrollbar.width,
+                scrollbar.height
+            );
+            noStroke();
+            fill("rgb(255, 255, 255)");
+            if (startPos >= 0 && endPos >= 0) {
+                rect(
+                    scrollbar.x,
+                    scrollbar.y,
+                    startPos - scrollbar.x,
+                    scrollbar.height
+                );
+                rect(
+                    endPos,
+                    scrollbar.y,
+                    scrollbar.x + scrollbar.width - endPos,
+                    scrollbar.height
+                );
             }
+
+            /* Scrollbar Segments */
+            fill("rgb(0, 0, 0)");
+            stroke("rgb(25, 25, 25)");
+            for (let idx = 0; idx < scrollbar.getSize(); idx++) {
+                let pos = scrollbar.getPositionOfIndex(idx);
+                renderSegment(idx, scrollbar.y, pos, scrollbar.getLineGap());
+            }
+
+            /* Scrollbar Annotations */
+            colorMode(HSL, 360, 100, 100);
+            scrollbar.annotations.forEach(annotation => {
+                stroke(annotation.colour);
+                if (this.imodel.highlightedAnnotation?.id === annotation.id) {
+                    strokeWeight(3);
+                }
+                let pos = scrollbar.getPositionOfIndex(annotation.index);
+                line(pos, scrollbar.y, pos, scrollbar.y + scrollbar.height);
+                strokeWeight(1);
+            });
+            colorMode(RGB, 255);
+
+            /* Display Snapshot Benchmarks */
+            this.model.snapshots.forEach((snapshot, index) => {
+                let snapshotIndex = this.model.findSnapshotIndex(scrollbar.id, snapshot);
+                if (snapshotIndex >= 0) {
+                    let colourTint = 32 * index;
+                    let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
+                    let pos = scrollbar.getPositionOfIndex(snapshotIndex);
+                    renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedSnapshot === snapshot);
+                }
+            });
+
+            fill("rgb(255, 255, 255)");
+            stroke("rgb(25, 25, 25)");
+            if (startPos >= 0 && endPos >= 0) {
+                /* Scrollbar start position arrow */
+                triangle(
+                    startPos,
+                    scrollbar.y + 5,
+                    startPos - 5,
+                    scrollbar.y + scrollbar.height - 0.5,
+                    startPos + 5,
+                    scrollbar.y + scrollbar.height - 0.5
+                );
+
+                /* Scrollbar end position arrow */
+                triangle(
+                    endPos,
+                    scrollbar.y + 5,
+                    endPos - 5,
+                    scrollbar.y + scrollbar.height - 0.5,
+                    endPos + 5,
+                    scrollbar.y + scrollbar.height - 0.5
+                );
+            }
+
+            /* Scrollbar main position arrow */
+            fill("rgb(0, 0, 0)");
+            triangle(
+                trianglePos,
+                scrollbar.y + 5,
+                trianglePos - 5,
+                scrollbar.y + scrollbar.height - 0.5,
+                trianglePos + 5,
+                scrollbar.y + scrollbar.height - 0.5
+            );
         });
-
-        /* Scrollbar start position arrow */
-        fill("rgb(255, 255, 255)");
-        stroke("rgb(25, 25, 25)");
-        triangle(
-            startPos,
-            scrollbarTop + 5,
-            startPos - 5,
-            scrollbarTop + display.scrollbarHeight - 0.5,
-            startPos + 5,
-            scrollbarTop + display.scrollbarHeight - 0.5
-        );
-
-        /* Scrollbar end position arrow */
-        triangle(
-            endPos,
-            scrollbarTop + 5,
-            endPos - 5,
-            scrollbarTop + display.scrollbarHeight - 0.5,
-            endPos + 5,
-            scrollbarTop + display.scrollbarHeight - 0.5
-        );
-
-        /* Scrollbar main position arrow */
-        fill("rgb(0, 0, 0)");
-        triangle(
-            trianglePos,
-            scrollbarTop + 5,
-            trianglePos - 5,
-            scrollbarTop + display.scrollbarHeight - 0.5,
-            trianglePos + 5,
-            scrollbarTop + display.scrollbarHeight - 0.5
-        );
     });
 
     /* Global Scrollbar */
     let scrollbar = this.model.globalScrollbar;
-    if (scrollbar instanceof GlobalScrollbar) {
-        let scrollbarLeft = scrollbar.getScrollbarLeft();
-        let scrollbarTop = scrollbar.getScrollbarTop();
+    if (scrollbar instanceof Scrollbar) {
         let trianglePos = scrollbar.getMainPosition();
-        fill("rgb(34, 154, 34)");
+        if (this.imodel.focused === scrollbar) {
+            fill("rgb(34, 200, 34)");
+        } else {
+            fill("rgb(34, 154, 34)");
+        }
         stroke("rgb(0, 0, 0)");
         rect(
-            scrollbarLeft,
-            scrollbarTop,
+            scrollbar.x,
+            scrollbar.y,
             scrollbar.width,
             scrollbar.height
         );
@@ -188,17 +199,16 @@ View.prototype.draw = function () {
         fill(0);
         stroke("rgb(25, 25, 25)");
         for (let idx = 0; idx < scrollbar.getSize(); idx++) {
-            let top = scrollbarTop;
             let pos = scrollbar.getPositionOfIndex(idx);
-            renderSegment(idx, top, pos, scrollbar.getLineGap());
+            renderSegment(idx, scrollbar.y, pos, scrollbar.getLineGap());
         }
 
-        /* Global Scrollbar Config Benchmark */
-        this.model.configs.forEach((config, index) => {
+        /* Global Scrollbar Snapshot Benchmark */
+        this.model.snapshots.forEach((snapshot, index) => {
             let colourTint = 32 * index;
             let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-            let pos = scrollbar.getPositionOfIndex(config.globalScrollbar.index);
-            renderBenchmark(scrollbarTop, pos, colour, this.imodel.highlightedConfig === config);
+            let pos = scrollbar.getPositionOfIndex(snapshot.globalScrollbar.index);
+            renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedSnapshot === snapshot);
         });
 
         /* Global Scrollbar main position arrow */
@@ -206,11 +216,11 @@ View.prototype.draw = function () {
         stroke("rgb(25, 25, 25)");
         triangle(
             trianglePos,
-            scrollbarTop + 5,
+            scrollbar.y + 5,
             trianglePos - 5,
-            scrollbarTop + scrollbar.height - 0.5,
+            scrollbar.y + scrollbar.height - 0.5,
             trianglePos + 5,
-            scrollbarTop + scrollbar.height - 0.5
+            scrollbar.y + scrollbar.height - 0.5
         )
     }
 
@@ -254,8 +264,8 @@ function renderSegment(idx, top, pos, lineGap) {
             line(pos, top, pos, top + 5);
             break;
         default:
-            if (lineGap > 1) {
-                line(pos, top, pos, top + 1);
+            if (lineGap > 3) {
+                line(pos, top, pos, top + 3);
             }
             break;
     }
@@ -286,9 +296,10 @@ function renderBenchmark(top, pos, colour, highlighted) {
  * @param {number|undefined} opt_x optional alternative x coordinate for the display skeleton
  * @param {number|undefined} opt_y optional alternative y coordinate for the display skeleton
  */
-function renderDisplaySkeleton(display, selected, opt_opacity=1.0, opt_x, opt_y) {
+function renderDisplaySkeleton(display, selected, opt_opacity = 1.0, opt_x, opt_y) {
     const x = opt_x || display.x;
     const y = opt_y || display.y;
+    /* Draw grey container */
     if (selected) {
         stroke(`rgba(52, 219, 85, ${opt_opacity})`);
         strokeWeight(2);
@@ -296,17 +307,21 @@ function renderDisplaySkeleton(display, selected, opt_opacity=1.0, opt_x, opt_y)
         noStroke();
     }
     fill(`rgba(190, 190, 190, ${opt_opacity})`);
-    rect(x, y, display.width + display.padding * 2, display.height + display.padding * 2 + display.scrollbarHeight, 10);
+    rect(x, y, display.width + display.padding * 2, display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length, 10);
     noStroke();
     strokeWeight(1);
+    /* Draw black image background */
     fill(`rgba(0, 0, 0, ${opt_opacity})`);
     rect(x + display.padding, y + display.padding, display.width, display.height);
+    /* Draw scrollbar backgrounds */
     if (display.locked) {
         fill(`rgba(128, 128, 128, ${opt_opacity})`);
     } else {
         fill(`rgba(34, 154, 34, ${opt_opacity})`);
     }
-    stroke("rgb(0, 0, 0)");
-    rect(x + display.padding, y + display.padding + display.height, display.width, display.scrollbarHeight);
+    stroke(`rgba(0, 0, 0, ${opt_opacity})`);
+    display.scrollbars.forEach((scrollbar, index) => {
+        rect(x + display.padding, y + display.padding + display.height + scrollbar.height * index, scrollbar.width, scrollbar.height);
+    });
     noStroke();
 }

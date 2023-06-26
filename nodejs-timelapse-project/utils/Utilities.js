@@ -32,19 +32,21 @@ function generateDisplayId(model, name) {
 /**
  * generate a unique overlay id
  * @param {Model} model model from which to generate a new display id
+ * @param {string} id1 id of primary display
+ * @param {string} id2 id of secondary display
  * @returns {string}
  */
-function generateOverlayId(model, name, secondaryName) {
+function generateOverlayId(model, id1, id2) {
     let idNum = 1;
     model.displays.forEach(display => {
         if (display instanceof Overlay) {
-            let displayName = getDisplayNameFromId(display.id);
-            let secondaryDisplayName = getSecondaryDisplayNameFromId(display.id);
+            let primaryId = getPrimaryIdFromId(display.id);
+            let secondaryId = getSecondaryIdFromId(display.id);
             let displayIdNum = getDisplayIdNumberFromId(display.id);
-            if (displayName === name && secondaryDisplayName === secondaryName) idNum = displayIdNum + 1;
+            if (primaryId === id1 && secondaryId === id2) idNum = displayIdNum + 1;
         }
     });
-    return name + ID_DELIMITER + idNum + ID_DELIMITER + secondaryName;
+    return id1 + ID_DELIMITER + id2 + ID_DELIMITER + idNum;
 }
 
 /**
@@ -53,7 +55,50 @@ function generateOverlayId(model, name, secondaryName) {
  * @returns {string}
  */
 function getDisplayNameFromId(id) {
-    return id.split(ID_DELIMITER)[0];
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 2 || idTokens.length === 5) {
+        return idTokens[0];
+    }
+    return "";
+}
+
+/**
+ * Get the display name of the secondary display of an overlay
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getSecondaryDisplayNameFromId(id) {
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 5) {
+        return id.split(ID_DELIMITER)[2];
+    }
+    return "";
+}
+
+/**
+ * Get the primary id from a display id
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getPrimaryIdFromId(id) {
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 2 || idTokens.length === 5) {
+        return idTokens[0] + ID_DELIMITER + idTokens[1];
+    }
+    return "";
+}
+
+/**
+ * Get the secondary id from a display id
+ * @param {string} id display id
+ * @returns {string}
+ */
+function getSecondaryIdFromId(id) {
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 5) {
+        return idTokens[2] + ID_DELIMITER + idTokens[3];
+    }
+    return "";
 }
 
 /**
@@ -62,16 +107,63 @@ function getDisplayNameFromId(id) {
  * @returns {number}
  */
 function getDisplayIdNumberFromId(id) {
-    return parseInt(id.split(ID_DELIMITER)[1]);
+    let idTokens = id.split(ID_DELIMITER);
+    if (idTokens.length === 2) {
+        return parseInt(id.split(ID_DELIMITER)[1]);
+    } else if (idTokens.length === 5) {
+        return parseInt(id.split(ID_DELIMITER)[4]);
+    }
+    return -1;
 }
 
 /**
- * Get the display id number of the secondary display of an overlay
- * @param {string} id display id
+ * Generate the x position of a new (or existing) display in the model
+ * @param {Model} model
+ * @param {number} position display position in the model (within the displays array)
+ */
+function generateDisplayX(model, position) {
+    let column = position % model.displaysPerRow;
+    return model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth);
+}
+
+/**
+ * Generate the y position of a new (or existing) display in the model
+ * @param {Model} model
+ * @param {number} position display position in the model (within the displays array)
+ */
+function generateDisplayY(model, position) {
+    let y = model.displayPadding;
+    let row = Math.floor(position / model.displaysPerRow);
+    for (let i = 0; i < row; i++) {
+        let maxHeight = 0;
+        for (let j = 0; j < model.displaysPerRow; j++) {
+            let display = model.displays[i * model.displaysPerRow + j];
+            let height = display.padding * 3 + display.height + display.scrollbarHeight * display.scrollbars.length;
+            if (height > maxHeight) maxHeight = height;
+        }
+        y += maxHeight;
+    }
+    return y;
+}
+
+/**
+ * Generate a personal id for an annotation
+ * @param {string} name name of the annotation
  * @returns {string}
  */
-function getSecondaryDisplayNameFromId(id) {
-    return id.split(ID_DELIMITER)[2];
+function generateAnnotationId(name) {
+    return `${name}-${Math.floor(Math.random() * 1000000)}`;
+}
+
+/**
+ * Generate an hsl colour value for an annotation
+ * @returns {Array<number>}
+ */
+function generateAnnotationColour() {
+    let hue = Math.random() * 360;
+    let saturation = 100;
+    let lightness = 50;
+    return [hue, saturation, lightness];
 }
 
 /**
@@ -81,7 +173,7 @@ function getSecondaryDisplayNameFromId(id) {
  * @param {number} segments number of segments in the scrollbar
  * @param {number} width width of the scrollbar
  */
-function getIndexFromMouse (x, mx, segments, width) {
+function getIndexFromMouse(x, mx, segments, width) {
     let idx = (int)(map(
         mx,                 // value to map
         x,                  // min value of mx
@@ -108,7 +200,7 @@ function getIndexFromMouse (x, mx, segments, width) {
  * Callback function should be of similar form to the Array.findIndex()
  *  standard library function.
  */
-Array.prototype.findFirst = function(callback, fromIndex = 0, thisArg) {
+Array.prototype.findFirst = function (callback, fromIndex = 0, thisArg) {
     while (fromIndex < this.length &&
         !callback.call(thisArg, this[fromIndex], fromIndex, this)) {
         fromIndex++;
@@ -127,7 +219,7 @@ Array.prototype.findFirst = function(callback, fromIndex = 0, thisArg) {
  * Callback function should be of similar form to the Array.findIndex()
  *  standard library function.
  */
-Array.prototype.findLast = function(callback, fromIndex = this.length, thisArg) {
+Array.prototype.findLast = function (callback, fromIndex = this.length, thisArg) {
     while (fromIndex >= 0 &&
         !callback.call(thisArg, this[fromIndex], fromIndex, this)) {
         fromIndex--;

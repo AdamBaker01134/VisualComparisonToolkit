@@ -17,6 +17,7 @@ function preload() {
     model = new Model();
     imodel = new iModel();
     model.loadDatasets();
+    model.loadSnapshots();
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
@@ -81,8 +82,8 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
                 currentState = STATE.OUT_OF_BOUNDS;
             } else {
                 hit = model.checkBenchmarkHit(mx, my);
-                imodel.highlightConfig(hit);
-                /* Only want to highlight annotation if no configs are highlighted */
+                imodel.highlightSnapshot(hit);
+                /* Only want to highlight annotation if no benchmarks are highlighted */
                 hit = hit === null ? model.checkAnnotationHit(mx, my) : null;
                 imodel.highlightAnnotation(hit);
             }
@@ -143,6 +144,9 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             previousY = mouseY;
             break;
     }
+    /* Highlighted objects are unhighlighted on drag */
+    imodel.highlightSnapshot(null);
+    imodel.highlightAnnotation(null);
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
@@ -151,11 +155,6 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
     switch (currentState) {
         case STATE.READY:
             if (hit = model.checkScrollbarHit(mx, my)) {
-                if (imodel.highlightedConfig) {
-                    model.loadConfig(imodel.highlightedConfig);
-                } else if (imodel.highlightedAnnotation) {
-                    model.setIndex(hit, imodel.highlightedAnnotation.index);
-                }
                 imodel.setFocused(hit);
                 let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
@@ -189,6 +188,13 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.FOCUSED:
         case STATE.START_FOCUSED:
         case STATE.END_FOCUSED:
+            if (hit = model.checkScrollbarHit(mx, my)) {
+                if (imodel.highlightedSnapshot) {
+                    model.loadSnapshot(imodel.highlightedSnapshot);
+                } else if (imodel.highlightedAnnotation) {
+                    imodel.loadAnnotation(hit, imodel.highlightedAnnotation.name);
+                }
+            }
             imodel.setFocused(null);
             currentState = STATE.READY;
             break;
@@ -211,21 +217,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
                 if (hit !== imodel.ghost) {
-                    let column = model.displays.length % model.displaysPerRow;
-                    let row = Math.floor(model.displays.length / model.displaysPerRow);
-                    let overlay = new Overlay(
-                        generateOverlayId(model, getDisplayNameFromId(imodel.ghost.id), getDisplayNameFromId(hit.id)),
-                        model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth),
-                        model.displayPadding + row * (model.displayPadding * 3 + model.displayHeight + model.displayScrollbarHeight),
-                        model.displayWidth,
-                        model.displayHeight,
-                        model.displayPadding,
-                        model.displayScrollbarHeight,
-                        imodel.ghost,
-                        hit,
-                    );
-                    model.addOverlay(overlay, hit);
-                    imodel.select(overlay);
+                    model.addOverlay(imodel.ghost.id, hit.id).then(overlay => imodel.select(overlay));
                 }
             }
             clearInterval(timer);
@@ -256,28 +248,26 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
 }
 
 function windowResized (event) {
-    model.updateCanvasDimensions();
+    model.updateCanvas();
 }
 
 function _attachHeaderListeners() {
     /* Upload header functions */
     document.getElementById("uploadButton")?.addEventListener("click", e => {
         let value = document.getElementById("uploadSelect")?.value;
-        model.loadDataset(value, {
-            callback: display => imodel.select(display),
-        });
+        model.addDisplay(value, "").then(display => imodel.select(display));
     });
 
     /* Global header functions */
-    document.getElementById("loadConfigButton")?.addEventListener("click", e => {
-        let configName = document.getElementById("configSelect")?.value;
-        let config = model.configs.find(configuration => configuration.name === configName);
-        if (!!config) {
-            model.loadConfig(config);
+    document.getElementById("loadSnapshotButton")?.addEventListener("click", e => {
+        let snapshotName = document.getElementById("snapshotSelect")?.value;
+        let snapshot = model.snapshots.find(snapshot => snapshot.name === snapshotName);
+        if (!!snapshot) {
+            model.loadSnapshot(snapshot);
         }
     });
-    document.getElementById("saveConfigButton")?.addEventListener("click", e => {
-        model.addConfig();
+    document.getElementById("saveSnapshotButton")?.addEventListener("click", e => {
+        model.addSnapshot();
     });
     document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
         model.setNormalized(e.target.checked);
@@ -292,17 +282,10 @@ function _attachHeaderListeners() {
         let value = e.target.value;
         let filterName = e.target.value;
         if (value !== "---" && imodel.selection !== null) {
-            let isOverlay = imodel.selection instanceof Overlay;
-            let name = isOverlay ? getSecondaryDisplayNameFromId(imodel.selection.id) : getDisplayNameFromId(imodel.selection.id);
             if (value === "Reset") {
-                value = model.datasets.find(d => d.name === name).dir;
                 filterName = "";
             }
-            model.loadDataset(name, {
-                dir: value,
-                display: imodel.selection,
-                filter: filterName,
-            });
+            model.filterImages(imodel.selection, filterName);
         }
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {
@@ -319,9 +302,8 @@ function _attachHeaderListeners() {
     });
     document.getElementById("loadAnnotationButton")?.addEventListener("click", e => {
         let name = document.getElementById("annotationSelect").value;
-        let annotation = imodel?.selection.annotations.find(annotation => annotation.name === name);
-        if (!!annotation) {
-            model.setIndex(imodel.selection, annotation.index);
+        if (imodel.selection !== null) {
+            imodel.loadAnnotation(imodel.selection.getMainScrollbar(), name);
         }
     });
     document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {

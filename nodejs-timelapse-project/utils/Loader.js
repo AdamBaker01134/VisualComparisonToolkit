@@ -25,6 +25,22 @@ Loader.prototype.loadDatasets = function () {
 }
 
 /**
+ * Load snapshots from the snapshots.json file.
+ * If file DNE, just return an empty array.
+ */
+Loader.prototype.loadSnapshots = function () {
+    return fetch("./snapshots.json")
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return [];
+            }
+        })
+        .catch(error => []);
+}
+
+/**
  * Begin a new dataset load.
  * @param {string} dataset name of the dataset to load
  * @param {string} dir directory of the dataset images to load
