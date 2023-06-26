@@ -17,7 +17,7 @@ function Model() {
     this.normalized = true;
     this.loading = 0;
     this.displays = [];
-    this.configs = [];
+    this.snapshots = [];
     this.globalScrollbarHeight = 40;
     this.globalScrollbar = new Scrollbar(
         "global",
@@ -255,7 +255,7 @@ Model.prototype.checkAnnotationHit = function (mx, my) {
 }
 
 /**
- * Model check if a config benchmark was hit in a mouse event
+ * Model check if a snapshot benchmark was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
  * @returns {Object|null}
@@ -264,12 +264,12 @@ Model.prototype.checkBenchmarkHit = function (mx, my) {
     const target = this.checkScrollbarHit(mx, my);
     const hitMargin = 5;
     if (target instanceof Scrollbar) {
-        for (let i = 0; i < this.configs.length; i++) {
-            const index = this.findConfigIndex(target.id, this.configs[i]);
+        for (let i = 0; i < this.snapshots.length; i++) {
+            const index = this.findSnapshotIndex(target.id, this.snapshots[i]);
             if (index >= 0) {
                 let pos = target.getPositionOfIndex(index);
                 if (mx > pos - 2 - hitMargin && mx < pos + 2 + hitMargin && my < target.y + 4 + hitMargin) {
-                    return this.configs[i];
+                    return this.snapshots[i];
                 }
             }
         }
@@ -278,17 +278,17 @@ Model.prototype.checkBenchmarkHit = function (mx, my) {
 }
 
 /**
- * Find the index of a scrollbar within a configuration
+ * Find the index of a scrollbar within a snapshot
  * @param {string} id id of scrollbar you want to find
- * @param {Object} config config to search
+ * @param {Object} snapshot snapshot to search
  * @returns {number}
  */
-Model.prototype.findConfigIndex = function (id, config) {
-    if (config.globalScrollbar.id === id) {
-        return config.globalScrollbar.index;
+Model.prototype.findSnapshotIndex = function (id, snapshot) {
+    if (snapshot.globalScrollbar.id === id) {
+        return snapshot.globalScrollbar.index;
     } else {
-        for (let i = 0; i < config.displays.length; i++) {
-            const display = config.displays[i];
+        for (let i = 0; i < snapshot.displays.length; i++) {
+            const display = snapshot.displays[i];
             for (let j = 0; j < display.scrollbars.length; j++) {
                 if (display.scrollbars[j].id === id) {
                     return display.scrollbars[j].index;
@@ -447,12 +447,12 @@ Model.prototype.removeDisplay = function (display) {
 }
 
 /**
- * Add a system configuration in JSON format to the model.
+ * Add a system snapshot in JSON format to the model.
  */
-Model.prototype.addConfig = function () {
-    let name = prompt("Enter a name for this config:", `config-${this.configs.length}`);
-    if (!!name && !this.configs.some(config => config.name === name)) {
-        let config = {
+Model.prototype.addSnapshot = function () {
+    let name = prompt("Enter a name for this snapshot:", `snapshot-${this.snapshots.length}`);
+    if (!!name && !this.snapshots.some(snapshot => snapshot.name === name)) {
+        let snapshot = {
             name: name,
             displays: this.displays.map((display, position) => {
                 let json = display.toJSON();
@@ -463,31 +463,31 @@ Model.prototype.addConfig = function () {
             scrollPos: [scrollX, scrollY],
             normalized: this.normalized,
         };
-        alert(`Successfully created configuration with name "${name}"`);
+        alert(`Successfully created snapshot with name "${name}"`);
         fetch("http://localhost:30500/addSnapshot", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ snapshot: config }),
+            body: JSON.stringify({ snapshot: snapshot }),
         }).then(() => this.loadSnapshots()).catch(err => console.error(err));
         this.notifySubscribers();
     } else {
-        alert(`Error: invalid configuration name`);
+        alert(`Error: invalid snapshot name`);
     }
 }
 
 /**
- * Load a saved config
- * @param {Object} config configuration
+ * Load a saved snapshot
+ * @param {Object} snapshot snapshot object
  */
-Model.prototype.loadConfig = async function (config) {
+Model.prototype.loadSnapshot = async function (snapshot) {
     /* Load global scrollbar from JSON */
-    this.globalScrollbar.fromJSON(config.globalScrollbar);
-    const configDisplays = config.displays.filter(displayJSON => displayJSON.type === "DISPLAY");
-    const configOverlays = config.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
+    this.globalScrollbar.fromJSON(snapshot.globalScrollbar);
+    const snapshotDisplays = snapshot.displays.filter(displayJSON => displayJSON.type === "DISPLAY");
+    const snapshotOverlays = snapshot.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
     /* Load in all displays from JSON */
-    for (let i = 0; i < configDisplays.length; i++) {
-        let display = this.displays.find(display => display.id === configDisplays[i].id);
-        const json = { ...configDisplays[i] };
+    for (let i = 0; i < snapshotDisplays.length; i++) {
+        let display = this.displays.find(display => display.id === snapshotDisplays[i].id);
+        const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
             display = await this.addDisplay(getDisplayNameFromId(json.id), json.filter);
@@ -502,9 +502,9 @@ Model.prototype.loadConfig = async function (config) {
         }
     }
     /* Load in all overlays from JSON */
-    for (let j = 0; j < configOverlays.length; j++) {
-        let overlay = this.displays.find(overlay => overlay.id === configOverlays[j].id);
-        const json = { ...configOverlays[j] };
+    for (let j = 0; j < snapshotOverlays.length; j++) {
+        let overlay = this.displays.find(overlay => overlay.id === snapshotOverlays[j].id);
+        const json = { ...snapshotOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
             overlay = await this.addOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
@@ -521,14 +521,14 @@ Model.prototype.loadConfig = async function (config) {
     }
     /* Link up all global scrollbar links and children */
     const allScrollbars = this.findAllScrollbars();
-    config.globalScrollbar.children.forEach(id => {
+    snapshot.globalScrollbar.children.forEach(id => {
         let foundChild = allScrollbars.find(s => s.id === id);
         if (foundChild) {
             this.globalScrollbar.removeChild(foundChild);
             this.globalScrollbar.addChild(foundChild);
         }
     });
-    config.globalScrollbar.links.forEach(id => {
+    snapshot.globalScrollbar.links.forEach(id => {
         let foundLink = allScrollbars.find(s => s.id === id);
         if (foundLink) {
             this.globalScrollbar.removeLink(foundLink);
@@ -536,17 +536,17 @@ Model.prototype.loadConfig = async function (config) {
         }
     });
     /* Link up all other scrollbar links and children */
-    config.displays.forEach(configDisplay => {
-        configDisplay.scrollbars.forEach(configScrollbar => {
-            let scrollbar = allScrollbars.find(scrollbar => scrollbar.id === configScrollbar.id);
-            configScrollbar.children.forEach(id => {
+    snapshot.displays.forEach(snapshotDisplay => {
+        snapshotDisplay.scrollbars.forEach(snapshotScrollbar => {
+            let scrollbar = allScrollbars.find(scrollbar => scrollbar.id === snapshotScrollbar.id);
+            snapshotScrollbar.children.forEach(id => {
                 let foundChild = allScrollbars.find(s => s.id === id);
                 if (foundChild) {
                     scrollbar.removeChild(foundChild);
                     scrollbar.addChild(foundChild);
                 }
             });
-            configScrollbar.children.forEach(id => {
+            snapshotScrollbar.children.forEach(id => {
                 let foundLink = allScrollbars.find(s => s.id === id);
                 if (foundLink) {
                     scrollbar.removeLink(foundLink);
@@ -555,19 +555,19 @@ Model.prototype.loadConfig = async function (config) {
             });
         });
     });
-    /* Update positions to match config */
-    config.displays.forEach(configDisplay => {
-        if (configDisplay.position >= this.displays.length) return;
-        const display = this.displays.find(display => display.id === configDisplay.id);
-        const target = this.displays[configDisplay.position];
+    /* Update positions to match snapshot */
+    snapshot.displays.forEach(snapshotDisplay => {
+        if (snapshotDisplay.position >= this.displays.length) return;
+        const display = this.displays.find(display => display.id === snapshotDisplay.id);
+        const target = this.displays[snapshotDisplay.position];
         if (display) {
             this.moveDisplay(display, target);
         }
     });
-    this.setNormalized(config.normalized);
-    window.scrollTo(config.scrollPos[0], config.scrollPos[1]);
+    this.setNormalized(snapshot.normalized);
+    window.scrollTo(snapshot.scrollPos[0], snapshot.scrollPos[1]);
     this.updateCanvas();
-    console.log(`Successfully loaded config "${config.name}"`);
+    console.log(`Successfully loaded snapshot "${snapshot.name}"`);
     this.notifySubscribers();
 }
 
@@ -598,7 +598,7 @@ Model.prototype.loadDatasets = function () {
  */
 Model.prototype.loadSnapshots = function () {
     this.loader.loadSnapshots().then(snapshots => {
-        this.configs = snapshots;
+        this.snapshots = snapshots;
         this.notifySubscribers();
     });
 }

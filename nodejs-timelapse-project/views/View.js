@@ -129,14 +129,14 @@ View.prototype.draw = function () {
             });
             colorMode(RGB, 255);
 
-            /* Display Config Benchmarks */
-            this.model.configs.forEach((config, index) => {
-                let configIndex = this.model.findConfigIndex(scrollbar.id, config);
-                if (configIndex >= 0) {
+            /* Display Snapshot Benchmarks */
+            this.model.snapshots.forEach((snapshot, index) => {
+                let snapshotIndex = this.model.findSnapshotIndex(scrollbar.id, snapshot);
+                if (snapshotIndex >= 0) {
                     let colourTint = 32 * index;
                     let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-                    let pos = scrollbar.getPositionOfIndex(configIndex);
-                    renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedConfig === config);
+                    let pos = scrollbar.getPositionOfIndex(snapshotIndex);
+                    renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedSnapshot === snapshot);
                 }
             });
 
@@ -203,12 +203,12 @@ View.prototype.draw = function () {
             renderSegment(idx, scrollbar.y, pos, scrollbar.getLineGap());
         }
 
-        /* Global Scrollbar Config Benchmark */
-        this.model.configs.forEach((config, index) => {
+        /* Global Scrollbar Snapshot Benchmark */
+        this.model.snapshots.forEach((snapshot, index) => {
             let colourTint = 32 * index;
             let colour = `rgb(${colourTint}, ${colourTint}, ${colourTint})`;
-            let pos = scrollbar.getPositionOfIndex(config.globalScrollbar.index);
-            renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedConfig === config);
+            let pos = scrollbar.getPositionOfIndex(snapshot.globalScrollbar.index);
+            renderBenchmark(scrollbar.y, pos, colour, this.imodel.highlightedSnapshot === snapshot);
         });
 
         /* Global Scrollbar main position arrow */

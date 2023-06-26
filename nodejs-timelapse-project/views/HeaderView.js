@@ -3,7 +3,7 @@
 function Headerview() {
     /* Snapshot arrays to avoid redrawing select elements and improve performance */
     this.datasetSnapshot = [];
-    this.configSnapshot = [];
+    this.snapshotSnapshot = [];
     this.annotationSnapshot = [];
     this.filterSnapshot = [];
 }
@@ -37,8 +37,8 @@ Headerview.prototype.draw = function () {
     if (this.datasetSnapshot !== this.model.datasets) {
         this.updateUploadSelect();
     }
-    if (this.configSnapshot !== this.model.configs) {
-        this.updateConfigSelect();
+    if (this.snapshotSnapshotSnapshot !== this.model.snapshots) {
+        this.updateSnapshotSelect();
     }
     if (!!this.imodel.selection && this.annotationSnapshot !== this.imodel.selection.getMainScrollbar().annotations) {
         this.updateAnnotationSelect();
@@ -126,20 +126,20 @@ Headerview.prototype.updateUploadSelect = function () {
 }
 
 /**
- * Update the config select element with cofigs from the imodel.
+ * Update the snapshot select element with cofigs from the imodel.
  */
-Headerview.prototype.updateConfigSelect = function () {
-    let configSelect = document.getElementById("configSelect");
-    configSelect.innerHTML = "";
+Headerview.prototype.updateSnapshotSelect = function () {
+    let snapshotSelect = document.getElementById("snapshotSelect");
+    snapshotSelect.innerHTML = "";
     let defaultOption = document.createElement("option");
     defaultOption.text = "---";
-    configSelect.add(defaultOption);
-    this.model.configs.forEach(config => {
+    snapshotSelect.add(defaultOption);
+    this.model.snapshots.forEach(snapshot => {
         let option = document.createElement("option");
-        option.text = config.name;
-        configSelect.add(option);
+        option.text = snapshot.name;
+        snapshotSelect.add(option);
     });
-    this.configSnapshot = [...this.model.configs];
+    this.snapshotSnapshot = [...this.model.snapshots];
 }
 
 /**

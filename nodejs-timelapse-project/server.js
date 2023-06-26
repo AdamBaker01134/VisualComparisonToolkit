@@ -35,7 +35,12 @@ app.put("/addSnapshot", (req, res) => {
             console.log("Error: could not read snapshot json. Generating new json...");
             result = [];
         } else {
-            result = JSON.parse(json);
+            try {
+                result = JSON.parse(json);
+            } catch (err) {
+                console.log("Error: snapshots.json file corrupted. Generating new json...");
+                result = [];
+            }
         }
         result.push(snapshot);
         fs.writeFile("./snapshots.json", JSON.stringify(result), err => {

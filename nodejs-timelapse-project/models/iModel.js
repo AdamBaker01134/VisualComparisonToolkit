@@ -4,7 +4,7 @@ function iModel () {
     this.focused = null;
     this.selection = null;
     this.highlightedAnnotation = null;
-    this.highlightedConfig = null;
+    this.highlightedSnapshot = null;
     this.ghost = null;
     this.subscribers = [];
 }
@@ -21,12 +21,12 @@ iModel.prototype.setFocused = function (focusedObject) {
 }
 
 /**
- * Highlight a configuration
- * @param {Object} config name of configuration
+ * Highlight a snapshot
+ * @param {Object} snapshot name of snapshot
  */
-iModel.prototype.highlightConfig = function (config) {
-    if (this.highlightedConfig !== config) {
-        this.highlightedConfig = config;
+iModel.prototype.highlightSnapshot = function (snapshot) {
+    if (this.highlightedSnapshot !== snapshot) {
+        this.highlightedSnapshot = snapshot;
         this.notifySubscribers();
     }
 }

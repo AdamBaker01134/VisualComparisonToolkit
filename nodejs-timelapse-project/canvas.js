@@ -82,8 +82,8 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
                 currentState = STATE.OUT_OF_BOUNDS;
             } else {
                 hit = model.checkBenchmarkHit(mx, my);
-                imodel.highlightConfig(hit);
-                /* Only want to highlight annotation if no configs are highlighted */
+                imodel.highlightSnapshot(hit);
+                /* Only want to highlight annotation if no benchmarks are highlighted */
                 hit = hit === null ? model.checkAnnotationHit(mx, my) : null;
                 imodel.highlightAnnotation(hit);
             }
@@ -145,7 +145,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
     }
     /* Highlighted objects are unhighlighted on drag */
-    imodel.highlightConfig(null);
+    imodel.highlightSnapshot(null);
     imodel.highlightAnnotation(null);
 }
 
@@ -189,8 +189,8 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.START_FOCUSED:
         case STATE.END_FOCUSED:
             if (hit = model.checkScrollbarHit(mx, my)) {
-                if (imodel.highlightedConfig) {
-                    model.loadConfig(imodel.highlightedConfig);
+                if (imodel.highlightedSnapshot) {
+                    model.loadSnapshot(imodel.highlightedSnapshot);
                 } else if (imodel.highlightedAnnotation) {
                     imodel.loadAnnotation(hit, imodel.highlightedAnnotation.name);
                 }
@@ -259,15 +259,15 @@ function _attachHeaderListeners() {
     });
 
     /* Global header functions */
-    document.getElementById("loadConfigButton")?.addEventListener("click", e => {
-        let configName = document.getElementById("configSelect")?.value;
-        let config = model.configs.find(configuration => configuration.name === configName);
-        if (!!config) {
-            model.loadConfig(config);
+    document.getElementById("loadSnapshotButton")?.addEventListener("click", e => {
+        let snapshotName = document.getElementById("snapshotSelect")?.value;
+        let snapshot = model.snapshots.find(snapshot => snapshot.name === snapshotName);
+        if (!!snapshot) {
+            model.loadSnapshot(snapshot);
         }
     });
-    document.getElementById("saveConfigButton")?.addEventListener("click", e => {
-        model.addConfig();
+    document.getElementById("saveSnapshotButton")?.addEventListener("click", e => {
+        model.addSnapshot();
     });
     document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
         model.setNormalized(e.target.checked);

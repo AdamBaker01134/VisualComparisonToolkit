@@ -37,7 +37,7 @@ Loader.prototype.loadSnapshots = function () {
                 return [];
             }
         })
-        .catch(error => console.error(error));
+        .catch(error => []);
 }
 
 /**
