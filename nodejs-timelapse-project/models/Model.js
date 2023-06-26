@@ -374,7 +374,7 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
     })
     if (display1 && display2) {
         overlay = new Overlay(
-            generateOverlayId(this, getDisplayNameFromId(id1), getDisplayNameFromId(id2)),
+            generateOverlayId(this, id1, id2),
             generateDisplayX(this, this.displays.length),
             generateDisplayY(this, this.displays.length),
             this.displayWidth,
@@ -465,6 +465,7 @@ Model.prototype.addConfig = function () {
         };
         this.configs.push(config);
         alert(`Successfully created configuration with name "${name}"`);
+        /* TODO: update configs.json local file */
         this.notifySubscribers();
     } else {
         alert(`Error: invalid configuration name`);
@@ -503,7 +504,6 @@ Model.prototype.loadConfig = async function (config) {
         const json = { ...configOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
-            /* TODO: Getting an error here, json.id is incorrect */
             overlay = await this.addOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
         }
         if (overlay instanceof Overlay) {
@@ -544,7 +544,15 @@ Model.prototype.loadConfig = async function (config) {
             });
         });
     });
-    /* TODO: Update positions to match config */
+    /* Update positions to match config */
+    config.displays.forEach(configDisplay => {
+        if (configDisplay.position >= this.displays.length) return;
+        const display = this.displays.find(display => display.id === configDisplay.id);
+        const target = this.displays[configDisplay.position];
+        if (display) {
+            this.moveDisplay(display, target);
+        }
+    });
     this.setNormalized(config.normalized);
     window.scrollTo(config.scrollPos[0], config.scrollPos[1]);
     this.updateCanvas();

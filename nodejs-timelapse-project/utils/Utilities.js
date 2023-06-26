@@ -56,7 +56,7 @@ function generateOverlayId(model, id1, id2) {
  */
 function getDisplayNameFromId(id) {
     let idTokens = id.split(ID_DELIMITER);
-    if (idTokens.length === 3 || idTokens.length === 5) {
+    if (idTokens.length === 2 || idTokens.length === 5) {
         return idTokens[0];
     }
     return "";
