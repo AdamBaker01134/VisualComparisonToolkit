@@ -463,9 +463,12 @@ Model.prototype.addConfig = function () {
             scrollPos: [scrollX, scrollY],
             normalized: this.normalized,
         };
-        this.configs.push(config);
         alert(`Successfully created configuration with name "${name}"`);
-        /* TODO: update configs.json local file */
+        fetch("http://localhost:30500/addSnapshot", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ snapshot: config }),
+        }).then(() => this.loadSnapshots()).catch(err => console.error(err));
         this.notifySubscribers();
     } else {
         alert(`Error: invalid configuration name`);
@@ -586,6 +589,16 @@ Model.prototype.findAllScrollbars = function () {
 Model.prototype.loadDatasets = function () {
     this.loader.loadDatasets().then(datasets => {
         this.datasets = datasets;
+        this.notifySubscribers();
+    });
+}
+
+/**
+ * Load in saved snapshots.
+ */
+Model.prototype.loadSnapshots = function () {
+    this.loader.loadSnapshots().then(snapshots => {
+        this.configs = snapshots;
         this.notifySubscribers();
     });
 }

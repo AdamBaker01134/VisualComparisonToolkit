@@ -17,6 +17,7 @@ function preload() {
     model = new Model();
     imodel = new iModel();
     model.loadDatasets();
+    model.loadSnapshots();
 }
 
 /* p5.js function that is called when the application starts up (after preload) */

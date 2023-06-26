@@ -5,6 +5,8 @@
 
 "use strict";
 
+const fs = require("fs");
+const bodyParser = require("body-parser");
 const express = require("express");
 const cloudinary = require("cloudinary").v2;
 const app = express();
@@ -19,8 +21,34 @@ cloudinary.config({
 
 app.use(express.static(__dirname));
 
+app.use(bodyParser.json());
+
 app.get("/", (req, res) => {
 	res.sendFile("video-comparison.html", { root: __dirname });
+});
+
+app.put("/addSnapshot", (req, res) => {
+    const snapshot = req.body.snapshot;
+    fs.readFile("./snapshots.json", (err, json) => {
+        let result;
+        if (err) {
+            console.log("Error: could not read snapshot json. Generating new json...");
+            result = [];
+        } else {
+            result = JSON.parse(json);
+        }
+        result.push(snapshot);
+        fs.writeFile("./snapshots.json", JSON.stringify(result), err => {
+            if (err) {
+                console.error("Error: could not write updated json to disk...");
+                res.status(400);
+                res.send(err);
+            } else {
+                res.status(200);
+                res.send("Ok.");
+            }
+        });
+    });
 });
 
 app.get("/getImages", (req, res) => {
