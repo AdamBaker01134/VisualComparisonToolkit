@@ -319,12 +319,13 @@ Model.prototype.addDisplay = async function (name, filter) {
             });
         });
         if (loadObj !== null) {
+            const aspectRatio = loadObj.images[0].width / loadObj.images[0].height;
             display = new Display(
                 generateDisplayId(this, loadObj.name),
                 generateDisplayX(this, this.displays.length),
                 generateDisplayY(this, this.displays.length),
                 this.displayWidth,
-                this.displayHeight,
+                this.displayHeight / aspectRatio,
                 this.displayPadding,
                 this.displayScrollbarHeight,
                 loadObj.frames,
@@ -373,12 +374,13 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         }
     })
     if (display1 && display2) {
+        const aspectRatio = display2.images[0].width / display2.images[0].height;
         overlay = new Overlay(
             generateOverlayId(this, id1, id2),
             generateDisplayX(this, this.displays.length),
             generateDisplayY(this, this.displays.length),
             this.displayWidth,
-            this.displayHeight,
+            this.displayHeight / aspectRatio,
             this.displayPadding,
             this.displayScrollbarHeight,
             display1,
