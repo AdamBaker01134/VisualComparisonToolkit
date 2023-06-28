@@ -309,10 +309,30 @@ Model.prototype.findSnapshotIndex = function (id, snapshot) {
  * Load in and add a new display to the model.
  * @param {string} name name of the display to load and add
  * @param {string} filter filter to initialize display with
- * @returns {Display|null}
+ * @returns {Promise}
  */
 Model.prototype.addDisplay = async function (name, filter) {
     if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
+    return this.loadDisplay(name, filter).then(display => {
+        const openCell = this.displays.findIndex(display => display === null);
+        if (openCell >= 0) {
+            this.displays[openCell] = display;
+        } else {
+            this.displays.push(display);
+        }
+        this.globalScrollbar.addChild(display.getMainScrollbar());
+
+        this.notifySubscribers();
+    });
+}
+
+/**
+ * Load in a new display to the model.
+ * @param {string} name name of the display to load
+ * @param {string} filter filter to initialize display with
+ * @returns {Display|null}
+ */
+Model.prototype.loadDisplay = async function (name, filter) {
     const dataset = this.datasets.find(d => d.name === name);
     let display = null;
     if (dataset) {
@@ -340,9 +360,6 @@ Model.prototype.addDisplay = async function (name, filter) {
                 loadObj.images,
                 dataset.filters,
             );
-            this.displays.push(display);
-            this.globalScrollbar.addChild(display.getMainScrollbar());
-            this.notifySubscribers();
         }
     }
     return display;
@@ -364,10 +381,8 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         if (found) {
             resolve(found);
         } else {
-            this.addDisplay(getDisplayNameFromId(id1), filter1).then(display => {
-                this.removeDisplay(display); // ¯\_(ツ)_/¯
-                resolve(display);
-            }).catch(() => reject(null));
+            this.loadDisplay(getDisplayNameFromId(id1), filter1).then(display => resolve(display))
+                .catch(() => reject(null));
         }
     });
     let display2 = await new Promise((resolve, reject) => {
@@ -375,10 +390,8 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         if (found) {
             resolve(found);
         } else {
-            this.addDisplay(getDisplayNameFromId(id2), filter2).then(display => {
-                this.removeDisplay(display); // ¯\_(ツ)_/¯
-                resolve(display);
-            }).catch(() => reject(null));
+            this.loadDisplay(getDisplayNameFromId(id2), filter2).then(display => resolve(display))
+                .catch(() => reject(null));
         }
     })
     if (display1 && display2) {
@@ -394,7 +407,12 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
             display1,
             display2,
         );
-        this.displays.push(overlay);
+        const openCell = this.displays.findIndex(display => display === null);
+        if (openCell >= 0) {
+            this.displays[openCell] = overlay;
+        } else {
+            this.displays.push(overlay);
+        }
         this.moveDisplay(overlay, display2);
         this.globalScrollbar.addChild(overlay.getMainScrollbar());
         this.notifySubscribers();
