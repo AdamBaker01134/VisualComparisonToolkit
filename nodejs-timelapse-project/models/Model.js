@@ -8,6 +8,10 @@ function Model() {
     this.canvasHeight = windowHeight * 3;
     this.displayWidth = 350;
     this.displayHeight = 350;
+    this.cellWidth = 350;
+    this.cellHeight = 350;
+    this.rows = Math.floor(this.canvasHeight / this.cellHeight);
+    this.columns = Math.floor(this.canvasWidth / this.cellWidth);
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
     this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
@@ -37,7 +41,9 @@ function Model() {
  */
 Model.prototype.updateCanvas = function () {
     this.canvasWidth = windowWidth * 0.98;
-    this.canvasHeight = windowHeight * 3;;
+    this.canvasHeight = windowHeight * 3;
+    this.rows = Math.floor(this.canvasHeight / this.cellHeight);
+    this.columns = Math.floor(this.canvasWidth / this.cellWidth);
     this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
@@ -306,6 +312,7 @@ Model.prototype.findSnapshotIndex = function (id, snapshot) {
  * @returns {Display|null}
  */
 Model.prototype.addDisplay = async function (name, filter) {
+    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
     const dataset = this.datasets.find(d => d.name === name);
     let display = null;
     if (dataset) {
@@ -350,6 +357,7 @@ Model.prototype.addDisplay = async function (name, filter) {
  * @returns {Overlay|null}
  */
 Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
+    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
     let overlay = null;
     let display1 = await new Promise((resolve, reject) => {
         const found = this.displays.find(display => display.id === id1);

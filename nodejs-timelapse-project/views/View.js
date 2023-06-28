@@ -177,6 +177,22 @@ View.prototype.draw = function () {
         });
     });
 
+    /* Dragging ghost */
+    let ghost = this.imodel.ghost;
+    if (ghost instanceof Display || ghost instanceof Overlay) {
+        /* Display grid lines */
+        stroke("rgb(0, 0, 0)");
+        for (let row = 0; row <= this.model.rows; row++) {
+            line(0, row * this.model.cellHeight, this.model.cellWidth * this.model.columns, row * this.model.cellHeight);
+        }
+        for (let column = 0; column <= this.model.columns; column++) {
+            line(column * this.model.cellWidth, 0, column * this.model.cellWidth, this.model.cellHeight * this.model.rows);
+        }
+        let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
+        let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
+        renderDisplaySkeleton(ghost, false, 0.5, ghostX, ghostY);
+    }
+
     /* Global Scrollbar */
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof Scrollbar) {
@@ -222,14 +238,6 @@ View.prototype.draw = function () {
             trianglePos + 5,
             scrollbar.y + scrollbar.height - 0.5
         )
-    }
-
-    /* Dragging ghost */
-    let ghost = this.imodel.ghost;
-    if (ghost instanceof Display || ghost instanceof Overlay) {
-        let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
-        let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
-        renderDisplaySkeleton(ghost, false, 0.5, ghostX, ghostY);
     }
 }
 
