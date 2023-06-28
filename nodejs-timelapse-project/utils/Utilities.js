@@ -122,8 +122,8 @@ function getDisplayIdNumberFromId(id) {
  * @param {number} position display position in the model (within the displays array)
  */
 function generateDisplayX(model, position) {
-    let column = position % model.displaysPerRow;
-    return model.displayPadding + column * (model.displayPadding * 3 + model.displayWidth);
+    let column = position % model.columns;
+    return model.cellWidth * column;
 }
 
 /**
@@ -132,18 +132,8 @@ function generateDisplayX(model, position) {
  * @param {number} position display position in the model (within the displays array)
  */
 function generateDisplayY(model, position) {
-    let y = model.displayPadding;
-    let row = Math.floor(position / model.displaysPerRow);
-    for (let i = 0; i < row; i++) {
-        let maxHeight = 0;
-        for (let j = 0; j < model.displaysPerRow; j++) {
-            let display = model.displays[i * model.displaysPerRow + j];
-            let height = display.padding * 3 + display.height + display.scrollbarHeight * display.scrollbars.length;
-            if (height > maxHeight) maxHeight = height;
-        }
-        y += maxHeight;
-    }
-    return y;
+    let row = Math.floor(position / model.columns);
+    return model.cellHeight * row;
 }
 
 /**

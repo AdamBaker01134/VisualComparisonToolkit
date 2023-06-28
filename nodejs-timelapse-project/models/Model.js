@@ -6,15 +6,12 @@ function Model() {
     this.headerHeight = 100;
     this.canvasWidth = windowWidth * 0.98;
     this.canvasHeight = windowHeight * 3;
-    this.displayWidth = 350;
-    this.displayHeight = 350;
     this.cellWidth = 350;
     this.cellHeight = 350;
     this.rows = Math.floor(this.canvasHeight / this.cellHeight);
     this.columns = Math.floor(this.canvasWidth / this.cellWidth);
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
-    this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
 
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
@@ -44,7 +41,6 @@ Model.prototype.updateCanvas = function () {
     this.canvasHeight = windowHeight * 3;
     this.rows = Math.floor(this.canvasHeight / this.cellHeight);
     this.columns = Math.floor(this.canvasWidth / this.cellWidth);
-    this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
     this.displays.forEach((display, index) => {
@@ -241,6 +237,24 @@ Model.prototype.checkPositionMarkerHit = function (mx, my) {
 }
 
 /**
+ * Model check if a grid cell was hit in a mouse event.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {number} grid cell index or -1 if grid cell was not hit
+ */
+Model.prototype.checkGridCellHit = function (mx, my) {
+    for (let i = 0; i < this.rows; i++) {
+        for (let j = 0; j < this.columns; j++) {
+            if (mx > j * this.cellWidth && mx < (j + 1) * this.cellWidth &&
+                my > i * this.cellHeight && my < (i + 1) * this.cellHeight) {
+                    return i * this.columns + j;
+            }
+        }
+    }
+    return -1;
+}
+
+/**
  * Model check if an annotation was hit in a mouse event.
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
@@ -334,7 +348,6 @@ Model.prototype.addDisplay = async function (name, filter) {
  */
 Model.prototype.loadDisplay = async function (name, filter) {
     const dataset = this.datasets.find(d => d.name === name);
-    let display = null;
     if (dataset) {
         const dir = filter !== "" ? filter : dataset.dir;
         const loadObj = await new Promise((resolve, reject) => {
@@ -346,13 +359,24 @@ Model.prototype.loadDisplay = async function (name, filter) {
             });
         });
         if (loadObj !== null) {
-            const aspectRatio = loadObj.images[0].width / loadObj.images[0].height;
-            display = new Display(
+            let width = loadObj.images[0].width;
+            let height = loadObj.images[0].height;
+            let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
+            if (widthDifference < 0) {
+                width += widthDifference;
+                height += widthDifference;
+            }
+            let heightDifference = this.cellHeight - (height + this.displayPadding * 2 + this.displayScrollbarHeight * 1);
+            if (heightDifference < 0) {
+                width += heightDifference;
+                height += heightDifference;
+            }
+            return new Display(
                 generateDisplayId(this, loadObj.name),
                 generateDisplayX(this, this.displays.length),
                 generateDisplayY(this, this.displays.length),
-                this.displayWidth,
-                this.displayHeight / aspectRatio,
+                width,
+                height,
                 this.displayPadding,
                 this.displayScrollbarHeight,
                 loadObj.frames,
@@ -360,9 +384,12 @@ Model.prototype.loadDisplay = async function (name, filter) {
                 loadObj.images,
                 dataset.filters,
             );
+        } else {
+            throw new Error("Error: could not load dataset");
         }
+    } else {
+        throw new Error("Error: specified dataset does not exist or is not visible in this instance");
     }
-    return display;
 }
 
 /**
@@ -395,13 +422,24 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         }
     })
     if (display1 && display2) {
-        const aspectRatio = display2.images[0].width / display2.images[0].height;
+        let width = display2.images[0].width;
+        let height = display2.images[0].height;
+        let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
+        if (widthDifference < 0) {
+            width += widthDifference;
+            height += widthDifference;
+        }
+        let heightDifference = this.cellHeight - (height + this.displayPadding * 2 + this.displayScrollbarHeight * 3);
+        if (heightDifference < 0) {
+            width += heightDifference;
+            height += heightDifference;
+        }
         overlay = new Overlay(
             generateOverlayId(this, id1, id2),
             generateDisplayX(this, this.displays.length),
             generateDisplayY(this, this.displays.length),
-            this.displayWidth,
-            this.displayHeight / aspectRatio,
+            width,
+            height,
             this.displayPadding,
             this.displayScrollbarHeight,
             display1,
