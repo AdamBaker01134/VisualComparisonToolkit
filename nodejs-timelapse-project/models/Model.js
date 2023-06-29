@@ -91,7 +91,8 @@ Model.prototype.setGlobalScrollbarLocation = function (newX, newY) {
  * @param {boolean} normalized normalization state
  */
 Model.prototype.setNormalized = function (normalized) {
-    this.normalized = normalized
+    this.normalized = normalized;
+    this.notifySubscribers();
 }
 
 /**
@@ -193,6 +194,21 @@ Model.prototype.checkDisplayHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i] !== null) {
             if (this.displays[i].checkHit(mx, my)) return this.displays[i];
+        }
+    }
+    return null;
+}
+
+/**
+ * Model check if a displays bottom right corner was hit in a mouse event
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Object|null}
+ */
+Model.prototype.checkCornerHit = function (mx, my) {
+    for (let i = 0; i < this.displays.length; i++) {
+        if (this.displays[i] !== null) {
+            if (this.displays[i].checkCornerHit(mx, my)) return this.displays[i]
         }
     }
     return null;
@@ -345,6 +361,8 @@ Model.prototype.addDisplay = async function (name, filter) {
         this.globalScrollbar.addChild(display.getMainScrollbar());
 
         this.notifySubscribers();
+
+        return display;
     });
 }
 
@@ -426,6 +444,8 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         this.globalScrollbar.addChild(overlay.getMainScrollbar());
 
         this.notifySubscribers();
+
+        return overlay
     });
 }
 

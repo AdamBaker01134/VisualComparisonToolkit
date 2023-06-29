@@ -43,7 +43,7 @@ function setup() {
 }
 
 /* p5.js function that acts as the draw loop */
-function draw() {}
+function draw() { }
 
 /* Controller */
 const STATE = {
@@ -56,6 +56,7 @@ const STATE = {
     PREPARE_SELECT: "prepareSelect",
     PREPARE_OVERLAY: "prepareOverlay",
     PANNING: "panning",
+    RESIZING: "resizing",
 }
 let currentState = STATE.READY;
 let timer;
@@ -80,6 +81,8 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
             if (my < scrollY) {
                 currentState = STATE.OUT_OF_BOUNDS;
             } else {
+                hit = model.checkCornerHit(mx, my)
+                imodel.setCursor(hit ? "nwse-resize" : "default");
                 hit = model.checkBenchmarkHit(mx, my);
                 imodel.highlightSnapshot(hit);
                 /* Only want to highlight annotation if no benchmarks are highlighted */
@@ -139,6 +142,15 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             previousX = mouseX;
             previousY = mouseY;
             break;
+        case STATE.RESIZING:
+            if (imodel.selection !== null) {
+                let dx = mouseX - previousX;
+                let dy = mouseY - previousY;
+                imodel.resize(dx, dy);
+            }
+            previousX = mouseX;
+            previousY = mouseY;
+            break;
     }
     /* Highlighted objects are unhighlighted on drag */
     imodel.highlightSnapshot(null);
@@ -171,6 +183,11 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     currentState = STATE.PANNING;
                     if (imodel.selection !== hit) imodel.select(hit);
                 }
+            } else if (hit = model.checkCornerHit(mx, my)) {
+                previousX = mouseX;
+                previousY = mouseY;
+                currentState = STATE.RESIZING;
+                if (imodel.selection !== hit) imodel.select(hit);
             }
             break;
     }
@@ -218,6 +235,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             currentState = STATE.READY;
             break;
         case STATE.PANNING:
+        case STATE.RESIZING:
             currentState = STATE.READY;
             break;
     }
@@ -236,7 +254,7 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
     }
 }
 
-function windowResized (event) {
+function windowResized(event) {
     model.updateCanvas();
 }
 

@@ -79,7 +79,18 @@ Display.prototype.setLocked = function (locked) {
  */
 Display.prototype.checkHit = function (mx, my) {
     return mx > this.x && my > this.y &&
-        mx < this.x + this.padding * 2 + this.width && my < this.y + this.padding * 2 + this.height;
+        mx < this.x + this.padding * 2 + this.width && my < this.y + this.padding * 2 + this.height + this.scrollbarHeight * this.scrollbars.length;
+}
+
+/**
+ * Check to see if mouse is on the display padding
+ * @param {number} mx x coordinate of cursor
+ * @param {number} my y coordinate of cursor
+ * @returns {boolean}
+ */
+Display.prototype.checkCornerHit = function (mx, my) {
+    return mx > this.x + this.padding + this.width && mx < this.x + this.padding * 2 + this.width &&
+        my > this.y + this.padding + this.height + this.scrollbarHeight * this.scrollbars.length && my < this.y + this.padding * 2 + this.height + this.scrollbarHeight * this.scrollbars.length;
 }
 
 /**

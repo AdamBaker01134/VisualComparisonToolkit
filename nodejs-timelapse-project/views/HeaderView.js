@@ -28,6 +28,7 @@ Headerview.prototype.setInteractionModel = function (imodel) {
  * "Draw"/Update all header HTML elements with values from the models
  */
 Headerview.prototype.draw = function () {
+    this.updateCursor();
     this.updateLoadingSpinner();
     this.updateNormalized();
     this.updateLocked();
@@ -49,12 +50,23 @@ Headerview.prototype.draw = function () {
 }
 
 /**
+ * Update the style of cursor in the canvas.
+ */
+Headerview.prototype.updateCursor = function () {
+    let cursor = this.imodel.cursor;
+    let canvas = document.getElementById("defaultCanvas0");
+    if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
+}
+
+/**
  * Update the state of the loading spinner.
  * If the system is loading, set it to visible.
  * If the system finished loading, set it to invisible.
  */
 Headerview.prototype.updateLoadingSpinner = function () {
-    document.getElementById("loading-spinner").style.display = this.model.loading ? "block" : "none";
+    let displayValue = this.model.loading ? "block" : "none";
+    let spinner = document.getElementById("loading-spinner");
+    if (spinner.style.display !== displayValue) spinner.style.display = displayValue;
 }
 
 /**

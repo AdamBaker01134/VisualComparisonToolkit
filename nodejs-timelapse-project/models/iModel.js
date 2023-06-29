@@ -1,12 +1,24 @@
 /* Application Interaction Model */
 "use strict";
 function iModel () {
+    this.cursor = "default";
     this.focused = null;
     this.selection = null;
     this.highlightedAnnotation = null;
     this.highlightedSnapshot = null;
     this.ghost = null;
     this.subscribers = [];
+}
+
+/**
+ * Set the cursor style
+ * @param {string} cursorStyle css style of the cursor
+ */
+iModel.prototype.setCursor = function (cursorStyle) {
+    if (this.cursor !== cursorStyle) {
+        this.cursor = cursorStyle;
+        this.notifySubscribers();
+    }
 }
 
 /**
@@ -78,6 +90,15 @@ iModel.prototype.pan = function (dx, dy) {
 iModel.prototype.zoom = function (display, delta) {
     display.zoom(delta);
     this.notifySubscribers();
+}
+
+/**
+ * Resize the selection
+ * @param {number} dx change in the x direction of the mouse
+ * @param {number} dy change in the y direction of the mouse
+ */
+iModel.prototype.resize = function (dx, dy) {
+    console.log(`Resizing: dx: ${dx}, dy: ${dy}`);
 }
 
 /**
