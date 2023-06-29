@@ -181,12 +181,13 @@ View.prototype.draw = function () {
     let ghost = this.imodel.ghost;
     if (ghost instanceof Display || ghost instanceof Overlay) {
         /* Display grid lines */
+        const padding = this.model.displayPadding;
         stroke("rgb(0, 0, 0)");
         for (let row = 0; row <= this.model.rows; row++) {
-            line(0, row * this.model.cellHeight, this.model.cellWidth * this.model.columns, row * this.model.cellHeight);
+            line(padding, row * this.model.cellHeight + padding, this.model.cellWidth * this.model.columns + padding, row * this.model.cellHeight + padding);
         }
         for (let column = 0; column <= this.model.columns; column++) {
-            line(column * this.model.cellWidth, 0, column * this.model.cellWidth, this.model.cellHeight * this.model.rows);
+            line(column * this.model.cellWidth + padding, padding, column * this.model.cellWidth + padding, this.model.cellHeight * this.model.rows + padding);
         }
         let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
         let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;

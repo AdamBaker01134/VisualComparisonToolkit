@@ -123,7 +123,7 @@ function getDisplayIdNumberFromId(id) {
  */
 function generateDisplayX(model, position) {
     let column = position % model.columns;
-    return model.cellWidth * column;
+    return model.cellWidth * column + model.displayPadding;
 }
 
 /**
@@ -133,7 +133,7 @@ function generateDisplayX(model, position) {
  */
 function generateDisplayY(model, position) {
     let row = Math.floor(position / model.columns);
-    return model.cellHeight * row;
+    return model.cellHeight * row + model.displayPadding;
 }
 
 /**

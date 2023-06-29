@@ -6,10 +6,6 @@ function Model() {
     this.headerHeight = 100;
     this.canvasWidth = windowWidth * 0.98;
     this.canvasHeight = windowHeight * 3;
-    this.cellWidth = 350;
-    this.cellHeight = 350;
-    this.rows = Math.floor(this.canvasHeight / this.cellHeight);
-    this.columns = Math.floor(this.canvasWidth / this.cellWidth);
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
 
@@ -28,6 +24,11 @@ function Model() {
         this.globalScrollbarHeight,
         this.maxImages,
     );
+    this.cellWidth = 350;
+    this.cellHeight = 350;
+    this.rows = Math.floor((this.canvasHeight - this.displayPadding - this.globalScrollbarHeight) / this.cellHeight);
+    this.columns = Math.floor((this.canvasWidth - this.displayPadding) / this.cellWidth);
+
     this.subscribers = [];
 }
 
@@ -39,8 +40,8 @@ function Model() {
 Model.prototype.updateCanvas = function () {
     this.canvasWidth = windowWidth * 0.98;
     this.canvasHeight = windowHeight * 3;
-    this.rows = Math.floor(this.canvasHeight / this.cellHeight);
-    this.columns = Math.floor(this.canvasWidth / this.cellWidth);
+    this.rows = Math.floor((this.canvasHeight - this.displayPadding) / this.cellHeight);
+    this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
     this.displays.forEach((display, index) => {
