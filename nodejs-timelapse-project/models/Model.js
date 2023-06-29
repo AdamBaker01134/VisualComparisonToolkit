@@ -45,6 +45,7 @@ Model.prototype.updateCanvas = function () {
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
     this.displays.forEach((display, index) => {
+        if (display === null) return;
         display.setLocation(generateDisplayX(this, index), generateDisplayY(this, index));
     });
     resizeCanvas(this.canvasWidth, this.canvasHeight);
@@ -190,7 +191,9 @@ Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
  */
 Model.prototype.checkDisplayHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkHit(mx, my)) return this.displays[i];
+        if (this.displays[i] !== null) {
+            if (this.displays[i].checkHit(mx, my)) return this.displays[i];
+        }
     }
     return null;
 }
@@ -203,7 +206,9 @@ Model.prototype.checkDisplayHit = function (mx, my) {
  */
 Model.prototype.checkImageHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];
+        if (this.displays[i] !== null) {
+            if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];
+        }
     }
     return null;
 }
@@ -217,8 +222,10 @@ Model.prototype.checkImageHit = function (mx, my) {
 Model.prototype.checkScrollbarHit = function (mx, my) {
     if (this.globalScrollbar?.checkScrollbarHit(mx, my)) return this.globalScrollbar;
     for (let i = 0; i < this.displays.length; i++) {
-        let index = this.displays[i].checkScrollbarHit(mx, my);
-        if (index >= 0) return this.displays[i].scrollbars[index];
+        if (this.displays[i] !== null) {
+            let index = this.displays[i].checkScrollbarHit(mx, my);
+            if (index >= 0) return this.displays[i].scrollbars[index];
+        }
     }
     return null;
 }
@@ -248,7 +255,7 @@ Model.prototype.checkGridCellHit = function (mx, my) {
         for (let j = 0; j < this.columns; j++) {
             if (mx > j * this.cellWidth && mx < (j + 1) * this.cellWidth &&
                 my > i * this.cellHeight && my < (i + 1) * this.cellHeight) {
-                    return i * this.columns + j;
+                return i * this.columns + j;
             }
         }
     }
@@ -372,10 +379,14 @@ Model.prototype.loadDisplay = async function (name, filter) {
                 width += heightDifference;
                 height += heightDifference;
             }
+            let position = this.displays.findIndex(display => display === null);
+            if (position < 0) {
+                position = this.displays.length;
+            }
             return new Display(
                 generateDisplayId(this, loadObj.name),
-                generateDisplayX(this, this.displays.length),
-                generateDisplayY(this, this.displays.length),
+                generateDisplayX(this, position),
+                generateDisplayY(this, position),
                 width,
                 height,
                 this.displayPadding,
@@ -405,7 +416,7 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
     if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
     let overlay = null;
     let display1 = await new Promise((resolve, reject) => {
-        const found = this.displays.find(display => display.id === id1);
+        const found = this.displays.find(display => display !== null && display.id === id1);
         if (found) {
             resolve(found);
         } else {
@@ -414,7 +425,7 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         }
     });
     let display2 = await new Promise((resolve, reject) => {
-        const found = this.displays.find(display => display.id === id2);
+        const found = this.displays.find(display => display !== null && display.id === id2);
         if (found) {
             resolve(found);
         } else {
@@ -435,10 +446,14 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
             width += heightDifference;
             height += heightDifference;
         }
+        let position = this.displays.findIndex(display => display === null);
+        if (position < 0) {
+            position = this.displays.length;
+        }
         overlay = new Overlay(
             generateOverlayId(this, id1, id2),
-            generateDisplayX(this, this.displays.length),
-            generateDisplayY(this, this.displays.length),
+            generateDisplayX(this, position),
+            generateDisplayY(this, position),
             width,
             height,
             this.displayPadding,
@@ -446,13 +461,11 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
             display1,
             display2,
         );
-        const openCell = this.displays.findIndex(display => display === null);
-        if (openCell >= 0) {
-            this.displays[openCell] = overlay;
-        } else {
-            this.displays.push(overlay);
+        const targetIndex = this.displays.findIndex(display => display === display2);
+        if (targetIndex >= 0) {
+            /* Insert overlay into display2's position */
+            this.insertDisplay(overlay, targetIndex);
         }
-        this.moveDisplay(overlay, display2);
         this.globalScrollbar.addChild(overlay.getMainScrollbar());
         this.notifySubscribers();
     }
@@ -485,20 +498,33 @@ Model.prototype.filterImages = async function (display, filter) {
 }
 
 /**
- * Move a display to the position of a target display and update the locations of all affected displays.
+ * Move a display to a target cell, swap positions with display if cell is occupied
  * @param {Display|Overlay} display display to move
- * @param {Display} target target with the displays new location
+ * @param {number} targetIndex targeted grid cell index
  */
-Model.prototype.moveDisplay = function (display, target) {
-    let index = this.displays.findIndex(d => d === display);
-    let targetIndex = this.displays.findIndex(d => d === target);
-    if (index >= 0 && targetIndex >= 0 && index !== targetIndex) {
-        this.displays.splice(index, 1);
-        this.displays.splice(targetIndex, 0, display);
-        this.updateCanvas();
+Model.prototype.moveDisplay = function (display, targetIndex) {
+    const index = this.displays.findIndex(d => d === display);
+    if (index < 0 || index === targetIndex) return;
+    this.displays[index] = null;
+    if (this.displays.length > targetIndex) {
+        if (this.displays[targetIndex] !== null) {
+            /* Swap the display and targets positions */
+            this.displays[index] = this.displays[targetIndex];
+            this.displays[targetIndex] = display;
+        } else {
+            /* Set the displays position to the target position */
+            this.displays[targetIndex] = display;
+        }
+    } else {
+        /* Fill displays array with null values to ensure that indexing isn't out of bounds */
+        this.displays.fillWith(null, this.displays.length, targetIndex + 1);
+        this.displays[targetIndex] = display;
     }
+    this.updateCanvas();
     this.notifySubscribers();
 }
+
+Model.prototype.insertDisplay = function (display, targetIndex) { }
 
 /**
  * Remove a display and update the locations of all affected displays.
@@ -506,10 +532,9 @@ Model.prototype.moveDisplay = function (display, target) {
  */
 Model.prototype.removeDisplay = function (display) {
     let index = this.displays.findIndex(d => d === display);
-    if (index >= 0) {
-        this.displays.splice(index, 1);
-        this.updateCanvas();
-    }
+    if (index < 0) return;
+    this.displays[index] = null;
+    this.updateCanvas();
     this.notifySubscribers();
 }
 
@@ -521,7 +546,7 @@ Model.prototype.addSnapshot = function () {
     if (!!name && !this.snapshots.some(snapshot => snapshot.name === name)) {
         let snapshot = {
             name: name,
-            displays: this.displays.map((display, position) => {
+            displays: this.displays.filter(display => display !== null).map((display, position) => {
                 let json = display.toJSON();
                 json.position = position;
                 return json;
@@ -553,7 +578,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
     const snapshotOverlays = snapshot.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
     /* Load in all displays from JSON */
     for (let i = 0; i < snapshotDisplays.length; i++) {
-        let display = this.displays.find(display => display.id === snapshotDisplays[i].id);
+        let display = this.displays.find(display => display !== null && display.id === snapshotDisplays[i].id);
         const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
@@ -570,7 +595,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
     }
     /* Load in all overlays from JSON */
     for (let j = 0; j < snapshotOverlays.length; j++) {
-        let overlay = this.displays.find(overlay => overlay.id === snapshotOverlays[j].id);
+        let overlay = this.displays.find(overlay => overlay !== null && overlay.id === snapshotOverlays[j].id);
         const json = { ...snapshotOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
@@ -625,10 +650,9 @@ Model.prototype.loadSnapshot = async function (snapshot) {
     /* Update positions to match snapshot */
     snapshot.displays.forEach(snapshotDisplay => {
         if (snapshotDisplay.position >= this.displays.length) return;
-        const display = this.displays.find(display => display.id === snapshotDisplay.id);
-        const target = this.displays[snapshotDisplay.position];
+        const display = this.displays.find(display => display !== null && display.id === snapshotDisplay.id);
         if (display) {
-            this.moveDisplay(display, target);
+            this.insertDisplay(display, snapshotDisplay.position);
         }
     });
     this.setNormalized(snapshot.normalized);
@@ -645,6 +669,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
 Model.prototype.findAllScrollbars = function () {
     let result = [this.globalScrollbar];
     this.displays.forEach(display => {
+        if (display === null) return;
         display.scrollbars.forEach(scrollbar => result.push(scrollbar));
     });
     return result;
@@ -675,8 +700,8 @@ Model.prototype.loadSnapshots = function () {
  * @param {Object} options optional attributes to alter the loading process.
  */
 Model.prototype.loadDataset = function (options = {}) {
-    const callback = options.callback || (() => {});
-    const errCallback = options.errCallback || (() => {});
+    const callback = options.callback || (() => { });
+    const errCallback = options.errCallback || (() => { });
     if (!!options.dataset) {
         const dir = options.dir || options.dataset.dir;
         this.incrementLoading();

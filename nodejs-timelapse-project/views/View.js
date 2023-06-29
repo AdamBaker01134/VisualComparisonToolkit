@@ -16,6 +16,7 @@ View.prototype.draw = function () {
     clear();
 
     this.model.displays.forEach(display => {
+        if (display === null) return;
         renderDisplaySkeleton(display, this.imodel.selection === display);
 
         if (display instanceof Overlay) {

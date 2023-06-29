@@ -22,6 +22,7 @@ function createElementWithID(tag, content, id, className) {
 function generateDisplayId(model, name) {
     let idNum = 1;
     model.displays.forEach(display => {
+        if (display === null) return;
         let displayName = getDisplayNameFromId(display.id);
         let displayIdNum = getDisplayIdNumberFromId(display.id);
         if (displayName === name) idNum = displayIdNum + 1;
