@@ -405,16 +405,39 @@ Model.prototype.loadDisplay = async function (name, filter) {
 }
 
 /**
- * Add a new overlay to the model. Load in required displays if necessary.
+ * Load in and add a new overlay to the model.
+ * @param {string} id1 id of top display
+ * @param {string} id2 id of bottom display
+ * @param {string} filter1 filter of top display
+ * @param {string} filter2 filter of bottom display
+ * @returns {Promise}
+ */
+Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
+    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached");
+    return this.loadOverlay(id1, id2, filter1, filter2).then(overlay => {
+        const targetIndex = this.displays.findIndex(display => display !== null && display.id === id2);
+        if (targetIndex >= 0) {
+            /* Insert overlay into display2's position */
+            this.insertDisplay(overlay, targetIndex);
+        } else {
+            this.displays.push(overlay);
+        }
+
+        this.globalScrollbar.addChild(overlay.getMainScrollbar());
+
+        this.notifySubscribers();
+    });
+}
+
+/**
+ * Load in a new overlay to the model.
  * @param {string} id1 id of top display
  * @param {string} id2 id of bottom display
  * @param {string} filter1 filter of top display
  * @param {string} filter2 filter of bottom display
  * @returns {Overlay|null}
  */
-Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
-    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
-    let overlay = null;
+Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
     let display1 = await new Promise((resolve, reject) => {
         const found = this.displays.find(display => display !== null && display.id === id1);
         if (found) {
@@ -450,7 +473,7 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         if (position < 0) {
             position = this.displays.length;
         }
-        overlay = new Overlay(
+        return new Overlay(
             generateOverlayId(this, id1, id2),
             generateDisplayX(this, position),
             generateDisplayY(this, position),
@@ -461,15 +484,9 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
             display1,
             display2,
         );
-        const targetIndex = this.displays.findIndex(display => display === display2);
-        if (targetIndex >= 0) {
-            /* Insert overlay into display2's position */
-            this.insertDisplay(overlay, targetIndex);
-        }
-        this.globalScrollbar.addChild(overlay.getMainScrollbar());
-        this.notifySubscribers();
+    } else {
+        throw new Error("Error: could not load displays for overlay");
     }
-    return overlay;
 }
 
 /**
@@ -531,11 +548,10 @@ Model.prototype.moveDisplay = function (display, targetIndex) {
  */
 Model.prototype.insertDisplay = function (display, targetIndex) {
     if (targetIndex >= this.displays.length) {
-        /* Push display onto the end of the array */
-        this.displays.push(display);
-        this.updateCanvas();
-        this.notifySubscribers();
-    } else if (this.displays[targetIndex] === null) {
+        /* Fill array with null objects to ensure our indexing doesn't break */
+        this.displays.fillWith(null, this.displays.length, targetIndex + 1);
+    }
+    if (this.displays[targetIndex] === null) {
         /* Insert display into open cell */
         this.displays[targetIndex] = display;
         this.updateCanvas();
@@ -568,11 +584,12 @@ Model.prototype.addSnapshot = function () {
     if (!!name && !this.snapshots.some(snapshot => snapshot.name === name)) {
         let snapshot = {
             name: name,
-            displays: this.displays.filter(display => display !== null).map((display, position) => {
+            displays: this.displays.map((display, position) => {
+                if (display === null) return null;
                 let json = display.toJSON();
                 json.position = position;
                 return json;
-            }),
+            }).filter(display => display !== null),
             globalScrollbar: this.globalScrollbar.toJSON(),
             scrollPos: [scrollX, scrollY],
             normalized: this.normalized,
@@ -604,13 +621,20 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await this.addDisplay(getDisplayNameFromId(json.id), json.filter);
+            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.filter);
         }
         if (display instanceof Display) {
             json.frames = display.frames;
             json.timestamps = display.timestamps;
             json.images = display.images;
             display.fromJSON(json);
+            const originalPosition = this.displays.findIndex(d => d !== null && d.id === display.id);
+            if (originalPosition !== json.position) {
+                if (originalPosition >= 0) {
+                    this.displays[originalPosition] = null;
+                }
+                this.insertDisplay(display, json.position);
+            }
         } else {
             console.error(`Failed to create display with id "${json.id}`);
         }
@@ -621,7 +645,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
-            overlay = await this.addOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
+            overlay = await this.loadOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
         }
         if (overlay instanceof Overlay) {
             json.frames = overlay.frames;
@@ -629,6 +653,13 @@ Model.prototype.loadSnapshot = async function (snapshot) {
             json.images = overlay.images;
             json.secondaryImages = overlay.secondaryImages;
             overlay.fromJSON(json);
+            const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
+            if (originalPosition !== json.position) {
+                if (originalPosition >= 0) {
+                    this.displays[originalPosition] = null;
+                }
+                this.insertDisplay(overlay, json.position);
+            }
         } else {
             console.error(`Failed to create overlay with id "${json.id}"`);
         }
@@ -668,14 +699,6 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                 }
             });
         });
-    });
-    /* Update positions to match snapshot */
-    snapshot.displays.forEach(snapshotDisplay => {
-        if (snapshotDisplay.position >= this.displays.length) return;
-        const display = this.displays.find(display => display !== null && display.id === snapshotDisplay.id);
-        if (display) {
-            this.insertDisplay(display, snapshotDisplay.position);
-        }
     });
     this.setNormalized(snapshot.normalized);
     window.scrollTo(snapshot.scrollPos[0], snapshot.scrollPos[1]);
