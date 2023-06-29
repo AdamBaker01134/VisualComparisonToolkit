@@ -54,7 +54,6 @@ const STATE = {
     END_FOCUSED: "endFocused",
     GHOSTING: "ghosting",
     PREPARE_SELECT: "prepareSelect",
-    PREPARE_MOVE: "prepareMove",
     PREPARE_OVERLAY: "prepareOverlay",
     PANNING: "panning",
 }
@@ -67,7 +66,7 @@ let previousY;
 function startTimerInterval() {
     timer = setInterval(() => {
         let hit = null;
-        if (!!imodel.ghost && (hit = model.checkImageHit(mouseX, mouseY)) && hit !== imodel.ghost) {
+        if (!!imodel.ghost && (hit = model.checkGridCellHit(mouseX, mouseY)) >= 0 && hit !== imodel.ghost) {
             model.moveDisplay(imodel.ghost, hit);
         }
     }, 2000);
@@ -117,7 +116,6 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
                 currentState = STATE.READY;
             }
             break;
-        case STATE.PREPARE_MOVE:
         case STATE.PREPARE_OVERLAY:
             if (!(hit = model.checkImageHit(mx, my))) {
                 currentState = STATE.GHOSTING;
@@ -126,9 +124,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                if (imodel.ghost instanceof Overlay || hit instanceof Overlay) {
-                    currentState = STATE.PREPARE_MOVE;
-                } else if (hit instanceof Display) {
+                if (hit instanceof Display && !(hit instanceof Overlay) && !(imodel.ghost instanceof Overlay)) {
                     currentState = STATE.PREPARE_OVERLAY;
                 }
             }
@@ -204,16 +200,6 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             }
             currentState = STATE.READY;
             break;
-        case STATE.PREPARE_MOVE:
-            if (hit = model.checkImageHit(mx, my)) {
-                if (hit !== imodel.ghost) {
-                    model.moveDisplay(imodel.ghost, hit);
-                }
-            }
-            clearInterval(timer);
-            imodel.setGhost(null);
-            currentState = STATE.READY;
-            break;
         case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
                 if (hit !== imodel.ghost) {
@@ -224,6 +210,9 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             imodel.setGhost(null);
             currentState = STATE.READY;
         case STATE.GHOSTING:
+            if (!!imodel.ghost && (hit = model.checkGridCellHit(mx, my)) >= 0) {
+                model.moveDisplay(imodel.ghost, hit);
+            }
             clearInterval(timer);
             imodel.setGhost(null);
             currentState = STATE.READY;

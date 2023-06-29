@@ -6,11 +6,8 @@ function Model() {
     this.headerHeight = 100;
     this.canvasWidth = windowWidth * 0.98;
     this.canvasHeight = windowHeight * 3;
-    this.displayWidth = 350;
-    this.displayHeight = 350;
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
-    this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
 
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
@@ -27,6 +24,11 @@ function Model() {
         this.globalScrollbarHeight,
         this.maxImages,
     );
+    this.cellWidth = 350;
+    this.cellHeight = 350;
+    this.rows = Math.floor((this.canvasHeight - this.displayPadding - this.globalScrollbarHeight) / this.cellHeight);
+    this.columns = Math.floor((this.canvasWidth - this.displayPadding) / this.cellWidth);
+
     this.subscribers = [];
 }
 
@@ -37,11 +39,13 @@ function Model() {
  */
 Model.prototype.updateCanvas = function () {
     this.canvasWidth = windowWidth * 0.98;
-    this.canvasHeight = windowHeight * 3;;
-    this.displaysPerRow = Math.floor(this.canvasWidth / (this.displayWidth + this.displayPadding * 3));
+    this.canvasHeight = windowHeight * 3;
+    this.rows = Math.floor((this.canvasHeight - this.displayPadding) / this.cellHeight);
+    this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
     this.displays.forEach((display, index) => {
+        if (display === null) return;
         display.setLocation(generateDisplayX(this, index), generateDisplayY(this, index));
     });
     resizeCanvas(this.canvasWidth, this.canvasHeight);
@@ -187,7 +191,9 @@ Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
  */
 Model.prototype.checkDisplayHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkHit(mx, my)) return this.displays[i];
+        if (this.displays[i] !== null) {
+            if (this.displays[i].checkHit(mx, my)) return this.displays[i];
+        }
     }
     return null;
 }
@@ -200,7 +206,9 @@ Model.prototype.checkDisplayHit = function (mx, my) {
  */
 Model.prototype.checkImageHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
-        if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];
+        if (this.displays[i] !== null) {
+            if (this.displays[i].checkImageHit(mx, my)) return this.displays[i];
+        }
     }
     return null;
 }
@@ -214,8 +222,10 @@ Model.prototype.checkImageHit = function (mx, my) {
 Model.prototype.checkScrollbarHit = function (mx, my) {
     if (this.globalScrollbar?.checkScrollbarHit(mx, my)) return this.globalScrollbar;
     for (let i = 0; i < this.displays.length; i++) {
-        let index = this.displays[i].checkScrollbarHit(mx, my);
-        if (index >= 0) return this.displays[i].scrollbars[index];
+        if (this.displays[i] !== null) {
+            let index = this.displays[i].checkScrollbarHit(mx, my);
+            if (index >= 0) return this.displays[i].scrollbars[index];
+        }
     }
     return null;
 }
@@ -232,6 +242,24 @@ Model.prototype.checkPositionMarkerHit = function (mx, my) {
         return target.checkMainPositionHit(mx) || target.checkStartHit(mx) || target.checkEndHit(mx);
     }
     return false;
+}
+
+/**
+ * Model check if a grid cell was hit in a mouse event.
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {number} grid cell index or -1 if grid cell was not hit
+ */
+Model.prototype.checkGridCellHit = function (mx, my) {
+    for (let i = 0; i < this.rows; i++) {
+        for (let j = 0; j < this.columns; j++) {
+            if (mx > j * this.cellWidth && mx < (j + 1) * this.cellWidth &&
+                my > i * this.cellHeight && my < (i + 1) * this.cellHeight) {
+                return i * this.columns + j;
+            }
+        }
+    }
+    return -1;
 }
 
 /**
@@ -303,11 +331,31 @@ Model.prototype.findSnapshotIndex = function (id, snapshot) {
  * Load in and add a new display to the model.
  * @param {string} name name of the display to load and add
  * @param {string} filter filter to initialize display with
- * @returns {Display|null}
+ * @returns {Promise}
  */
 Model.prototype.addDisplay = async function (name, filter) {
+    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
+    return this.loadDisplay(name, filter).then(display => {
+        const openCell = this.displays.findIndex(display => display === null);
+        if (openCell >= 0) {
+            this.displays[openCell] = display;
+        } else {
+            this.displays.push(display);
+        }
+        this.globalScrollbar.addChild(display.getMainScrollbar());
+
+        this.notifySubscribers();
+    });
+}
+
+/**
+ * Load in a new display to the model.
+ * @param {string} name name of the display to load
+ * @param {string} filter filter to initialize display with
+ * @returns {Display|null}
+ */
+Model.prototype.loadDisplay = async function (name, filter) {
     const dataset = this.datasets.find(d => d.name === name);
-    let display = null;
     if (dataset) {
         const dir = filter !== "" ? filter : dataset.dir;
         const loadObj = await new Promise((resolve, reject) => {
@@ -319,13 +367,28 @@ Model.prototype.addDisplay = async function (name, filter) {
             });
         });
         if (loadObj !== null) {
-            const aspectRatio = loadObj.images[0].width / loadObj.images[0].height;
-            display = new Display(
+            let width = loadObj.images[0].width;
+            let height = loadObj.images[0].height;
+            let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
+            if (widthDifference < 0) {
+                width += widthDifference;
+                height += widthDifference;
+            }
+            let heightDifference = this.cellHeight - (height + this.displayPadding * 2 + this.displayScrollbarHeight * 1);
+            if (heightDifference < 0) {
+                width += heightDifference;
+                height += heightDifference;
+            }
+            let position = this.displays.findIndex(display => display === null);
+            if (position < 0) {
+                position = this.displays.length;
+            }
+            return new Display(
                 generateDisplayId(this, loadObj.name),
-                generateDisplayX(this, this.displays.length),
-                generateDisplayY(this, this.displays.length),
-                this.displayWidth,
-                this.displayHeight / aspectRatio,
+                generateDisplayX(this, position),
+                generateDisplayY(this, position),
+                width,
+                height,
                 this.displayPadding,
                 this.displayScrollbarHeight,
                 loadObj.frames,
@@ -333,65 +396,97 @@ Model.prototype.addDisplay = async function (name, filter) {
                 loadObj.images,
                 dataset.filters,
             );
-            this.displays.push(display);
-            this.globalScrollbar.addChild(display.getMainScrollbar());
-            this.notifySubscribers();
+        } else {
+            throw new Error("Error: could not load dataset");
         }
+    } else {
+        throw new Error("Error: specified dataset does not exist or is not visible in this instance");
     }
-    return display;
 }
 
 /**
- * Add a new overlay to the model. Load in required displays if necessary.
+ * Load in and add a new overlay to the model.
+ * @param {string} id1 id of top display
+ * @param {string} id2 id of bottom display
+ * @param {string} filter1 filter of top display
+ * @param {string} filter2 filter of bottom display
+ * @returns {Promise}
+ */
+Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
+    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached");
+    return this.loadOverlay(id1, id2, filter1, filter2).then(overlay => {
+        const targetIndex = this.displays.findIndex(display => display !== null && display.id === id2);
+        if (targetIndex >= 0) {
+            /* Insert overlay into display2's position */
+            this.insertDisplay(overlay, targetIndex);
+        } else {
+            this.displays.push(overlay);
+        }
+
+        this.globalScrollbar.addChild(overlay.getMainScrollbar());
+
+        this.notifySubscribers();
+    });
+}
+
+/**
+ * Load in a new overlay to the model.
  * @param {string} id1 id of top display
  * @param {string} id2 id of bottom display
  * @param {string} filter1 filter of top display
  * @param {string} filter2 filter of bottom display
  * @returns {Overlay|null}
  */
-Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
-    let overlay = null;
+Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
     let display1 = await new Promise((resolve, reject) => {
-        const found = this.displays.find(display => display.id === id1);
+        const found = this.displays.find(display => display !== null && display.id === id1);
         if (found) {
             resolve(found);
         } else {
-            this.addDisplay(getDisplayNameFromId(id1), filter1).then(display => {
-                this.removeDisplay(display); // ¯\_(ツ)_/¯
-                resolve(display);
-            }).catch(() => reject(null));
+            this.loadDisplay(getDisplayNameFromId(id1), filter1).then(display => resolve(display))
+                .catch(() => reject(null));
         }
     });
     let display2 = await new Promise((resolve, reject) => {
-        const found = this.displays.find(display => display.id === id2);
+        const found = this.displays.find(display => display !== null && display.id === id2);
         if (found) {
             resolve(found);
         } else {
-            this.addDisplay(getDisplayNameFromId(id2), filter2).then(display => {
-                this.removeDisplay(display); // ¯\_(ツ)_/¯
-                resolve(display);
-            }).catch(() => reject(null));
+            this.loadDisplay(getDisplayNameFromId(id2), filter2).then(display => resolve(display))
+                .catch(() => reject(null));
         }
     })
     if (display1 && display2) {
-        const aspectRatio = display2.images[0].width / display2.images[0].height;
-        overlay = new Overlay(
+        let width = display2.images[0].width;
+        let height = display2.images[0].height;
+        let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
+        if (widthDifference < 0) {
+            width += widthDifference;
+            height += widthDifference;
+        }
+        let heightDifference = this.cellHeight - (height + this.displayPadding * 2 + this.displayScrollbarHeight * 3);
+        if (heightDifference < 0) {
+            width += heightDifference;
+            height += heightDifference;
+        }
+        let position = this.displays.findIndex(display => display === null);
+        if (position < 0) {
+            position = this.displays.length;
+        }
+        return new Overlay(
             generateOverlayId(this, id1, id2),
-            generateDisplayX(this, this.displays.length),
-            generateDisplayY(this, this.displays.length),
-            this.displayWidth,
-            this.displayHeight / aspectRatio,
+            generateDisplayX(this, position),
+            generateDisplayY(this, position),
+            width,
+            height,
             this.displayPadding,
             this.displayScrollbarHeight,
             display1,
             display2,
         );
-        this.displays.push(overlay);
-        this.moveDisplay(overlay, display2);
-        this.globalScrollbar.addChild(overlay.getMainScrollbar());
-        this.notifySubscribers();
+    } else {
+        throw new Error("Error: could not load displays for overlay");
     }
-    return overlay;
 }
 
 /**
@@ -420,19 +515,53 @@ Model.prototype.filterImages = async function (display, filter) {
 }
 
 /**
- * Move a display to the position of a target display and update the locations of all affected displays.
+ * Move a display to a target cell, swap positions with display if cell is occupied
  * @param {Display|Overlay} display display to move
- * @param {Display} target target with the displays new location
+ * @param {number} targetIndex targeted grid cell index
  */
-Model.prototype.moveDisplay = function (display, target) {
-    let index = this.displays.findIndex(d => d === display);
-    let targetIndex = this.displays.findIndex(d => d === target);
-    if (index >= 0 && targetIndex >= 0 && index !== targetIndex) {
-        this.displays.splice(index, 1);
-        this.displays.splice(targetIndex, 0, display);
-        this.updateCanvas();
+Model.prototype.moveDisplay = function (display, targetIndex) {
+    const index = this.displays.findIndex(d => d === display);
+    if (index < 0 || index === targetIndex) return;
+    this.displays[index] = null;
+    if (this.displays.length > targetIndex) {
+        if (this.displays[targetIndex] !== null) {
+            /* Swap the display and targets positions */
+            this.displays[index] = this.displays[targetIndex];
+            this.displays[targetIndex] = display;
+        } else {
+            /* Set the displays position to the target position */
+            this.displays[targetIndex] = display;
+        }
+    } else {
+        /* Fill displays array with null values to ensure that indexing isn't out of bounds */
+        this.displays.fillWith(null, this.displays.length, targetIndex + 1);
+        this.displays[targetIndex] = display;
     }
+    this.updateCanvas();
     this.notifySubscribers();
+}
+
+/**
+ * Insert a display at a target cell, shifting existing cells recursively until an open cell is found
+ * @param {Display|Overlay} display display to insert
+ * @param {number} targetIndex target grid cell index
+ */
+Model.prototype.insertDisplay = function (display, targetIndex) {
+    if (targetIndex >= this.displays.length) {
+        /* Fill array with null objects to ensure our indexing doesn't break */
+        this.displays.fillWith(null, this.displays.length, targetIndex + 1);
+    }
+    if (this.displays[targetIndex] === null) {
+        /* Insert display into open cell */
+        this.displays[targetIndex] = display;
+        this.updateCanvas();
+        this.notifySubscribers();
+    } else {
+        /* Insert display and recurse */
+        const target = this.displays[targetIndex];
+        this.displays[targetIndex] = display;
+        this.insertDisplay(target, targetIndex + 1);
+    }
 }
 
 /**
@@ -441,10 +570,9 @@ Model.prototype.moveDisplay = function (display, target) {
  */
 Model.prototype.removeDisplay = function (display) {
     let index = this.displays.findIndex(d => d === display);
-    if (index >= 0) {
-        this.displays.splice(index, 1);
-        this.updateCanvas();
-    }
+    if (index < 0) return;
+    this.displays[index] = null;
+    this.updateCanvas();
     this.notifySubscribers();
 }
 
@@ -457,10 +585,11 @@ Model.prototype.addSnapshot = function () {
         let snapshot = {
             name: name,
             displays: this.displays.map((display, position) => {
+                if (display === null) return null;
                 let json = display.toJSON();
                 json.position = position;
                 return json;
-            }),
+            }).filter(display => display !== null),
             globalScrollbar: this.globalScrollbar.toJSON(),
             scrollPos: [scrollX, scrollY],
             normalized: this.normalized,
@@ -488,28 +617,35 @@ Model.prototype.loadSnapshot = async function (snapshot) {
     const snapshotOverlays = snapshot.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
     /* Load in all displays from JSON */
     for (let i = 0; i < snapshotDisplays.length; i++) {
-        let display = this.displays.find(display => display.id === snapshotDisplays[i].id);
+        let display = this.displays.find(display => display !== null && display.id === snapshotDisplays[i].id);
         const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await this.addDisplay(getDisplayNameFromId(json.id), json.filter);
+            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.filter);
         }
         if (display instanceof Display) {
             json.frames = display.frames;
             json.timestamps = display.timestamps;
             json.images = display.images;
             display.fromJSON(json);
+            const originalPosition = this.displays.findIndex(d => d !== null && d.id === display.id);
+            if (originalPosition !== json.position) {
+                if (originalPosition >= 0) {
+                    this.displays[originalPosition] = null;
+                }
+                this.insertDisplay(display, json.position);
+            }
         } else {
             console.error(`Failed to create display with id "${json.id}`);
         }
     }
     /* Load in all overlays from JSON */
     for (let j = 0; j < snapshotOverlays.length; j++) {
-        let overlay = this.displays.find(overlay => overlay.id === snapshotOverlays[j].id);
+        let overlay = this.displays.find(overlay => overlay !== null && overlay.id === snapshotOverlays[j].id);
         const json = { ...snapshotOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
-            overlay = await this.addOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
+            overlay = await this.loadOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
         }
         if (overlay instanceof Overlay) {
             json.frames = overlay.frames;
@@ -517,6 +653,13 @@ Model.prototype.loadSnapshot = async function (snapshot) {
             json.images = overlay.images;
             json.secondaryImages = overlay.secondaryImages;
             overlay.fromJSON(json);
+            const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
+            if (originalPosition !== json.position) {
+                if (originalPosition >= 0) {
+                    this.displays[originalPosition] = null;
+                }
+                this.insertDisplay(overlay, json.position);
+            }
         } else {
             console.error(`Failed to create overlay with id "${json.id}"`);
         }
@@ -557,15 +700,6 @@ Model.prototype.loadSnapshot = async function (snapshot) {
             });
         });
     });
-    /* Update positions to match snapshot */
-    snapshot.displays.forEach(snapshotDisplay => {
-        if (snapshotDisplay.position >= this.displays.length) return;
-        const display = this.displays.find(display => display.id === snapshotDisplay.id);
-        const target = this.displays[snapshotDisplay.position];
-        if (display) {
-            this.moveDisplay(display, target);
-        }
-    });
     this.setNormalized(snapshot.normalized);
     window.scrollTo(snapshot.scrollPos[0], snapshot.scrollPos[1]);
     this.updateCanvas();
@@ -580,6 +714,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
 Model.prototype.findAllScrollbars = function () {
     let result = [this.globalScrollbar];
     this.displays.forEach(display => {
+        if (display === null) return;
         display.scrollbars.forEach(scrollbar => result.push(scrollbar));
     });
     return result;
@@ -610,8 +745,8 @@ Model.prototype.loadSnapshots = function () {
  * @param {Object} options optional attributes to alter the loading process.
  */
 Model.prototype.loadDataset = function (options = {}) {
-    const callback = options.callback || (() => {});
-    const errCallback = options.errCallback || (() => {});
+    const callback = options.callback || (() => { });
+    const errCallback = options.errCallback || (() => { });
     if (!!options.dataset) {
         const dir = options.dir || options.dataset.dir;
         this.incrementLoading();

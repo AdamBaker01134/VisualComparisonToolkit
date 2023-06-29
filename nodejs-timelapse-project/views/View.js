@@ -16,6 +16,7 @@ View.prototype.draw = function () {
     clear();
 
     this.model.displays.forEach(display => {
+        if (display === null) return;
         renderDisplaySkeleton(display, this.imodel.selection === display);
 
         if (display instanceof Overlay) {
@@ -177,6 +178,23 @@ View.prototype.draw = function () {
         });
     });
 
+    /* Dragging ghost */
+    let ghost = this.imodel.ghost;
+    if (ghost instanceof Display || ghost instanceof Overlay) {
+        /* Display grid lines */
+        const padding = this.model.displayPadding;
+        stroke("rgb(0, 0, 0)");
+        for (let row = 0; row <= this.model.rows; row++) {
+            line(padding, row * this.model.cellHeight + padding, this.model.cellWidth * this.model.columns + padding, row * this.model.cellHeight + padding);
+        }
+        for (let column = 0; column <= this.model.columns; column++) {
+            line(column * this.model.cellWidth + padding, padding, column * this.model.cellWidth + padding, this.model.cellHeight * this.model.rows + padding);
+        }
+        let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
+        let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
+        renderDisplaySkeleton(ghost, false, 0.5, ghostX, ghostY);
+    }
+
     /* Global Scrollbar */
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof Scrollbar) {
@@ -222,14 +240,6 @@ View.prototype.draw = function () {
             trianglePos + 5,
             scrollbar.y + scrollbar.height - 0.5
         )
-    }
-
-    /* Dragging ghost */
-    let ghost = this.imodel.ghost;
-    if (ghost instanceof Display || ghost instanceof Overlay) {
-        let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
-        let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
-        renderDisplaySkeleton(ghost, false, 0.5, ghostX, ghostY);
     }
 }
 
