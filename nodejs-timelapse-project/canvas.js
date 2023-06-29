@@ -66,7 +66,7 @@ let previousY;
 function startTimerInterval() {
     timer = setInterval(() => {
         let hit = null;
-        if (!!imodel.ghost && (hit = model.checkGridCellHit(mouseX, mouseY)) >= 0) {
+        if (!!imodel.ghost && (hit = model.checkGridCellHit(mouseX, mouseY)) >= 0 && hit !== imodel.ghost) {
             model.moveDisplay(imodel.ghost, hit);
         }
     }, 2000);
@@ -124,7 +124,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                if (hit instanceof Display) {
+                if (hit instanceof Display && !(hit instanceof Overlay) && !(imodel.ghost instanceof Overlay)) {
                     currentState = STATE.PREPARE_OVERLAY;
                 }
             }
