@@ -524,7 +524,29 @@ Model.prototype.moveDisplay = function (display, targetIndex) {
     this.notifySubscribers();
 }
 
-Model.prototype.insertDisplay = function (display, targetIndex) { }
+/**
+ * Insert a display at a target cell, shifting existing cells recursively until an open cell is found
+ * @param {Display|Overlay} display display to insert
+ * @param {number} targetIndex target grid cell index
+ */
+Model.prototype.insertDisplay = function (display, targetIndex) {
+    if (targetIndex >= this.displays.length) {
+        /* Push display onto the end of the array */
+        this.displays.push(display);
+        this.updateCanvas();
+        this.notifySubscribers();
+    } else if (this.displays[targetIndex] === null) {
+        /* Insert display into open cell */
+        this.displays[targetIndex] = display;
+        this.updateCanvas();
+        this.notifySubscribers();
+    } else {
+        /* Insert display and recurse */
+        const target = this.displays[targetIndex];
+        this.displays[targetIndex] = display;
+        this.insertDisplay(target, targetIndex + 1);
+    }
+}
 
 /**
  * Remove a display and update the locations of all affected displays.
