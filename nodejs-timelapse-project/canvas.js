@@ -59,18 +59,29 @@ const STATE = {
     RESIZING: "resizing",
 }
 let currentState = STATE.READY;
-let timer;
+let moveTimer, cycleTimer;
+let cycling = false;
 let previousX;
 let previousY;
 
 /* Start an interval timer that continually checks if displays should be moved */
-function startTimerInterval() {
-    timer = setInterval(() => {
+function startTimedMoveInterval() {
+    clearInterval(moveTimer);
+    moveTimer = setInterval(() => {
         let hit = null;
         if (!!imodel.ghost && (hit = model.checkGridCellHit(mouseX, mouseY)) >= 0 && hit !== imodel.ghost) {
             model.moveDisplay(imodel.ghost, hit);
         }
     }, 2000);
+}
+
+/* Start an interval timer that continually checks if displays  */
+function startAutoCycleInterval() {
+    clearInterval(cycleTimer);
+    cycling = true;
+    cycleTimer = setInterval(() => {
+        console.log("Cycled!");
+    }, 1000);
 }
 
 function mouseMoved(event, mx = mouseX, my = mouseY) {
@@ -113,8 +124,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.setGhost(hit);
                 currentState = STATE.GHOSTING;
-                clearInterval(timer);
-                startTimerInterval();
+                startTimedMoveInterval();
             } else {
                 currentState = STATE.READY;
             }
@@ -225,14 +235,14 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     model.addOverlay(imodel.ghost.id, hit.id).then(overlay => imodel.select(overlay));
                 }
             }
-            clearInterval(timer);
+            clearInterval(moveTimer);
             imodel.setGhost(null);
             currentState = STATE.READY;
         case STATE.GHOSTING:
             if (!!imodel.ghost && (hit = model.checkGridCellHit(mx, my)) >= 0) {
                 model.moveDisplay(imodel.ghost, hit);
             }
-            clearInterval(timer);
+            clearInterval(moveTimer);
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
@@ -258,6 +268,25 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
 
 function windowResized(event) {
     model.updateCanvas();
+}
+
+function keyPressed(event) {
+    switch (currentState) {
+        case STATE.READY:
+            if (imodel.selection !== null && imodel.selection instanceof Overlay) {
+                if (keyCode === TAB) {
+                    if (cycling) {
+                        clearInterval(cycleTimer);
+                        cycling = false;
+                    } else if (event.shiftKey) {
+                        startAutoCycleInterval();
+                    } else {
+                        console.log("Cycled!");
+                    }
+                    return false;
+                }
+            }
+    }
 }
 
 function _attachHeaderListeners() {
