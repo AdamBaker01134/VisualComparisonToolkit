@@ -58,12 +58,13 @@ View.prototype.draw = function () {
         noTint();
         stroke("rgb(0, 0, 0)");
         fill("rgb(255, 255, 255)");
-        textSize(16);
+        const txtSize = 24 * display.width / this.model.cellWidth;
+        textSize(txtSize);
         if (index > display.timestamps.length - 1) {
             text(
                 display.frames[index],
                 display.x + display.padding + 5,
-                display.y + display.padding + 16
+                display.y + display.padding + txtSize
             );
         } else {
             text(

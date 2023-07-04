@@ -146,6 +146,8 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (imodel.selection !== null) {
                 let dx = mouseX - previousX;
                 let dy = mouseY - previousY;
+                if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) dx = 0;
+                if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) dy = 0;
                 imodel.resize(dx, dy);
             }
             previousX = mouseX;

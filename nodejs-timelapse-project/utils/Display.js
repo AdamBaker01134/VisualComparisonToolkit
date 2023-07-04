@@ -15,7 +15,6 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
     this.timestamps = timestamps;
     this.images = images;
 
-    // this.annotations = [];
     this.filters = filters;
     this.filter = "";
 
@@ -187,6 +186,31 @@ Display.prototype.zoom = function (delta) {
     this.viewportHeight += (this.viewportHeight * zoomRatio);
     if (this.viewportHeight < minHeight) this.viewportHeight = minHeight;
     else if (this.viewportHeight > maxHeight) this.viewportHeight = maxHeight;
+}
+
+/**
+ * Resize the image display.
+ * @param {number} dx change to the width of the display
+ * @param {number} dy change to the height of the display
+ */
+Display.prototype.resize = function (dx, dy) {
+    if (this.locked) return;
+
+    const maxWidth = 500;
+    const maxHeight = 500;
+    const minWidth = 50;
+    const minHeight = 50;
+    if (this.width + dx < minWidth || this.width + dx > maxWidth) return;
+    if (this.height + dy < minHeight || this.height + dy > maxHeight) return;
+    this.width += dx;
+    this.height += dy;
+    this.viewportWidth += dx;
+    this.viewportHeight += dy;
+
+    this.scrollbars.forEach(scrollbar => {
+        scrollbar.setDimensions(this.width, this.scrollbarHeight);
+        scrollbar.setLocation(this.x + this.padding, this.y + this.padding + this.height);
+    });
 }
 
 /**

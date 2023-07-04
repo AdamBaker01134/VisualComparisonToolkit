@@ -98,7 +98,10 @@ iModel.prototype.zoom = function (display, delta) {
  * @param {number} dy change in the y direction of the mouse
  */
 iModel.prototype.resize = function (dx, dy) {
-    console.log(`Resizing: dx: ${dx}, dy: ${dy}`);
+    if (this.selection != null) {
+        this.selection.resize(dx, dy);
+        this.notifySubscribers();
+    }
 }
 
 /**
