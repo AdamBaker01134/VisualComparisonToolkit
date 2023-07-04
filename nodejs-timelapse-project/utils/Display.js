@@ -207,9 +207,9 @@ Display.prototype.resize = function (dx, dy) {
     this.viewportWidth += dx;
     this.viewportHeight += dy;
 
-    this.scrollbars.forEach(scrollbar => {
+    this.scrollbars.forEach((scrollbar, index) => {
         scrollbar.setDimensions(this.width, this.scrollbarHeight);
-        scrollbar.setLocation(this.x + this.padding, this.y + this.padding + this.height);
+        scrollbar.setLocation(this.x + this.padding, this.y + this.padding + this.height + this.scrollbarHeight * index);
     });
 }
 
