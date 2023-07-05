@@ -11,6 +11,8 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
 
     this.scrollbarHeight = scrollbarHeight;
 
+    this.layers = [];
+
     this.frames = frames;
     this.timestamps = timestamps;
     this.images = images;
@@ -35,6 +37,8 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
     this.mainScrollbarIndex = 0;
 
     this.locked = false;
+
+    this.opacity = "255";
 }
 
 /* Set the displays images */
@@ -42,6 +46,12 @@ Display.prototype.setImages = function (images, filter = "") {
     this.images = images;
     this.scrollbars[0].setSize(this.images.length);
     this.filter = filter;
+    /* Sync main layer */
+    if (this.layers.length > 0) {
+        let mainLayer = this.layers[0];
+        mainLayer.images = this.images;
+        mainLayer.filter = this.filter;
+    }
 }
 
 /**
@@ -104,21 +114,6 @@ Display.prototype.checkImageHit = function (mx, my) {
 }
 
 /**
- * Update the dimensions of the display.
- * @param {number} newWidth new width for the display
- * @param {number} newHeight new height for the display
- */
-Display.prototype.setDimensions = function (newWidth, newHeight) {
-    let dw = newWidth - this.width;
-    let dh = newHeight - this.height;
-    this.width = newWidth;
-    this.height = newHeight;
-    this.viewportWidth += dw;
-    this.viewportHeight += dh;
-    this.scrollbars.forEach(scrollbar => scrollbar.setDimensions(newWidth, newHeight));
-}
-
-/**
  * Update the location parameters in the display.
  * @param {number} newX new x coordinate for the display
  * @param {number} newY new y coordinate for the display
@@ -132,6 +127,12 @@ Display.prototype.setLocation = function (newX, newY) {
     this.viewportX += dx;
     this.viewportY += dy;
     this.scrollbars.forEach(scrollbar => scrollbar.setLocation(scrollbar.x + dx, scrollbar.y + dy));
+    /* Sync layers */
+    for (let i = 0; i < this.layers.length; i++) {
+        let layer = this.layers[i];
+        layer.viewportX += dx;
+        layer.viewportY += dy;
+    }
 }
 
 /**
@@ -164,6 +165,13 @@ Display.prototype.pan = function (dx, dy) {
     } else if (this.viewportY + this.viewportHeight > bottom + vPadding) {
         this.viewportY = bottom + vPadding - this.viewportHeight
     }
+
+    /* Sync main layer */
+    if (this.layers.length > 0) {
+        let mainLayer = this.layers[0];
+        mainLayer.viewportX = this.viewportX;
+        mainLayer.viewportY = this.viewportY;
+    }
 }
 
 /**
@@ -186,6 +194,13 @@ Display.prototype.zoom = function (delta) {
     this.viewportHeight += (this.viewportHeight * zoomRatio);
     if (this.viewportHeight < minHeight) this.viewportHeight = minHeight;
     else if (this.viewportHeight > maxHeight) this.viewportHeight = maxHeight;
+
+    /* Sync main layer */
+    if (this.layers.length > 0) {
+        let mainLayer = this.layers[0];
+        mainLayer.viewportWidth = this.viewportWidth;
+        mainLayer.viewportHeight = this.viewportHeight;
+    }
 }
 
 /**
@@ -211,6 +226,13 @@ Display.prototype.resize = function (dx, dy) {
         scrollbar.setDimensions(this.width, this.scrollbarHeight);
         scrollbar.setLocation(this.x + this.padding, this.y + this.padding + this.height + this.scrollbarHeight * index);
     });
+
+    /* Sync layers */
+    for (let i = 0; i < this.layers.length; i++) {
+        let layer = this.layers[i];
+        layer.viewportWidth += dw;
+        layer.viewportHeight += dh;
+    }
 }
 
 /**
@@ -303,6 +325,7 @@ Display.prototype.toJSON = function () {
         scrollbars: this.scrollbars.map(scrollbar => scrollbar.toJSON()),
         mainScrollbarIndex: this.mainScrollbarIndex,
         locked: this.locked,
+        opacity: this.opacity,
     }
 }
 
@@ -327,5 +350,6 @@ Display.prototype.fromJSON = function (json) {
     this.scrollbars = this.scrollbars.map((scrollbar, index) => scrollbar.fromJSON(json.scrollbars[index]));
     this.mainScrollbarIndex = json.mainScrollbarIndex;
     this.locked = json.locked;
+    this.opacity = json.opacity;
     return this;
 }

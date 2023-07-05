@@ -232,7 +232,8 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
                 if (hit !== imodel.ghost) {
-                    model.addOverlay(imodel.ghost.id, hit.id).then(overlay => imodel.select(overlay));
+                    model.addOverlay(hit.id, imodel.ghost.id, hit.filter, imodel.ghost.filter)
+                        .then(overlay => imodel.select(overlay));
                 }
             }
             clearInterval(moveTimer);

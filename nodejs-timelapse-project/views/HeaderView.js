@@ -91,9 +91,11 @@ Headerview.prototype.updateLocked = function () {
  * Update the value of the opacity slider if it has changed.
  */
 Headerview.prototype.updateOpacitySlider = function () {
-    let opacity = this.imodel.selection?.opacity;
-    let opacityInput = document.getElementById("opacityInput");
-    if (opacityInput?.value !== opacity) opacityInput.value = opacity;
+    if (this.imodel.selection !== null && this.imodel.selection instanceof Overlay) {
+        const opacity = this.imodel.selection.layers[this.imodel.selection.layers.length - 1].opacity;
+        const opacityInput = document.getElementById("opacityInput");
+        if (opacityInput?.value !== opacity) opacityInput.value = opacity;
+    }
 }
 
 /**
@@ -183,12 +185,7 @@ Headerview.prototype.updateFilterSelect = function () {
         let filterSelect = document.getElementById("filterSelect");
         filterSelect.innerHTML = "";
 
-        let selectedFilter = "";
-        if (selection instanceof Overlay) {
-            if (selection.secondaryFilter !== "") selectedFilter = selection.secondaryFilter;
-        } else if (selection.filter !== "") {
-            selectedFilter = selection.filter;
-        }
+        let selectedFilter = selection.filter;
 
         if (selectedFilter !== "") {
             let currentOption = document.createElement("option");

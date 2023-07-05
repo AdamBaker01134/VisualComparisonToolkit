@@ -19,40 +19,33 @@ View.prototype.draw = function () {
         if (display === null) return;
         renderDisplaySkeleton(display, this.imodel.selection === display);
 
-        if (display instanceof Overlay) {
-            let secondaryIndex = Math.floor(display.getIndex(1)); /* Floor index in case index has been affected by ratio */
-            image(
-                display.secondaryImages[secondaryIndex].get(),
-                display.x + display.padding,
-                display.y + display.padding,
-                display.width,
-                display.height
-            );
-            tint(255, parseInt(display.opacity));
-        }
-
+        tint(255, parseInt(display.opacity));
         let index = Math.floor(display.getIndex(0)); /* Floor index in case index has been affected by ratio */
         const left = display.x + display.padding;
         const right = display.x + display.padding + display.width;
         const top = display.y + display.padding;
         const bottom = display.y + display.padding + display.height;
-        let translatedX = display.viewportX < left ? left - display.viewportX : 0;
-        let translatedY = display.viewportY < top ? top - display.viewportY : 0;
-        let imageX = display.viewportX < left ? left : display.viewportX;
-        let imageY = display.viewportY < top ? top : display.viewportY;
-        let imageWidth = display.viewportWidth + imageX > right ? right - imageX : display.viewportWidth;
-        let imageHeight = display.viewportHeight + imageY > bottom ? bottom - imageY : display.viewportHeight;
 
-        let widthRatio = display.images[index].width / display.viewportWidth;
-        let heightRatio = display.images[index].height / display.viewportHeight;
+        renderImage(display.images[index], left, right, top, bottom, {
+            x: display.viewportX,
+            y: display.viewportY,
+            width: display.viewportWidth,
+            height: display.viewportHeight,
+        });
 
-        let img = display.images[index].get(
-            translatedX * widthRatio,
-            translatedY * heightRatio,
-            imageWidth * widthRatio,
-            imageHeight * heightRatio
-        );
-        image(img, imageX, imageY, imageWidth, imageHeight);
+        if (display instanceof Overlay) {
+            for (let i = 1; i < display.layers.length; i++) {
+                let layer = display.layers[i];
+                tint(255, parseInt(layer.opacity));
+                index = Math.floor(display.getIndex(i));
+                renderImage(layer.images[index], left, right, top, bottom, {
+                    x: layer.viewportX,
+                    y: layer.viewportY,
+                    width: layer.viewportWidth,
+                    height: layer.viewportHeight,
+                });
+            }
+        }
 
         /* Timestamp */
         noTint();
@@ -246,6 +239,35 @@ View.prototype.draw = function () {
 
 View.prototype.modelChanged = function () {
     this.draw();
+}
+
+/**
+ * Render an image with viewport translations.
+ * @param {p5.Image} img Image to render
+ * @param {number} left x coordinate of the leftmost position in the display
+ * @param {number} right x coordinate of the rightmost position in the display
+ * @param {number} top y coordinate of the topmost position in the display
+ * @param {number} bottom y coordinate of the bottommost position in the display
+ * @param {Object} viewport viewport coordinates and dimensions
+ */
+function renderImage(img, left, right, top, bottom, viewport) {
+    const translatedX = viewport.x < left ? left - viewport.x : 0;
+    const translatedY = viewport.y < top ? top - viewport.y : 0;
+    const x = viewport.x < left ? left : viewport.x;
+    const y = viewport.y < top ? top : viewport.y;
+    const width = viewport.width + x > right ? right - x : viewport.width;
+    const height = viewport.height + y > bottom ? bottom - y : viewport.height;
+
+    const widthRatio = img.width / viewport.width;
+    const heightRatio = img.height / viewport.height;
+
+    const translatedImg = img.get(
+        translatedX * widthRatio,
+        translatedY * heightRatio,
+        width * widthRatio,
+        height * heightRatio,
+    );
+    image(translatedImg, x, y, width, height);
 }
 
 /**

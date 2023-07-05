@@ -53,22 +53,6 @@ Model.prototype.updateCanvas = function () {
 }
 
 /**
- * Set a displays images (either primary or secondary depending on the type of display)
- * @param {Display|Overlay} display display to set images
- * @param {Array<p5.Image>} images new set of images
- * @param {boolean} secondary true if we want to set secondary images instead of primary
- * @param {string} filter filter name
- */
-Model.prototype.setDisplayImages = function (display, images, secondary, filter = "") {
-    if (secondary && display instanceof Overlay) {
-        display.setSecondaryImages(images, filter);
-    } else {
-        display.setImages(images, filter);
-    }
-    this.notifySubscribers();
-}
-
-/**
  * @param {GlobalScrollbar} scrollbar global scrollbar
  */
 Model.prototype.setGlobalScrollbar = function (scrollbar) {
@@ -529,7 +513,8 @@ Model.prototype.filterImages = async function (display, filter) {
             });
         });
         if (loadObj !== null) {
-            this.setDisplayImages(display, loadObj.images, isOverlay, filter);
+            display.setImages(loadObj.images, filter);
+            this.notifySubscribers();
         }
     }
 }
@@ -665,13 +650,35 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
-            overlay = await this.loadOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
+            overlay = await this.loadOverlay(json.layers[0].id, json.layers[1].id, json.layers[0].filter, json.layers[1].filter);
         }
         if (overlay instanceof Overlay) {
             json.frames = overlay.frames;
             json.timestamps = overlay.timestamps;
             json.images = overlay.images;
-            json.secondaryImages = overlay.secondaryImages;
+            /* Restore first and second layer */
+            json.layers[0] = {
+                ...json.layers[0],
+                frames: overlay.layers[0].frames,
+                timestamps: overlay.layers[0].timestamps,
+                images: overlay.layers[0].images,
+            };
+            json.layers[1] = {
+                ...json.layers[1],
+                frames: overlay.layers[1].frames,
+                timestamps: overlay.layers[1].timestamps,
+                images: overlay.layers[1].images,
+            }
+            /* Restore all remaining layers */
+            if (overlay.layers.length < json.layers.length) {
+                for (let i = overlay.layers.length; i < json.layers.length; i++) {
+                    let layer = json.layers[i];
+                    let display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
+                    layer.frames = display.frames;
+                    layer.timestamps = display.timestamps;
+                    layer.images = display.images;
+                }
+            }
             overlay.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
             if (originalPosition !== json.position) {
