@@ -13,8 +13,8 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
             filter: display.filter,
             viewportX: this.x + this.padding + (display.viewportX - display.x - display.padding),
             viewportY: this.y + this.padding + (display.viewportY - display.y - display.padding),
-            viewportWidth: display.viewportWidth,
-            viewportHeight: display.viewportHeight,
+            viewportWidth: this.width + (display.viewportWidth - display.width),
+            viewportHeight: this.height + (display.viewportHeight - display.height),
             opacity: display.opacity,
         },
         {
@@ -26,8 +26,8 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
             filter: secondaryDisplay.filter,
             viewportX: this.x + this.padding + (secondaryDisplay.viewportX - secondaryDisplay.x - secondaryDisplay.padding),
             viewportY: this.y + this.padding + (secondaryDisplay.viewportY - secondaryDisplay.y - secondaryDisplay.padding),
-            viewportWidth: secondaryDisplay.viewportWidth,
-            viewportHeight: secondaryDisplay.viewportHeight,
+            viewportWidth: this.width + (display.viewportWidth - display.width),
+            viewportHeight: this.height + (display.viewportHeight - display.height),
             opacity: "128",
         },
     ];
