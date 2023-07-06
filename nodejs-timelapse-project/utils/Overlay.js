@@ -88,6 +88,47 @@ Overlay.prototype.setOpacity = function (opacity) {
 }
 
 /**
+ * Add a layer to the overlay
+ * @param {Display} display display whose properties will be converted to a new layer of the overlay
+ */
+Overlay.prototype.addLayer = function (display) {
+    const layer = {
+        id: display.id,
+        frames: display.frames,
+        timestamps: display.timestamps,
+        images: display.images.slice(display.getMainScrollbar().start, display.getMainScrollbar().end),
+        filters: display.filters,
+        filter: display.filter,
+        viewportX: this.x + this.padding + (display.viewportX - display.x - display.padding),
+        viewportY: this.y + this.padding + (display.viewportY - display.y - display.padding),
+        viewportWidth: this.width + (display.viewportWidth - display.width),
+        viewportHeight: this.height + (display.viewportHeight - display.height),
+        opacity: "128",
+    };
+    const scrollbar = new Scrollbar(
+        `${this.id}-${this.scrollbars.length}`,
+        this.x + this.padding,
+        this.y + this.padding + this.height + this.scrollbarHeight * this.scrollbars.length - 1,
+        this.width,
+        this.scrollbarHeight,
+        layer.images.length,
+        display.getMainScrollbar().annotations,
+    );
+    display.getMainScrollbar().addLink(scrollbar);
+    this.scrollbars.splice(this.mainScrollbarIndex, 0, scrollbar);
+    this.layers.push(layer);
+
+    /* Update the main scrollbar so it knows about the new one */
+    this.mainScrollbarIndex = this.scrollbars.length - 1;
+    const mainScrollbar = this.getMainScrollbar();
+    mainScrollbar.addChild(scrollbar);
+    mainScrollbar.setLocation(mainScrollbar.x, mainScrollbar.y + this.scrollbarHeight);
+
+    /* Need to resize the image display to ensure that everything fits inside the grid cell */
+    this.resize(-this.scrollbarHeight, -this.scrollbarHeight);
+}
+
+/**
  * Convert overlay to JSON
  * @returns {Object}
  */
@@ -144,7 +185,6 @@ Overlay.prototype.fromJSON = function (json) {
     this.viewportWidth = json.viewportWidth;
     this.viewportHeight = json.viewportHeight;
     this.layers = json.layers;
-    /* TODO: Refactor this once additional scrollbars are added in */
     this.scrollbars = this.scrollbars.map((scrollbar, index) => scrollbar.fromJSON(json.scrollbars[index]));
     this.mainScrollbarIndex = json.mainScrollbarIndex;
     this.locked = json.locked;

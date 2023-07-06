@@ -230,8 +230,8 @@ Display.prototype.resize = function (dx, dy) {
     /* Sync layers */
     for (let i = 0; i < this.layers.length; i++) {
         let layer = this.layers[i];
-        layer.viewportWidth += dw;
-        layer.viewportHeight += dh;
+        layer.viewportWidth += dx;
+        layer.viewportHeight += dy;
     }
 }
 
@@ -322,6 +322,14 @@ Display.prototype.toJSON = function () {
         viewportY: this.viewportY,
         viewportWidth: this.viewportWidth,
         viewportHeight: this.viewportHeight,
+        layers: this.layers.map(layer => {
+            return {
+                ...layer,
+                frames: [],
+                timestamps: [],
+                images: [],
+            }
+        }),
         scrollbars: this.scrollbars.map(scrollbar => scrollbar.toJSON()),
         mainScrollbarIndex: this.mainScrollbarIndex,
         locked: this.locked,
@@ -347,6 +355,7 @@ Display.prototype.fromJSON = function (json) {
     this.viewportY = json.viewportY;
     this.viewportWidth = json.viewportWidth;
     this.viewportHeight = json.viewportHeight;
+    this.layers = json.layers;
     this.scrollbars = this.scrollbars.map((scrollbar, index) => scrollbar.fromJSON(json.scrollbars[index]));
     this.mainScrollbarIndex = json.mainScrollbarIndex;
     this.locked = json.locked;

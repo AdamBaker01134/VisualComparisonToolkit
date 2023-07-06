@@ -494,6 +494,17 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
 }
 
 /**
+ * Add a layer to an overlay display.
+ * @param {Overlay} overlay overlay to add a layer to
+ * @param {Display} layer display that will become a new layer of the overlay
+ */
+Model.prototype.addLayer = function (overlay, layer) {
+    if (overlay instanceof Overlay && layer instanceof Display && !(layer instanceof Overlay)) {
+        overlay.addLayer(layer);
+    }
+}
+
+/**
  * Load in filtered images and set in an display existing
  * @param {Display|Overlay} display display to filter
  * @param {string} filter name of the filter
@@ -670,14 +681,16 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                 images: overlay.layers[1].images,
             }
             /* Restore all remaining layers */
-            if (overlay.layers.length < json.layers.length) {
-                for (let i = overlay.layers.length; i < json.layers.length; i++) {
-                    let layer = json.layers[i];
-                    let display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
-                    layer.frames = display.frames;
-                    layer.timestamps = display.timestamps;
-                    layer.images = display.images;
+            for (let i = 2; i < json.layers.length; i++) {
+                let display;
+                let layer = json.layers[i];
+                if (overlay.layers.length <= i) {
+                    display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
+                    overlay.addLayer(display);
                 }
+                layer.frames = overlay.layers[i].frames;
+                layer.timestamps = overlay.layers[i].timestamps;
+                layer.images = overlay.layers[i].images;
             }
             overlay.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
