@@ -692,6 +692,8 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                 layer.timestamps = overlay.layers[i].timestamps;
                 layer.images = overlay.layers[i].images;
             }
+            /* Filter out additional unwanted scrollbars */
+            overlay.scrollbars = overlay.scrollbars.filter(scrollbar => json.scrollbars.find(jsonScrollbar => scrollbar.id === jsonScrollbar.id));
             overlay.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
             if (originalPosition !== json.position) {
@@ -731,7 +733,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                     scrollbar.addChild(foundChild);
                 }
             });
-            snapshotScrollbar.children.forEach(id => {
+            snapshotScrollbar.links.forEach(id => {
                 let foundLink = allScrollbars.find(s => s.id === id);
                 if (foundLink) {
                     scrollbar.removeLink(foundLink);
