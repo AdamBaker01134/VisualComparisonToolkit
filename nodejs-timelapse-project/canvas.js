@@ -80,7 +80,7 @@ function startAutoCycleInterval() {
     clearInterval(cycleTimer);
     cycling = true;
     cycleTimer = setInterval(() => {
-        console.log("Cycled!");
+        imodel.cycleLayers();
     }, 1000);
 }
 
@@ -286,7 +286,7 @@ function keyPressed(event) {
                     } else if (event.shiftKey) {
                         startAutoCycleInterval();
                     } else {
-                        console.log("Cycled!");
+                        imodel.cycleLayers();
                     }
                     return false;
                 }

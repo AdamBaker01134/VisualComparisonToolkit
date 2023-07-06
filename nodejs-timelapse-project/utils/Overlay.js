@@ -16,6 +16,7 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
             viewportWidth: this.width + (display.viewportWidth - display.width),
             viewportHeight: this.height + (display.viewportHeight - display.height),
             opacity: display.opacity,
+            scrollbarIndex: 0,
         },
         {
             id: secondaryDisplay.id,
@@ -29,6 +30,7 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
             viewportWidth: this.width + (display.viewportWidth - display.width),
             viewportHeight: this.height + (display.viewportHeight - display.height),
             opacity: "128",
+            scrollbarIndex: 1,
         },
     ];
 
@@ -104,6 +106,7 @@ Overlay.prototype.addLayer = function (display) {
         viewportWidth: this.width + (display.viewportWidth - display.width),
         viewportHeight: this.height + (display.viewportHeight - display.height),
         opacity: "128",
+        scrollbarIndex: this.mainScrollbarIndex,
     };
     const scrollbar = new Scrollbar(
         `${this.id}-${this.scrollbars.length}`,
@@ -127,6 +130,49 @@ Overlay.prototype.addLayer = function (display) {
     /* Need to resize the image display to ensure that everything fits inside the grid cell */
     this.resize(-this.scrollbarHeight, -this.scrollbarHeight);
 }
+
+/**
+ * Cycle the layers within the the overlay by one.
+ */
+Overlay.prototype.cycleLayers = function () {
+    let savedLayer = this.layers[0];
+    for (let i = 1; i < this.layers.length; i++) {
+        let tempLayer = this.layers[i];
+        this.layers[i] = savedLayer;
+        savedLayer = tempLayer;
+    }
+    this.layers[0] = savedLayer;
+    // this.cycleScrollbars();
+    /* Sync main layer */
+    this.frames = this.layers[0].frames;
+    this.timestamps = this.layers[0].timestamps;
+    this.images = this.layers[0].images;
+    this.filters = this.layers[0].filters;
+    this.filter = this.layers[0].filter;
+    this.viewportX = this.layers[0].viewportX;
+    this.viewportY = this.layers[0].viewportY;
+    this.viewportWidth = this.layers[0].viewportWidth;
+    this.viewportHeight = this.layers[0].viewportHeight;
+    this.opacity = this.layers[0].opacity;
+}
+
+// IF YOU UNCOMMENT CYCLING SCROLLBARS, YOU NEED TO REMOVE SCROLLBAR INDICES IN LAYERS
+// /**
+//  * Cycle the scrollbars within the overlay by one, ignoring the main scrollbar.
+//  */
+// Overlay.prototype.cycleScrollbars = function () {
+//     let savedScrollbar = this.scrollbars[0];
+//     const savedX = savedScrollbar.x;
+//     const savedY = savedScrollbar.y;
+//     for (let i = 1; i < this.mainScrollbarIndex; i++) {
+//         let tempScrollbar = this.scrollbars[i];
+//         this.scrollbars[i] = savedScrollbar;
+//         savedScrollbar.setLocation(tempScrollbar.x, tempScrollbar.y);
+//         savedScrollbar = tempScrollbar;
+//     }
+//     this.scrollbars[0] = savedScrollbar;
+//     savedScrollbar.setLocation(savedX, savedY);
+// }
 
 /**
  * Convert overlay to JSON

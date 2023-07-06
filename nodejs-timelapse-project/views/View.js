@@ -21,6 +21,12 @@ View.prototype.draw = function () {
 
         tint(255, parseInt(display.opacity));
         let index = Math.floor(display.getIndex(0)); /* Floor index in case index has been affected by ratio */
+        if (display instanceof Overlay) {
+            /* With cycling, scrollbar index and layer index may not match. */
+            /* Another reason to have just layers instead of object attributes. */
+            let layer = display.layers[0];
+            index = Math.floor(display.getIndex(layer.scrollbarIndex));
+        }
         const left = display.x + display.padding;
         const right = display.x + display.padding + display.width;
         const top = display.y + display.padding;
@@ -37,7 +43,7 @@ View.prototype.draw = function () {
             for (let i = 1; i < display.layers.length; i++) {
                 let layer = display.layers[i];
                 tint(255, parseInt(layer.opacity));
-                index = Math.floor(display.getIndex(i));
+                index = Math.floor(display.getIndex(layer.scrollbarIndex));
                 renderImage(layer.images[index], left, right, top, bottom, {
                     x: layer.viewportX,
                     y: layer.viewportY,

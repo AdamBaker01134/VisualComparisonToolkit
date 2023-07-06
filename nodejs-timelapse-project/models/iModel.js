@@ -119,6 +119,16 @@ iModel.prototype.select = function (display) {
 }
 
 /**
+ * Cycle the layers of the selection.
+ */
+iModel.prototype.cycleLayers = function () {
+    if (this.selection !== null) {
+        this.selection.cycleLayers();
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Set the opacity of the currently selected display (if it is an overlay that is)
  * @param {string} opacity opacity value (range from 0 to 255)
  */
