@@ -629,6 +629,11 @@ Model.prototype.addSnapshot = function () {
 Model.prototype.loadSnapshot = async function (snapshot) {
     /* Load global scrollbar from JSON */
     this.globalScrollbar.fromJSON(snapshot.globalScrollbar);
+    /* Clear all displays that are not included in the snapshot */
+    this.displays = this.displays.filter(display => {
+        if (display === null) return false;
+        if (snapshot.displays.find(displayJSON => display.id === displayJSON.id)) return true;
+    });
     const snapshotDisplays = snapshot.displays.filter(displayJSON => displayJSON.type === "DISPLAY");
     const snapshotOverlays = snapshot.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
     /* Load in all displays from JSON */
