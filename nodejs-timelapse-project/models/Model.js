@@ -417,7 +417,7 @@ Model.prototype.loadDisplay = async function (name, filter) {
 Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
     if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached");
     return this.loadOverlay(id1, id2, filter1, filter2).then(overlay => {
-        const targetIndex = this.displays.findIndex(display => display !== null && display.id === id2);
+        const targetIndex = this.displays.findIndex(display => display !== null && display.id === id1);
         if (targetIndex >= 0) {
             /* Insert overlay into display2's position */
             this.insertDisplay(overlay, targetIndex);
@@ -461,8 +461,8 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
         }
     })
     if (display1 && display2) {
-        let width = display2.images[0].width;
-        let height = display2.images[0].height;
+        let width = display2.getLayerImages()[0].width;
+        let height = display2.getLayerImages()[0].height;
         let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
         if (widthDifference < 0) {
             width += widthDifference;
@@ -637,12 +637,15 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.filter);
+            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.layers[0].filter);
         }
         if (display instanceof Display) {
-            json.frames = display.frames;
-            json.timestamps = display.timestamps;
-            json.images = display.images;
+            json.layers[0] = {
+                ...json.layers[0],
+                frames: display.getLayerFrames(),
+                timestamps: display.getLayerTimestamps(),
+                images: display.getLayerImages(),
+            };
             display.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === display.id);
             if (originalPosition !== json.position) {
@@ -664,36 +667,21 @@ Model.prototype.loadSnapshot = async function (snapshot) {
             overlay = await this.loadOverlay(json.layers[0].id, json.layers[1].id, json.layers[0].filter, json.layers[1].filter);
         }
         if (overlay instanceof Overlay) {
-            json.frames = overlay.frames;
-            json.timestamps = overlay.timestamps;
-            json.images = overlay.images;
-            /* Restore first and second layer */
-            json.layers[0] = {
-                ...json.layers[0],
-                frames: overlay.layers[0].frames,
-                timestamps: overlay.layers[0].timestamps,
-                images: overlay.layers[0].images,
-            };
-            json.layers[1] = {
-                ...json.layers[1],
-                frames: overlay.layers[1].frames,
-                timestamps: overlay.layers[1].timestamps,
-                images: overlay.layers[1].images,
-            }
-            /* Restore all remaining layers */
-            for (let i = 2; i < json.layers.length; i++) {
-                let display;
+            /* Restore all overlay layers */
+            for (let i = 0; i < json.layers.length; i++) {
                 let layer = json.layers[i];
                 if (overlay.layers.length <= i) {
-                    display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
+                    let display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
                     overlay.addLayer(display);
                 }
-                layer.frames = overlay.layers[i].frames;
-                layer.timestamps = overlay.layers[i].timestamps;
-                layer.images = overlay.layers[i].images;
+                layer.frames = overlay.getLayerFrames(i);
+                layer.timestamps = overlay.getLayerTimestamps(i);
+                layer.images = overlay.getLayerImages(i);
             }
-            /* Filter out additional unwanted scrollbars */
-            overlay.scrollbars = overlay.scrollbars.filter(scrollbar => json.scrollbars.find(jsonScrollbar => scrollbar.id === jsonScrollbar.id));
+            if (overlay.scrollbars.length > json.scrollbars.length) {
+                /* Ensure overlay scrollbar length equals the json overlay scrollbar length */
+                overlay.scrollbars = overlay.scrollbars.slice(0, json.scrollbars.length);
+            }
             overlay.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
             if (originalPosition !== json.position) {

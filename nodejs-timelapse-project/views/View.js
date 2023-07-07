@@ -18,59 +18,40 @@ View.prototype.draw = function () {
     this.model.displays.forEach(display => {
         if (display === null) return;
         renderDisplaySkeleton(display, this.imodel.selection === display);
-
-        tint(255, parseInt(display.opacity));
-        let index = Math.floor(display.getIndex(0)); /* Floor index in case index has been affected by ratio */
-        if (display instanceof Overlay) {
-            /* With cycling, scrollbar index and layer index may not match. */
-            /* Another reason to have just layers instead of object attributes. */
-            let layer = display.layers[0];
-            index = Math.floor(display.getIndex(layer.scrollbarIndex));
-        }
+        
         const left = display.x + display.padding;
         const right = display.x + display.padding + display.width;
         const top = display.y + display.padding;
         const bottom = display.y + display.padding + display.height;
 
-        renderImage(display.images[index], left, right, top, bottom, {
-            x: display.viewportX,
-            y: display.viewportY,
-            width: display.viewportWidth,
-            height: display.viewportHeight,
-        });
-
-        if (display instanceof Overlay) {
-            for (let i = 1; i < display.layers.length; i++) {
-                let layer = display.layers[i];
-                tint(255, parseInt(layer.opacity));
-                index = Math.floor(display.getIndex(layer.scrollbarIndex));
-                renderImage(layer.images[index], left, right, top, bottom, {
-                    x: layer.viewportX,
-                    y: layer.viewportY,
-                    width: layer.viewportWidth,
-                    height: layer.viewportHeight,
-                });
-            }
+        let index = 0;
+        for (let i = 0; i < display.layers.length; i++) {
+            const layer = display.layers[i];
+            tint(255, parseInt(layer.opacity));
+            index = Math.floor(display.getIndex(layer.scrollbarIndex)); /* Floor index in case index has been affected by ratio */
+            renderImage(layer.images[index], left, right, top, bottom, layer.viewport);
         }
 
         /* Timestamp */
         noTint();
-        stroke("rgb(0, 0, 0)");
-        fill("rgb(255, 255, 255)");
-        const txtSize = 24 * display.width / this.model.cellWidth;
-        textSize(txtSize);
-        if (index > display.timestamps.length - 1) {
-            text(
-                display.frames[index],
-                display.x + display.padding + 5,
-                display.y + display.padding + txtSize
-            );
-        } else {
-            text(
-                display.timestamps[index],
-                display.x + display.padding + 5,
-                display.y + display.padding + 16
-            );
+        if (display.layers.length === 1) {
+            stroke("rgb(0, 0, 0)");
+            fill("rgb(255, 255, 255)");
+            const txtSize = 24 * display.width / this.model.cellWidth;
+            textSize(txtSize);
+            if (index > display.getLayerTimestamps().length - 1) {
+                text(
+                    display.getLayerFrames()[index],
+                    display.x + display.padding + 5,
+                    display.y + display.padding + txtSize
+                );
+            } else {
+                text(
+                    display.getLayerTimestamps()[index],
+                    display.x + display.padding + 5,
+                    display.y + display.padding + 16
+                );
+            }
         }
 
         /* Scrollbars */

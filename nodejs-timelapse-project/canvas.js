@@ -235,7 +235,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     if (hit instanceof Overlay) {
                         model.addLayer(hit, imodel.ghost);
                     } else {
-                        model.addOverlay(hit.id, imodel.ghost.id, hit.filter, imodel.ghost.filter)
+                        model.addOverlay(hit.id, imodel.ghost.id, hit.getLayerFilter(), imodel.ghost.getLayerFilter())
                             .then(overlay => imodel.select(overlay));
                     }
                 }
