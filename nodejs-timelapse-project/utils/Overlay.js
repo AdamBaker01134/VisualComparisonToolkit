@@ -1,10 +1,42 @@
 /* Application Overlay for Videos */
 "use strict";
 function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, secondaryDisplay) {
-    Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, display.frames, display.timestamps, display.images, secondaryDisplay.filters]);
+    Display.apply(this, [id, x, y, width, height, padding, scrollbarHeight, display.getLayerFrames(), display.getLayerTimestamps(), display.getLayerImages(), display.getLayerFilters()]);
 
-    this.images = this.images.slice(display.start, display.end);
-    this.secondaryImages = secondaryDisplay.images.slice(secondaryDisplay.start, secondaryDisplay.end);
+    this.layers = [
+        {
+            id: display.id,
+            frames: display.getLayerFrames(),
+            timestamps: display.getLayerTimestamps(),
+            images: display.getLayerImages().slice(display.getMainScrollbar().start, display.getMainScrollbar().end),
+            filters: display.getLayerFilters(),
+            filter: display.getLayerFilter(),
+            viewport: {
+                x: this.x + this.padding + (display.getLayerViewport().x - display.x - display.padding),
+                y: this.y + this.padding + (display.getLayerViewport().y - display.y - display.padding),
+                width: this.width + (display.getLayerViewport().width - display.width),
+                height: this.height + (display.getLayerViewport().height - display.height),
+            },
+            opacity: display.getLayerOpacity(),
+            scrollbarIndex: 0,
+        },
+        {
+            id: secondaryDisplay.id,
+            frames: secondaryDisplay.getLayerFrames(),
+            timestamps: secondaryDisplay.getLayerTimestamps(),
+            images: secondaryDisplay.getLayerImages().slice(secondaryDisplay.getMainScrollbar().start, secondaryDisplay.getMainScrollbar().end),
+            filters: secondaryDisplay.getLayerFilters(),
+            filter: secondaryDisplay.getLayerFilter(),
+            viewport: {
+                x: this.x + this.padding + (secondaryDisplay.getLayerViewport().x - secondaryDisplay.x - secondaryDisplay.padding),
+                y: this.y + this.padding + (secondaryDisplay.getLayerViewport().y - secondaryDisplay.y - secondaryDisplay.padding),
+                width: this.width + (secondaryDisplay.getLayerViewport().width - secondaryDisplay.width),
+                height: this.height + (secondaryDisplay.getLayerViewport().height - secondaryDisplay.height),
+            },
+            opacity: "128",
+            scrollbarIndex: 1,
+        },
+    ];
 
     this.scrollbars = [];
     let scrollbar1 = new Scrollbar(
@@ -13,7 +45,7 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
         this.y + this.padding + this.height,
         this.width,
         this.scrollbarHeight,
-        this.images.length,
+        this.getLayerImages(0).length,
         display.getMainScrollbar().annotations,
     );
     display.getMainScrollbar().addLink(scrollbar1);
@@ -24,7 +56,7 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
         this.y + this.padding + this.height + this.scrollbarHeight,
         this.width,
         this.scrollbarHeight,
-        this.secondaryImages.length,
+        this.getLayerImages(1).length,
         secondaryDisplay.getMainScrollbar().annotations,
     );
     secondaryDisplay.getMainScrollbar().addLink(scrollbar2);
@@ -35,34 +67,101 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
         this.y + this.padding + this.height + this.scrollbarHeight * 2,
         this.width,
         this.scrollbarHeight,
-        Math.max(this.images.length, this.secondaryImages.length),
+        Math.max(scrollbar1.getSize(), scrollbar2.getSize()),
         [],
         [scrollbar1, scrollbar2]
     ));
     this.mainScrollbarIndex = 2;
 
-    this.secondaryFilter = secondaryDisplay.filter;
-
-    this.opacity = "128";
 }
 
 Overlay.prototype = Object.create(Display.prototype);
 Overlay.prototype.constructor = Overlay;
-
-/* Set the overlays secondary images */
-Overlay.prototype.setSecondaryImages = function (images, filter = "") {
-    this.secondaryImages = images;
-    this.scrollbars[1].setSize(this.secondaryImages.length);
-    this.secondaryFilter = filter;
-}
 
 /**
  * Set the opacity level for the top layer images
  * @param {string} opacity opacity value of top layer of images
  */
 Overlay.prototype.setOpacity = function (opacity) {
-    this.opacity = opacity;
+    const topLayer = this.getLayer(this.layers.length - 1);
+    topLayer.opacity = opacity;
 }
+
+/**
+ * Add a layer to the overlay
+ * @param {Display} display display whose properties will be converted to a new layer of the overlay
+ */
+Overlay.prototype.addLayer = function (display) {
+    const layer = {
+        id: display.id,
+        frames: display.getLayerFrames(),
+        timestamps: display.getLayerTimestamps(),
+        images: display.getLayerImages().slice(display.getMainScrollbar().start, display.getMainScrollbar().end),
+        filters: display.getLayerFilters(),
+        filter: display.getLayerFilter(),
+        viewport: {
+            x: this.x + this.padding + (display.getLayerViewport().x - display.x - display.padding),
+            y: this.y + this.padding + (display.getLayerViewport().y - display.y - display.padding),
+            width: this.width + (display.getLayerViewport().width - display.width),
+            height: this.height + (display.getLayerViewport().height - display.height),
+        },
+        opacity: "128",
+        scrollbarIndex: this.mainScrollbarIndex,
+    };
+    const scrollbar = new Scrollbar(
+        `${this.id}-${this.scrollbars.length}`,
+        this.x + this.padding,
+        this.y + this.padding + this.height + this.scrollbarHeight * this.scrollbars.length - 1,
+        this.width,
+        this.scrollbarHeight,
+        layer.images.length,
+        display.getMainScrollbar().annotations,
+    );
+    display.getMainScrollbar().addLink(scrollbar);
+    this.scrollbars.splice(this.mainScrollbarIndex, 0, scrollbar);
+    this.layers.push(layer);
+
+    /* Update the main scrollbar so it knows about the new one */
+    this.mainScrollbarIndex = this.scrollbars.length - 1;
+    const mainScrollbar = this.getMainScrollbar();
+    mainScrollbar.addChild(scrollbar);
+    mainScrollbar.setLocation(mainScrollbar.x, mainScrollbar.y + this.scrollbarHeight);
+
+    /* Need to resize the image display to ensure that everything fits inside the grid cell */
+    this.resize(-this.scrollbarHeight, -this.scrollbarHeight);
+}
+
+/**
+ * Cycle the layers within the the overlay by one.
+ */
+Overlay.prototype.cycleLayers = function () {
+    let savedLayer = this.getLayer(0);
+    for (let i = 1; i < this.layers.length; i++) {
+        let tempLayer = this.getLayer(1);
+        this.layers[i] = savedLayer;
+        savedLayer = tempLayer;
+    }
+    this.layers[0] = savedLayer;
+    // this.cycleScrollbars();
+}
+
+// IF YOU UNCOMMENT CYCLING SCROLLBARS, YOU NEED TO REMOVE SCROLLBAR INDICES IN LAYERS
+// /**
+//  * Cycle the scrollbars within the overlay by one, ignoring the main scrollbar.
+//  */
+// Overlay.prototype.cycleScrollbars = function () {
+//     let savedScrollbar = this.scrollbars[0];
+//     const savedX = savedScrollbar.x;
+//     const savedY = savedScrollbar.y;
+//     for (let i = 1; i < this.mainScrollbarIndex; i++) {
+//         let tempScrollbar = this.scrollbars[i];
+//         this.scrollbars[i] = savedScrollbar;
+//         savedScrollbar.setLocation(tempScrollbar.x, tempScrollbar.y);
+//         savedScrollbar = tempScrollbar;
+//     }
+//     this.scrollbars[0] = savedScrollbar;
+//     savedScrollbar.setLocation(savedX, savedY);
+// }
 
 /**
  * Convert overlay to JSON
@@ -78,21 +177,17 @@ Overlay.prototype.toJSON = function () {
         height: this.height,
         padding: this.padding,
         scrollbarHeight: this.scrollbarHeight,
-        frames: [],
-        timestamps: [],
-        images: [],
-        secondaryImages: [],
-        filters: this.filters,
-        filter: this.filter,
-        secondaryFilter: this.secondaryFilter,
-        viewportX: this.viewportX,
-        viewportY: this.viewportY,
-        viewportWidth: this.viewportWidth,
-        viewportHeight: this.viewportHeight,
+        layers: this.layers.map(layer => {
+            return {
+                ...layer,
+                frames: [],
+                timestamps: [],
+                images: [],
+            }
+        }),
         scrollbars: this.scrollbars.map(scrollbar => scrollbar.toJSON()),
         mainScrollbarIndex: this.mainScrollbarIndex,
         locked: this.locked,
-        opacity: this.opacity,
     }
 }
 
@@ -105,20 +200,9 @@ Overlay.prototype.fromJSON = function (json) {
     this.height = json.height;
     this.padding = json.padding;
     this.scrollbarHeight = json.scrollbarHeight;
-    this.frames = json.frames;
-    this.timestamps = json.timestamps;
-    this.images = json.images;
-    this.secondaryImages = json.secondaryImages;
-    this.filters = json.filters;
-    this.filter = json.filter;
-    this.secondaryFilter = json.secondaryFilter;
-    this.viewportX = json.viewportX;
-    this.viewportY = json.viewportY;
-    this.viewportWidth = json.viewportWidth;
-    this.viewportHeight = json.viewportHeight;
+    this.layers = json.layers;
     this.scrollbars = this.scrollbars.map((scrollbar, index) => scrollbar.fromJSON(json.scrollbars[index]));
     this.mainScrollbarIndex = json.mainScrollbarIndex;
     this.locked = json.locked;
-    this.opacity = json.opacity;
     return this;
 }

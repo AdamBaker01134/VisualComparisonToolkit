@@ -80,7 +80,7 @@ function startAutoCycleInterval() {
     clearInterval(cycleTimer);
     cycling = true;
     cycleTimer = setInterval(() => {
-        console.log("Cycled!");
+        imodel.cycleLayers();
     }, 1000);
 }
 
@@ -137,7 +137,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                if (hit instanceof Display && !(hit instanceof Overlay) && !(imodel.ghost instanceof Overlay)) {
+                if (hit instanceof Display && !(imodel.ghost instanceof Overlay)) {
                     currentState = STATE.PREPARE_OVERLAY;
                 }
             }
@@ -232,7 +232,12 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_OVERLAY:
             if (hit = model.checkImageHit(mx, my)) {
                 if (hit !== imodel.ghost) {
-                    model.addOverlay(imodel.ghost.id, hit.id).then(overlay => imodel.select(overlay));
+                    if (hit instanceof Overlay) {
+                        model.addLayer(hit, imodel.ghost);
+                    } else {
+                        model.addOverlay(hit.id, imodel.ghost.id, hit.getLayerFilter(), imodel.ghost.getLayerFilter())
+                            .then(overlay => imodel.select(overlay));
+                    }
                 }
             }
             clearInterval(moveTimer);
@@ -281,7 +286,7 @@ function keyPressed(event) {
                     } else if (event.shiftKey) {
                         startAutoCycleInterval();
                     } else {
-                        console.log("Cycled!");
+                        imodel.cycleLayers();
                     }
                     return false;
                 }

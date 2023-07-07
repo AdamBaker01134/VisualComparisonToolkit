@@ -11,17 +11,24 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
 
     this.scrollbarHeight = scrollbarHeight;
 
-    this.frames = frames;
-    this.timestamps = timestamps;
-    this.images = images;
-
-    this.filters = filters;
-    this.filter = "";
-
-    this.viewportX = this.x + this.padding;
-    this.viewportY = this.y + this.padding;
-    this.viewportWidth = this.width;
-    this.viewportHeight = this.height;
+    this.layers = [
+        {
+            id: id,
+            frames: frames,
+            timestamps: timestamps,
+            images: images,
+            filters: filters,
+            filter: "",
+            viewport: {
+                x: this.x + this.padding,
+                y: this.y + this.padding,
+                width: this.width,
+                height: this.height,
+            },
+            opacity: "255",
+            scrollbarIndex: 0,
+        }
+    ];
 
     this.scrollbars = [];
     this.scrollbars.push(new Scrollbar(
@@ -30,18 +37,64 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
         this.y + this.padding + this.height,
         this.width,
         this.scrollbarHeight,
-        this.images.length
+        this.getLayerImages(0).length
     ));
     this.mainScrollbarIndex = 0;
 
     this.locked = false;
 }
 
+/** Get layer */
+Display.prototype.getLayer = function (index=0) {
+    return this.layers[index];
+}
+
+/** Get layer id */
+Display.prototype.getLayerId = function (index=0) {
+    return this.getLayer(index).id;
+}
+
+/** Get layer frames */
+Display.prototype.getLayerFrames = function (index=0) {
+    return this.getLayer(index).frames;
+}
+
+/** Get layer timestamps */
+Display.prototype.getLayerTimestamps = function (index=0) {
+    return this.getLayer(index).timestamps;
+}
+
+/** Get layer images */
+Display.prototype.getLayerImages = function (index=0) {
+    return this.getLayer(index).images;
+}
+
+/** Get layer filters  */
+Display.prototype.getLayerFilters = function (index=0) {
+    return this.getLayer(index).filters;
+}
+
+/** Get layer filter */
+Display.prototype.getLayerFilter = function (index=0) {
+    return this.getLayer(index).filter;
+}
+
+/** Get layer viewport */
+Display.prototype.getLayerViewport = function (index=0) {
+    return this.getLayer(index).viewport;
+}
+
+/** Get layer opacity */
+Display.prototype.getLayerOpacity = function (index=0) {
+    return this.getLayer(index).opacity;
+}
+
 /* Set the displays images */
 Display.prototype.setImages = function (images, filter = "") {
-    this.images = images;
-    this.scrollbars[0].setSize(this.images.length);
-    this.filter = filter;
+    const layer = this.getLayer();
+    layer.images = images;
+    layer.filter = filter;
+    this.scrollbars[0].setSize(layer.images.length);
 }
 
 /**
@@ -104,21 +157,6 @@ Display.prototype.checkImageHit = function (mx, my) {
 }
 
 /**
- * Update the dimensions of the display.
- * @param {number} newWidth new width for the display
- * @param {number} newHeight new height for the display
- */
-Display.prototype.setDimensions = function (newWidth, newHeight) {
-    let dw = newWidth - this.width;
-    let dh = newHeight - this.height;
-    this.width = newWidth;
-    this.height = newHeight;
-    this.viewportWidth += dw;
-    this.viewportHeight += dh;
-    this.scrollbars.forEach(scrollbar => scrollbar.setDimensions(newWidth, newHeight));
-}
-
-/**
  * Update the location parameters in the display.
  * @param {number} newX new x coordinate for the display
  * @param {number} newY new y coordinate for the display
@@ -129,8 +167,11 @@ Display.prototype.setLocation = function (newX, newY) {
     let dy = newY - this.y;
     this.x = newX;
     this.y = newY;
-    this.viewportX += dx;
-    this.viewportY += dy;
+    for (let i = 0; i < this.layers.length; i++) {
+        const viewport = this.getLayerViewport(i);
+        viewport.x += dx;
+        viewport.y += dy;
+    }
     this.scrollbars.forEach(scrollbar => scrollbar.setLocation(scrollbar.x + dx, scrollbar.y + dy));
 }
 
@@ -146,23 +187,25 @@ Display.prototype.pan = function (dx, dy) {
     const right = this.x + this.padding + this.width;
     const top = this.y + this.padding;
     const bottom = this.y + this.padding + this.height;
-    const hPadding = this.viewportWidth * 2 / 3;
-    const vPadding = this.viewportHeight * 2 / 3;
 
+    const viewport = this.getLayerViewport();
+    const hPadding = viewport.width * 2 / 3;
+    const vPadding = viewport.height * 2 / 3;
+    
     /* Horizontal viewport calculations */
-    this.viewportX += dx;
-    if (this.viewportX < left - hPadding) {
-        this.viewportX = left - hPadding;
-    } else if (this.viewportX + this.viewportWidth > right + hPadding) {
-        this.viewportX = right + hPadding - this.viewportWidth;
+    viewport.x += dx;
+    if (viewport.x < left - hPadding) {
+        viewport.x = left - hPadding;
+    } else if (viewport.x + viewport.width > right + hPadding) {
+        viewport.x = right + hPadding - viewport.width;
     }
 
     /* Vertical viewport calculations */
-    this.viewportY += dy;
-    if (this.viewportY < top - vPadding) {
-        this.viewportY = top - vPadding;
-    } else if (this.viewportY + this.viewportHeight > bottom + vPadding) {
-        this.viewportY = bottom + vPadding - this.viewportHeight
+    viewport.y += dy;
+    if (viewport.y < top - vPadding) {
+        viewport.y = top - vPadding;
+    } else if (viewport.y + viewport.height > bottom + vPadding) {
+        viewport.y = bottom + vPadding - viewport.height;
     }
 }
 
@@ -179,13 +222,15 @@ Display.prototype.zoom = function (delta) {
     const maxHeight = this.height * 2;
     const zoomRatio = -delta / 1000;
 
-    this.viewportWidth += (this.viewportWidth * zoomRatio);
-    if (this.viewportWidth < minWidth) this.viewportWidth = minWidth;
-    else if (this.viewportWidth > maxWidth) this.viewportWidth = maxWidth;
+    const viewport = this.getLayerViewport();
 
-    this.viewportHeight += (this.viewportHeight * zoomRatio);
-    if (this.viewportHeight < minHeight) this.viewportHeight = minHeight;
-    else if (this.viewportHeight > maxHeight) this.viewportHeight = maxHeight;
+    viewport.width += (viewport.width * zoomRatio);
+    if (viewport.width < minWidth) viewport.width = minWidth;
+    else if (viewport.width > maxWidth) viewport.width = maxWidth;
+
+    viewport.height += (viewport.height * zoomRatio);
+    if (viewport.height < minHeight) viewport.height = minHeight;
+    else if (viewport.height > maxHeight) viewport.height = maxHeight;
 }
 
 /**
@@ -204,9 +249,11 @@ Display.prototype.resize = function (dx, dy) {
     if (this.height + dy < minHeight || this.height + dy > maxHeight) return;
     this.width += dx;
     this.height += dy;
-    this.viewportWidth += dx;
-    this.viewportHeight += dy;
-
+    for (let i = 0; i < this.layers.length; i++) {
+        const viewport = this.getLayerViewport(i);
+        viewport.width += dx;
+        viewport.height += dy;
+    }
     this.scrollbars.forEach((scrollbar, index) => {
         scrollbar.setDimensions(this.width, this.scrollbarHeight);
         scrollbar.setLocation(this.x + this.padding, this.y + this.padding + this.height + this.scrollbarHeight * index);
@@ -291,15 +338,14 @@ Display.prototype.toJSON = function () {
         height: this.height,
         padding: this.padding,
         scrollbarHeight: this.scrollbarHeight,
-        frames: [],
-        timestamps: [],
-        images: [],
-        filters: this.filters,
-        filter: this.filter,
-        viewportX: this.viewportX,
-        viewportY: this.viewportY,
-        viewportWidth: this.viewportWidth,
-        viewportHeight: this.viewportHeight,
+        layers: this.layers.map(layer => {
+            return {
+                ...layer,
+                frames: [],
+                timestamps: [],
+                images: [],
+            }
+        }),
         scrollbars: this.scrollbars.map(scrollbar => scrollbar.toJSON()),
         mainScrollbarIndex: this.mainScrollbarIndex,
         locked: this.locked,
@@ -315,15 +361,7 @@ Display.prototype.fromJSON = function (json) {
     this.height = json.height;
     this.padding = json.padding;
     this.scrollbarHeight = json.scrollbarHeight;
-    this.frames = json.frames;
-    this.timestamps = json.timestamps;
-    this.images = json.images;
-    this.filters = json.filters;
-    this.filter = json.filter;
-    this.viewportX = json.viewportX;
-    this.viewportY = json.viewportY;
-    this.viewportWidth = json.viewportWidth;
-    this.viewportHeight = json.viewportHeight;
+    this.layers = json.layers;
     this.scrollbars = this.scrollbars.map((scrollbar, index) => scrollbar.fromJSON(json.scrollbars[index]));
     this.mainScrollbarIndex = json.mainScrollbarIndex;
     this.locked = json.locked;

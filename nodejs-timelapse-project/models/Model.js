@@ -53,22 +53,6 @@ Model.prototype.updateCanvas = function () {
 }
 
 /**
- * Set a displays images (either primary or secondary depending on the type of display)
- * @param {Display|Overlay} display display to set images
- * @param {Array<p5.Image>} images new set of images
- * @param {boolean} secondary true if we want to set secondary images instead of primary
- * @param {string} filter filter name
- */
-Model.prototype.setDisplayImages = function (display, images, secondary, filter = "") {
-    if (secondary && display instanceof Overlay) {
-        display.setSecondaryImages(images, filter);
-    } else {
-        display.setImages(images, filter);
-    }
-    this.notifySubscribers();
-}
-
-/**
  * @param {GlobalScrollbar} scrollbar global scrollbar
  */
 Model.prototype.setGlobalScrollbar = function (scrollbar) {
@@ -433,7 +417,7 @@ Model.prototype.loadDisplay = async function (name, filter) {
 Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
     if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached");
     return this.loadOverlay(id1, id2, filter1, filter2).then(overlay => {
-        const targetIndex = this.displays.findIndex(display => display !== null && display.id === id2);
+        const targetIndex = this.displays.findIndex(display => display !== null && display.id === id1);
         if (targetIndex >= 0) {
             /* Insert overlay into display2's position */
             this.insertDisplay(overlay, targetIndex);
@@ -477,8 +461,8 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
         }
     })
     if (display1 && display2) {
-        let width = display2.images[0].width;
-        let height = display2.images[0].height;
+        let width = display2.getLayerImages()[0].width;
+        let height = display2.getLayerImages()[0].height;
         let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
         if (widthDifference < 0) {
             width += widthDifference;
@@ -510,6 +494,17 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
 }
 
 /**
+ * Add a layer to an overlay display.
+ * @param {Overlay} overlay overlay to add a layer to
+ * @param {Display} layer display that will become a new layer of the overlay
+ */
+Model.prototype.addLayer = function (overlay, layer) {
+    if (overlay instanceof Overlay && layer instanceof Display && !(layer instanceof Overlay)) {
+        overlay.addLayer(layer);
+    }
+}
+
+/**
  * Load in filtered images and set in an display existing
  * @param {Display|Overlay} display display to filter
  * @param {string} filter name of the filter
@@ -529,7 +524,8 @@ Model.prototype.filterImages = async function (display, filter) {
             });
         });
         if (loadObj !== null) {
-            this.setDisplayImages(display, loadObj.images, isOverlay, filter);
+            display.setImages(loadObj.images, filter);
+            this.notifySubscribers();
         }
     }
 }
@@ -633,6 +629,11 @@ Model.prototype.addSnapshot = function () {
 Model.prototype.loadSnapshot = async function (snapshot) {
     /* Load global scrollbar from JSON */
     this.globalScrollbar.fromJSON(snapshot.globalScrollbar);
+    /* Clear all displays that are not included in the snapshot */
+    this.displays = this.displays.filter(display => {
+        if (display === null) return false;
+        if (snapshot.displays.find(displayJSON => display.id === displayJSON.id)) return true;
+    });
     const snapshotDisplays = snapshot.displays.filter(displayJSON => displayJSON.type === "DISPLAY");
     const snapshotOverlays = snapshot.displays.filter(displayJSON => displayJSON.type === "OVERLAY");
     /* Load in all displays from JSON */
@@ -641,12 +642,15 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.filter);
+            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.layers[0].filter);
         }
         if (display instanceof Display) {
-            json.frames = display.frames;
-            json.timestamps = display.timestamps;
-            json.images = display.images;
+            json.layers[0] = {
+                ...json.layers[0],
+                frames: display.getLayerFrames(),
+                timestamps: display.getLayerTimestamps(),
+                images: display.getLayerImages(),
+            };
             display.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === display.id);
             if (originalPosition !== json.position) {
@@ -665,13 +669,24 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotOverlays[j] };
         if (!overlay) {
             /* Create new overlay from JSON */
-            overlay = await this.loadOverlay(getPrimaryIdFromId(json.id), getSecondaryIdFromId(json.id));
+            overlay = await this.loadOverlay(json.layers[0].id, json.layers[1].id, json.layers[0].filter, json.layers[1].filter);
         }
         if (overlay instanceof Overlay) {
-            json.frames = overlay.frames;
-            json.timestamps = overlay.timestamps;
-            json.images = overlay.images;
-            json.secondaryImages = overlay.secondaryImages;
+            /* Restore all overlay layers */
+            for (let i = 0; i < json.layers.length; i++) {
+                let layer = json.layers[i];
+                if (overlay.layers.length <= i) {
+                    let display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
+                    overlay.addLayer(display);
+                }
+                layer.frames = overlay.getLayerFrames(i);
+                layer.timestamps = overlay.getLayerTimestamps(i);
+                layer.images = overlay.getLayerImages(i);
+            }
+            if (overlay.scrollbars.length > json.scrollbars.length) {
+                /* Ensure overlay scrollbar length equals the json overlay scrollbar length */
+                overlay.scrollbars = overlay.scrollbars.slice(0, json.scrollbars.length);
+            }
             overlay.fromJSON(json);
             const originalPosition = this.displays.findIndex(d => d !== null && d.id === overlay.id);
             if (originalPosition !== json.position) {
@@ -711,7 +726,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                     scrollbar.addChild(foundChild);
                 }
             });
-            snapshotScrollbar.children.forEach(id => {
+            snapshotScrollbar.links.forEach(id => {
                 let foundLink = allScrollbars.find(s => s.id === id);
                 if (foundLink) {
                     scrollbar.removeLink(foundLink);

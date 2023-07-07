@@ -18,60 +18,40 @@ View.prototype.draw = function () {
     this.model.displays.forEach(display => {
         if (display === null) return;
         renderDisplaySkeleton(display, this.imodel.selection === display);
-
-        if (display instanceof Overlay) {
-            let secondaryIndex = Math.floor(display.getIndex(1)); /* Floor index in case index has been affected by ratio */
-            image(
-                display.secondaryImages[secondaryIndex].get(),
-                display.x + display.padding,
-                display.y + display.padding,
-                display.width,
-                display.height
-            );
-            tint(255, parseInt(display.opacity));
-        }
-
-        let index = Math.floor(display.getIndex(0)); /* Floor index in case index has been affected by ratio */
+        
         const left = display.x + display.padding;
         const right = display.x + display.padding + display.width;
         const top = display.y + display.padding;
         const bottom = display.y + display.padding + display.height;
-        let translatedX = display.viewportX < left ? left - display.viewportX : 0;
-        let translatedY = display.viewportY < top ? top - display.viewportY : 0;
-        let imageX = display.viewportX < left ? left : display.viewportX;
-        let imageY = display.viewportY < top ? top : display.viewportY;
-        let imageWidth = display.viewportWidth + imageX > right ? right - imageX : display.viewportWidth;
-        let imageHeight = display.viewportHeight + imageY > bottom ? bottom - imageY : display.viewportHeight;
 
-        let widthRatio = display.images[index].width / display.viewportWidth;
-        let heightRatio = display.images[index].height / display.viewportHeight;
-
-        let img = display.images[index].get(
-            translatedX * widthRatio,
-            translatedY * heightRatio,
-            imageWidth * widthRatio,
-            imageHeight * heightRatio
-        );
-        image(img, imageX, imageY, imageWidth, imageHeight);
+        let index = 0;
+        for (let i = 0; i < display.layers.length; i++) {
+            const layer = display.layers[i];
+            tint(255, parseInt(layer.opacity));
+            index = Math.floor(display.getIndex(layer.scrollbarIndex)); /* Floor index in case index has been affected by ratio */
+            renderImage(layer.images[index], left, right, top, bottom, layer.viewport);
+        }
 
         /* Timestamp */
         noTint();
-        stroke("rgb(0, 0, 0)");
-        fill("rgb(255, 255, 255)");
-        const txtSize = 24 * display.width / this.model.cellWidth;
-        textSize(txtSize);
-        if (index > display.timestamps.length - 1) {
-            text(
-                display.frames[index],
-                display.x + display.padding + 5,
-                display.y + display.padding + txtSize
-            );
-        } else {
-            text(
-                display.timestamps[index],
-                display.x + display.padding + 5,
-                display.y + display.padding + 16
-            );
+        if (display.layers.length === 1) {
+            stroke("rgb(0, 0, 0)");
+            fill("rgb(255, 255, 255)");
+            const txtSize = 24 * display.width / this.model.cellWidth;
+            textSize(txtSize);
+            if (index > display.getLayerTimestamps().length - 1) {
+                text(
+                    display.getLayerFrames()[index],
+                    display.x + display.padding + 5,
+                    display.y + display.padding + txtSize
+                );
+            } else {
+                text(
+                    display.getLayerTimestamps()[index],
+                    display.x + display.padding + 5,
+                    display.y + display.padding + 16
+                );
+            }
         }
 
         /* Scrollbars */
@@ -246,6 +226,35 @@ View.prototype.draw = function () {
 
 View.prototype.modelChanged = function () {
     this.draw();
+}
+
+/**
+ * Render an image with viewport translations.
+ * @param {p5.Image} img Image to render
+ * @param {number} left x coordinate of the leftmost position in the display
+ * @param {number} right x coordinate of the rightmost position in the display
+ * @param {number} top y coordinate of the topmost position in the display
+ * @param {number} bottom y coordinate of the bottommost position in the display
+ * @param {Object} viewport viewport coordinates and dimensions
+ */
+function renderImage(img, left, right, top, bottom, viewport) {
+    const translatedX = viewport.x < left ? left - viewport.x : 0;
+    const translatedY = viewport.y < top ? top - viewport.y : 0;
+    const x = viewport.x < left ? left : viewport.x;
+    const y = viewport.y < top ? top : viewport.y;
+    const width = viewport.width + x > right ? right - x : viewport.width;
+    const height = viewport.height + y > bottom ? bottom - y : viewport.height;
+
+    const widthRatio = img.width / viewport.width;
+    const heightRatio = img.height / viewport.height;
+
+    const translatedImg = img.get(
+        translatedX * widthRatio,
+        translatedY * heightRatio,
+        width * widthRatio,
+        height * heightRatio,
+    );
+    image(translatedImg, x, y, width, height);
 }
 
 /**

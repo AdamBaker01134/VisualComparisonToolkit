@@ -44,7 +44,7 @@ Headerview.prototype.draw = function () {
     if (!!this.imodel.selection && this.annotationSnapshot !== this.imodel.selection.getMainScrollbar().annotations) {
         this.updateAnnotationSelect();
     }
-    if (!!this.imodel.selection && this.filterSnapshot !== this.imodel.selection.filters) {
+    if (!!this.imodel.selection && this.filterSnapshot !== this.imodel.selection.getLayerFilters()) {
         this.updateFilterSelect();
     }
 }
@@ -91,9 +91,11 @@ Headerview.prototype.updateLocked = function () {
  * Update the value of the opacity slider if it has changed.
  */
 Headerview.prototype.updateOpacitySlider = function () {
-    let opacity = this.imodel.selection?.opacity;
-    let opacityInput = document.getElementById("opacityInput");
-    if (opacityInput?.value !== opacity) opacityInput.value = opacity;
+    if (this.imodel.selection !== null && this.imodel.selection instanceof Overlay) {
+        const opacity = this.imodel.selection.getLayerOpacity(this.imodel.selection.layers.length - 1);
+        const opacityInput = document.getElementById("opacityInput");
+        if (opacityInput?.value !== opacity) opacityInput.value = opacity;
+    }
 }
 
 /**
@@ -183,18 +185,14 @@ Headerview.prototype.updateFilterSelect = function () {
         let filterSelect = document.getElementById("filterSelect");
         filterSelect.innerHTML = "";
 
-        let selectedFilter = "";
-        if (selection instanceof Overlay) {
-            if (selection.secondaryFilter !== "") selectedFilter = selection.secondaryFilter;
-        } else if (selection.filter !== "") {
-            selectedFilter = selection.filter;
-        }
+        const filters = selection.getLayerFilters();
+        const selectedFilter = selection.getLayerFilter();
 
         if (selectedFilter !== "") {
             let currentOption = document.createElement("option");
             currentOption.text = selectedFilter;
             filterSelect.add(currentOption);
-            selection.filters.filter(name => name !== selectedFilter)
+            filters.filter(name => name !== selectedFilter)
                 .forEach(filterName => {
                     let option = document.createElement("option");
                     option.text = filterName;
@@ -209,14 +207,14 @@ Headerview.prototype.updateFilterSelect = function () {
             let defaultOption = document.createElement("option");
             defaultOption.text = "---";
             filterSelect.add(defaultOption);
-            selection.filters.forEach(filterName => {
+            filters.forEach(filterName => {
                 let option = document.createElement("option");
                 option.text = filterName;
                 option.disabled = selection.locked;
                 filterSelect.add(option);
             });
         }
-        this.filterSnapshot = [...selection.filters];
+        this.filterSnapshot = [...filters];
     }
 }
 
