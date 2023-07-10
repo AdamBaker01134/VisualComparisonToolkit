@@ -478,15 +478,15 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
     if (display1 && display2) {
         let width = display2.getLayerImages()[0].width;
         let height = display2.getLayerImages()[0].height;
-        let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
-        if (widthDifference < 0) {
-            width += widthDifference;
-            height += widthDifference;
+        const widthRatio = (this.cellWidth - this.displayPadding * 2) / width;
+        if (widthRatio < 1) {
+            width *= widthRatio;
+            height *= widthRatio;
         }
-        let heightDifference = this.cellHeight - (height + this.displayPadding * 2 + this.displayScrollbarHeight * 3);
-        if (heightDifference < 0) {
-            width += heightDifference;
-            height += heightDifference;
+        const heightRatio = (this.cellHeight - (this.displayPadding * 2 + this.displayScrollbarHeight * 3)) / height;
+        if (heightRatio < 1) {
+            width *= heightRatio;
+            height *= heightRatio;
         }
         let position = this.displays.findIndex(display => display === null);
         if (position < 0) {

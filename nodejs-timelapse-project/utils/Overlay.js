@@ -139,7 +139,7 @@ Overlay.prototype.addLayer = function (display) {
 Overlay.prototype.cycleLayers = function () {
     let savedLayer = this.getLayer(0);
     for (let i = 1; i < this.layers.length; i++) {
-        let tempLayer = this.getLayer(1);
+        let tempLayer = this.getLayer(i);
         this.layers[i] = savedLayer;
         savedLayer = tempLayer;
     }
