@@ -73,6 +73,8 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
     ));
     this.mainScrollbarIndex = 2;
 
+    this.comparisonSliderActive = false;
+    this.comparisonSliderValue = 0.5; /* Ratio of the overlay width to represent the width */
 }
 
 Overlay.prototype = Object.create(Display.prototype);
@@ -162,6 +164,42 @@ Overlay.prototype.cycleLayers = function () {
 //     this.scrollbars[0] = savedScrollbar;
 //     savedScrollbar.setLocation(savedX, savedY);
 // }
+
+/**
+ * Toggle the comparison slider on/off.
+ * Will not toggle unless only 2 layers are within the overlay.
+ */
+Overlay.prototype.toggleComparisonSliderActive = function () {
+    if (this.locked || this.layers.length !== 2) return;
+    this.comparisonSliderActive = !this.comparisonSliderActive;
+}
+
+/**
+ * Set a new value for the comparison slider value. Must be between 0.1 and 0.9 to avoid image errors.
+ * @param {number} value new value for the comparison slider value
+ */
+Overlay.prototype.setComparisonSlider = function (value) {
+    if (this.locked || !this.comparisonSliderActive) return;
+    this.comparisonSliderValue = value;
+    if (this.comparisonSliderValue < 0.1) this.comparisonSliderValue = 0.1;
+    if (this.comparisonSliderValue > 0.9) this.comparisonSliderValue = 0.9;
+}
+
+/**
+ * Check if the comparison slider was hit in a mouse event.
+ * If the comparison slider is not active, this will always return false.
+ * @param {number} mx x coordinate of the mouse
+ * @param {number} my y coordinate of the mouse
+ * @returns {boolean}
+ */
+Overlay.prototype.checkComparisonSliderHit = function (mx=mouseX, my=mouseY) {
+    if (this.locked || !this.comparisonSliderActive) return false;
+    const sliderRadius = this.width / 10;
+    return mx > this.x + this.padding + this.width * this.comparisonSliderValue - sliderRadius &&
+        mx < this.x + this.padding + this.width * this.comparisonSliderValue + sliderRadius &&
+        my > this.y + this.padding + this.height / 2 - sliderRadius &&
+        my < this.y + this.padding + this.height / 2 + sliderRadius;
+}
 
 /**
  * Convert overlay to JSON

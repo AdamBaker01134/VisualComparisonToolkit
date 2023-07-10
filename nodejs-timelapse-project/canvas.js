@@ -57,6 +57,7 @@ const STATE = {
     PREPARE_OVERLAY: "prepareOverlay",
     PANNING: "panning",
     RESIZING: "resizing",
+    COMPARE_SLIDING: "compareSliding",
 }
 let currentState = STATE.READY;
 let moveTimer, cycleTimer;
@@ -92,8 +93,13 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
             if (my < scrollY) {
                 currentState = STATE.OUT_OF_BOUNDS;
             } else {
-                hit = model.checkCornerHit(mx, my)
-                imodel.setCursor(hit ? "nwse-resize" : "default");
+                if (hit = model.checkCornerHit(mx, my)) {
+                    imodel.setCursor("nwse-resize");
+                } else if (hit = model.checkComparisonSliderHit(mx, my)) {
+                    imodel.setCursor("ew-resize");
+                } else {
+                    imodel.setCursor("default");
+                }
                 hit = model.checkBenchmarkHit(mx, my);
                 imodel.highlightSnapshot(hit);
                 /* Only want to highlight annotation if no benchmarks are highlighted */
@@ -137,7 +143,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                if (hit instanceof Display && !(imodel.ghost instanceof Overlay)) {
+                if (hit instanceof Display && !(imodel.ghost instanceof Overlay) && !hit.comparisonSliderActive) {
                     currentState = STATE.PREPARE_OVERLAY;
                 }
             }
@@ -163,6 +169,11 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             previousX = mouseX;
             previousY = mouseY;
             break;
+        case STATE.COMPARE_SLIDING:
+            if (imodel.selection !== null) {
+                imodel.setComparisonSlider(mouseX);
+            }
+            break;
     }
     /* Highlighted objects are unhighlighted on drag */
     imodel.highlightSnapshot(null);
@@ -185,6 +196,9 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 } else {
                     currentState = STATE.FOCUSED;
                 }
+            } else if (hit = model.checkComparisonSliderHit(mx, my)) {
+                currentState = STATE.COMPARE_SLIDING;
+                if (imodel.selection !== hit) imodel.select(hit);
             } else if (hit = model.checkImageHit(mx, my)) {
                 if (event.which === 1) {
                     currentState = STATE.PREPARE_SELECT;
@@ -251,8 +265,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
-        case STATE.PANNING:
-        case STATE.RESIZING:
+        default:
             currentState = STATE.READY;
             break;
     }
@@ -289,6 +302,8 @@ function keyPressed(event) {
                         imodel.cycleLayers();
                     }
                     return false;
+                } else if (keyCode === 220) {
+                    imodel.toggleComparisonSlider();
                 }
             }
     }

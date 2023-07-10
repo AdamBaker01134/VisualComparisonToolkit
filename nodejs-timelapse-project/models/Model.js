@@ -187,12 +187,27 @@ Model.prototype.checkDisplayHit = function (mx, my) {
  * Model check if a displays bottom right corner was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor
- * @returns {Object|null}
+ * @returns {Display|null}
  */
 Model.prototype.checkCornerHit = function (mx, my) {
     for (let i = 0; i < this.displays.length; i++) {
         if (this.displays[i] !== null) {
-            if (this.displays[i].checkCornerHit(mx, my)) return this.displays[i]
+            if (this.displays[i].checkCornerHit(mx, my)) return this.displays[i];
+        }
+    }
+    return null;
+}
+
+/**
+ * Model check if a displays comparison slider was hit in a mouse event
+ * @param {number} mx x coordinate of the cursor
+ * @param {number} my y coordinate of the cursor
+ * @returns {Display|null}
+ */
+Model.prototype.checkComparisonSliderHit = function (mx, my) {
+    for (let i = 0; i < this.displays.length; i++) {
+        if (this.displays[i] instanceof Overlay) {
+            if (this.displays[i].checkComparisonSliderHit(mx, my)) return this.displays[i];
         }
     }
     return null;

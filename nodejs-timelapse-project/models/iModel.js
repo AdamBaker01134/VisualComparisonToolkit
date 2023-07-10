@@ -129,6 +129,36 @@ iModel.prototype.cycleLayers = function () {
 }
 
 /**
+ * Set the selections comparison slider value.
+ * @param {number} mx x coordinate of the mouse
+ */
+iModel.prototype.setComparisonSlider = function (mx=mouseX) {
+    if (this.selection instanceof Overlay) {
+        let value = (map(
+            mx,
+            this.selection.x + this.selection.padding,
+            this.selection.x + this.selection.padding + this.selection.width,
+            0,
+            1,
+        ));
+        if (value < 0.1) value = 0.1;
+        if (value > 0.9) value = 0.9;
+        this.selection.setComparisonSlider(value);
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Toggle the comparison slider in a selected
+ */
+iModel.prototype.toggleComparisonSlider = function () {
+    if (this.selection instanceof Overlay) {
+        this.selection.toggleComparisonSliderActive();
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Set the opacity of the currently selected display (if it is an overlay that is)
  * @param {string} opacity opacity value (range from 0 to 255)
  */
