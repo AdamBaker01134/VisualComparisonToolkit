@@ -386,15 +386,15 @@ Model.prototype.loadDisplay = async function (name, filter) {
         if (loadObj !== null) {
             let width = loadObj.images[0].width;
             let height = loadObj.images[0].height;
-            let widthDifference = this.cellWidth - (width + this.displayPadding * 2);
-            if (widthDifference < 0) {
-                width += widthDifference;
-                height += widthDifference;
+            const widthRatio = (this.cellWidth - this.displayPadding * 2) / width;
+            if (widthRatio < 1) {
+                width *= widthRatio;
+                height *= widthRatio;
             }
-            let heightDifference = this.cellHeight - (height + this.displayPadding * 2 + this.displayScrollbarHeight * 1);
-            if (heightDifference < 0) {
-                width += heightDifference;
-                height += heightDifference;
+            const heightRatio = (this.cellHeight - (this.displayPadding * 2 + this.displayScrollbarHeight * 1)) / height;
+            if (heightRatio < 1) {
+                width *= heightRatio;
+                height *= heightRatio;
             }
             let position = this.displays.findIndex(display => display === null);
             if (position < 0) {
