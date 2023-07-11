@@ -520,6 +520,17 @@ Model.prototype.addLayer = function (overlay, layer) {
 }
 
 /**
+ * Cycle the layers of the selection.
+ * @param {Overlay} overlay overlay display to cycle layers
+ */
+Model.prototype.cycleLayers = function (overlay) {
+    if (overlay instanceof Overlay) {
+        overlay.cycleLayers();
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Load in filtered images and set in an display existing
  * @param {Display|Overlay} display display to filter
  * @param {string} filter name of the filter

@@ -119,16 +119,6 @@ iModel.prototype.select = function (display) {
 }
 
 /**
- * Cycle the layers of the selection.
- */
-iModel.prototype.cycleLayers = function () {
-    if (this.selection !== null) {
-        this.selection.cycleLayers();
-        this.notifySubscribers();
-    }
-}
-
-/**
  * Set the selections comparison slider value.
  * @param {number} mx x coordinate of the mouse
  */

@@ -60,8 +60,9 @@ const STATE = {
     COMPARE_SLIDING: "compareSliding",
 }
 let currentState = STATE.READY;
-let moveTimer, cycleTimer;
-let cycling = false;
+let moveTimer, cycleTimer, playTimer;
+let cycling = null;
+let playing = null;
 let previousX;
 let previousY;
 
@@ -77,12 +78,27 @@ function startTimedMoveInterval() {
 }
 
 /* Start an interval timer that continually checks if displays  */
-function startAutoCycleInterval() {
+function startAutoCycleInterval(overlay) {
     clearInterval(cycleTimer);
-    cycling = true;
     cycleTimer = setInterval(() => {
-        imodel.cycleLayers();
+        switch (currentState) {
+            case STATE.READY:
+                model.cycleLayers(overlay);
+                break;
+        }
     }, 1000);
+}
+
+/* Start an interval timer that "plays" the selected video at a given frame rate. */
+function startPlayInterval(scrollbar, frameRate = 10) {
+    clearInterval(playTimer);
+    playTimer = setInterval(() => {
+        switch (currentState) {
+            case STATE.READY:
+                model.setIndex(scrollbar, scrollbar.index + 1);
+                break;
+        }
+    }, Math.floor(1000 / frameRate));
 }
 
 function mouseMoved(event, mx = mouseX, my = mouseY) {
@@ -291,20 +307,45 @@ function windowResized(event) {
 function keyPressed(event) {
     switch (currentState) {
         case STATE.READY:
-            if (imodel.selection !== null && imodel.selection instanceof Overlay) {
-                if (keyCode === TAB) {
-                    if (cycling) {
-                        clearInterval(cycleTimer);
-                        cycling = false;
-                    } else if (event.shiftKey) {
-                        startAutoCycleInterval();
+            if (keyCode === TAB) {
+                /* Handle tab key pressed events */
+                if (imodel.selection instanceof Overlay) {
+                    const overlay = imodel.selection;
+                    if (cycling !== overlay) {
+                        if (event.shiftKey) {
+                            startAutoCycleInterval(overlay);
+                            cycling = overlay;
+                        } else {
+                            model.cycleLayers(overlay);
+                        }
                     } else {
-                        imodel.cycleLayers();
+                        clearInterval(cycleTimer);
+                        cycling = null;
                     }
                     return false;
-                } else if (keyCode === 220) {
-                    imodel.toggleComparisonSlider();
                 }
+            } else if (keyCode === 220) {
+                /* Handle backslash key pressed events */
+                if (imodel.selection instanceof Overlay) {
+                    imodel.toggleComparisonSlider();
+                    return false;
+                }
+            } else if (keyCode === 32) {
+                /* Handle spacebar key pressed events */
+                let scrollbar = null;
+                if (event.ctrlKey || imodel.selection === null) {
+                    scrollbar = model.globalScrollbar;
+                } else if (imodel.selection !== null) {
+                    scrollbar = imodel.selection.getMainScrollbar();
+                }
+                if (playing !== scrollbar) {
+                    startPlayInterval(scrollbar);
+                    playing = scrollbar;
+                } else {
+                    clearInterval(playTimer);
+                    playing = null;
+                }
+                return false;
             }
     }
 }
