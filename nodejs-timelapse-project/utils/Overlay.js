@@ -85,6 +85,7 @@ Overlay.prototype.constructor = Overlay;
  * @param {string} opacity opacity value of top layer of images
  */
 Overlay.prototype.setOpacity = function (opacity) {
+    if (this.locked) return;
     const topLayer = this.getLayer(this.layers.length - 1);
     topLayer.opacity = opacity;
 }
@@ -137,6 +138,7 @@ Overlay.prototype.addLayer = function (display) {
  * Cycle the layers within the the overlay by one.
  */
 Overlay.prototype.cycleLayers = function () {
+    if (this.locked) return;
     let savedLayer = this.getLayer(0);
     for (let i = 1; i < this.layers.length; i++) {
         let tempLayer = this.getLayer(i);
