@@ -1,3 +1,8 @@
+"""
+Image processing script to configure a directory of images into a file structure usable
+in the video comparison system.
+"""
+
 import os
 import math
 import time
@@ -10,7 +15,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--input",
     type=str,
-    required=True,
+    required=False,
+    default="../../../greenskeye/20230522",
     help="Path to folder of images"
 )
 
@@ -32,6 +38,12 @@ parser.add_argument(
     type=int,
     default=100,
     help="Brightness threshold for images to be included/excluded"
+)
+
+parser.add_argument(
+    "--delete",
+    action="store_true",
+    help="Delete the 'input' dataset and its entry in the datasets.json file"
 )
 
 
@@ -67,11 +79,11 @@ def find_optimal_image_width(src_dir, max_img_size):
             resized_image.save(img_path)
             im.close()
             resized_image.close()
-    if (os.path.isdir("./temp") and os.path.isfile(img_path)):
+    if os.path.isdir("./temp") and os.path.isfile(img_path):
         os.remove(img_path)
         os.rmdir("./temp")
 
-    if (optimal_image_width > smallest_image_width):
+    if optimal_image_width > smallest_image_width:
         optimal_image_width = smallest_image_width
 
     print("Optimal image width is " +
@@ -117,7 +129,8 @@ def find_optimizing_properties(src_dir):
 
 def brightness(im):
     """
-    Calculate the perceived brightness of an image using the method described here: http://alienryderflex.com/hsp.html
+    Calculate the perceived brightness of an image using the method described here:
+    http://alienryderflex.com/hsp.html
     """
     stat = ImageStat.Stat(im)
     r = stat.mean[0]
@@ -129,7 +142,8 @@ def brightness(im):
 def get_timestamps(src_dir):
     """
     Generate the timestamps from a given json file.
-    If the json file does not exist in the src directory or its parent directory, just return empty list
+    If the json file does not exist in the src directory or its parent directory,
+    just return empty list.
     """
     dir = src_dir
     result = []
@@ -140,30 +154,30 @@ def get_timestamps(src_dir):
     else:
         return result
 
-    file_in = open(dir, "r")
-    dates = file_in.readlines()
-    for timestamp in dates:
-        date = timestamp.rstrip()
-        date = time.strptime(date, "%Y-%m-%dT%H:%M:%S")
-        date = time.mktime(date)  # convert time to epoch
-        date -= 21600  # subtract 6 hours
-        date = time.localtime(date)
-        result.append(time.asctime(date))
-    file_in.close()
-    return result
+    with open(dir, "r", encoding="utf-8") as file_in:
+        dates = file_in.readlines()
+        for timestamp in dates:
+            date = timestamp.rstrip()
+            date = time.strptime(date, "%Y-%m-%dT%H:%M:%S")
+            date = time.mktime(date)  # convert time to epoch
+            date -= 21600  # subtract 6 hours
+            date = time.localtime(date)
+            result.append(time.asctime(date))
+        file_in.close()
+        return result
 
 
 def write_list_to_txt(path, listy):
     """
     Write a list of things to a text file at a given path.
     """
-    file_out = open(path, "w")
-    for something in listy:
-        file_out.write(str(something) + "\n")
-    file_out.close()
+    with open(path, "w", encoding="utf-8") as file_out:
+        for something in listy:
+            file_out.write(str(something) + "\n")
+        file_out.close()
 
 
-def write_to_datasets_json(output_dir, name):
+def write_dataset_to_json(path_to_json, name):
     """
     Write a processed dataset to datasets.json file.
     TODO: Add in sub-foldering.
@@ -175,22 +189,46 @@ def write_to_datasets_json(output_dir, name):
         "filters": ["edges", "emboss", "grayscale", "black_and_white"],
     }
 
-    if not os.path.isfile(output_dir + "/datasets.json"):
-        with open(output_dir + "/datasets.json", "w") as f:
+    if not os.path.isfile(path_to_json):
+        with open(path_to_json, "w", encoding="utf-8") as f:
             json.dump([data], f, indent=4)
             f.close()
     else:
-        with open(output_dir + "/datasets.json", "r+") as f:
+        with open(path_to_json, "r+", encoding="utf-8") as f:
             file_data = json.load(f)
             file_data = [data for data in file_data if data["name"] != name]
             file_data.append(data)
             f.seek(0)
             json.dump(file_data, f, indent=4)
+            f.close()
+
+
+def remove_dataset_from_json(path_to_json, name):
+    """
+    Remove a processed dataset from datasets.json file.
+    Throw an exception if the dataset does not exist in the JSON file or if the JSON file does
+    not exist.
+    """
+    if not os.path.isfile(path_to_json):
+        raise FileNotFoundError("datasets.json file not found")
+
+    with open(path_to_json, "r", encoding="utf-8") as f:
+        file_data = json.load(f)
+        filtered_data = [data for data in file_data if data["name"] != name]
+        f.close()
+        if len(file_data) == len(filtered_data):
+            raise RuntimeError("Dataset with name " + name + " does not exist in datasets.json")
+
+    with open(path_to_json, "w", encoding="utf-8") as f:
+        f.seek(0)
+        json.dump(filtered_data, f, indent=4)
+        f.close()
 
 
 def process_images(src_dir, output_dir, options):
     """
-    Process the images within the source directory and output them into an output directory recursively.
+    Process the images within the source directory and output them into an output directory
+    recursively.
     Processing steps:
     - resize
     - compress
@@ -237,7 +275,7 @@ def process_images(src_dir, output_dir, options):
                         timestamps.append(raw_timestamps[processed])
                     if options["resize"] is True:
                         # Resizing image
-                        width_ratio = (options["width"]/float(im.size[0]))
+                        width_ratio = options["width"]/float(im.size[0])
                         height = int((float(im.size[1]) * float(width_ratio)))
                         im_resized = im.resize(
                             (options["width"], height), Image.Resampling.LANCZOS)
@@ -281,12 +319,40 @@ def process_images(src_dir, output_dir, options):
     print("Processing Done for " + src_dir)
 
 
+def delete_directory(dir):
+    """
+    Recursively delete a directory and its contents.
+    """
+    if not os.path.isdir(dir):
+        raise FileNotFoundError("Path to directory was incorrect.")
+    files = os.listdir(dir)
+    for filename in files:
+        file_path = dir + "/" + filename
+        if os.path.isdir(file_path):
+            delete_directory(file_path)
+        else:
+            os.remove(file_path)
+    os.rmdir(dir)
+
 if __name__ == "__main__":
     args = parser.parse_args()
-    dataset_name = args.name
     src_dir = args.input
+    dataset_name = args.name
     output_dir = "./" + dataset_name
-    if (not os.path.isdir(output_dir)):
+    if args.delete:
+        try:
+            delete_directory(output_dir)
+            remove_dataset_from_json("./datasets.json", dataset_name)
+        except FileNotFoundError as e:
+            print("File Not Found Error: " + str(e))
+            exit(1)
+        except RuntimeError as e:
+            print("Runtime Error: " + str(e))
+            exit(1)
+        print("Successfully removed " + dataset_name + " dataset!")
+        exit(0)
+
+    if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
     sub_dirs = os.listdir(src_dir)
     options = {
@@ -298,5 +364,5 @@ if __name__ == "__main__":
         options["width"] = find_optimal_image_width(src_dir, 60000)
 
     process_images(src_dir, output_dir, options)
-    write_to_datasets_json("./", dataset_name)
+    write_dataset_to_json("./datasets.json", dataset_name)
     print("Image Processing complete.")
