@@ -104,7 +104,7 @@ Loader.prototype.initDatasetLoad = function (dataset, dir, callback = () => { },
 Loader.prototype._loadFrames = function (loadObj) {
     // Load image frames
     loadStrings(
-        this.imgPath + loadObj.name + "/summer-day-frames.txt",
+        this.imgPath + loadObj.name + "/frames.txt",
         loadedFrames => {
             loadObj.frames = loadedFrames.filter(frame => frame !== "");
             this._loadTimestamps(loadObj);
@@ -120,9 +120,9 @@ Loader.prototype._loadFrames = function (loadObj) {
 Loader.prototype._loadTimestamps = function (loadObj) {
     // Load image timestamps (if they exist)
     loadStrings(
-        this.imgPath + loadObj.name + "/summer-day-timestamps.txt",
+        this.imgPath + loadObj.name + "/timestamps.txt",
         loadedTimestamps => {
-            loadObj.timestamps = loadedTimestamps;
+            loadObj.timestamps = loadedTimestamps.filter(timestamp => timestamp !== "");
             this._loadImages(loadObj);
         },
         err => {

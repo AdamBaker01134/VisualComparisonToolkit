@@ -54,21 +54,17 @@ View.prototype.draw = function () {
         if (display.layers.length === 1) {
             stroke("rgb(0, 0, 0)");
             fill("rgb(255, 255, 255)");
-            const txtSize = 24 * display.width / this.model.cellWidth;
-            textSize(txtSize);
-            if (index > display.getLayerTimestamps().length - 1) {
-                text(
-                    display.getLayerFrames()[index],
-                    display.x + display.padding + 5,
-                    display.y + display.padding + txtSize
-                );
-            } else {
-                text(
-                    display.getLayerTimestamps()[index],
-                    display.x + display.padding + 5,
-                    display.y + display.padding + 16
-                );
+            const minWidth = 24;
+            textSize(minWidth);
+            const timestamps = display.getLayerTimestamps();
+            const txt = index > timestamps.length - 1 ? display.getLayerFrames()[index] : timestamps[index];
+            const txtWidth = textWidth(txt);
+            let txtSize = minWidth * (display.width - display.padding * 2) / txtWidth;
+            if (txtSize > minWidth) {
+                txtSize = minWidth;
             }
+            textSize(txtSize);
+            text(txt, display.x + display.padding + 5, display.y + display.padding + txtSize);
         }
 
         /* Scrollbars */
