@@ -1,7 +1,7 @@
 /* Application Model */
 "use strict";
 function Model() {
-    this.imagePath = "./img/";
+    this.imagePath = "./img";
     this.maxImages = 1000;
     this.headerHeight = 100;
     this.canvasWidth = windowWidth * 0.98;
@@ -50,6 +50,17 @@ Model.prototype.updateCanvas = function () {
     });
     resizeCanvas(this.canvasWidth, this.canvasHeight);
     this.notifySubscribers();
+}
+
+/**
+ * Search for and retrieve a dataset with a specific name
+ * @param {string} name name of the dataset
+ * @returns {Object|undefined}
+ */
+Model.prototype.getDatasetFromName = function (name) {
+    const dataset = this.datasets.find(dataset => basename(dataset.dir) === name);
+    if (dataset) return dataset;
+    return null;
 }
 
 /**
@@ -344,13 +355,13 @@ Model.prototype.findSnapshotIndex = function (id, snapshot) {
 
 /**
  * Load in and add a new display to the model.
- * @param {string} name name of the display to load and add
+ * @param {Object} dataset dataset object to add as a display
  * @param {string} filter filter to initialize display with
  * @returns {Promise}
  */
-Model.prototype.addDisplay = async function (name, filter) {
+Model.prototype.addDisplay = async function (dataset, filter) {
     if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
-    return this.loadDisplay(name, filter).then(display => {
+    return this.loadDisplay(dataset, filter).then(display => {
         const openCell = this.displays.findIndex(display => display === null);
         if (openCell >= 0) {
             this.displays[openCell] = display;
@@ -367,18 +378,15 @@ Model.prototype.addDisplay = async function (name, filter) {
 
 /**
  * Load in a new display to the model.
- * @param {string} name name of the display to load
- * @param {string} filter filter to initialize display with
+ * @param {Object} dataset dataset object to load into a display
  * @returns {Display|null}
  */
-Model.prototype.loadDisplay = async function (name, filter) {
-    const dataset = this.datasets.find(d => d.name === name);
+Model.prototype.loadDisplay = async function (dataset, filter) {
     if (dataset) {
-        const dir = filter !== "" ? filter : dataset.dir;
         const loadObj = await new Promise((resolve, reject) => {
             this.loadDataset({
                 dataset: dataset,
-                dir: dir,
+                filter: filter !== "" ? filter : "original",
                 callback: (loadObj) => resolve(loadObj),
                 errCallback: () => reject(null),
             });
@@ -401,7 +409,7 @@ Model.prototype.loadDisplay = async function (name, filter) {
                 position = this.displays.length;
             }
             return new Display(
-                generateDisplayId(this, loadObj.name),
+                generateDisplayId(this, basename(loadObj.dir)),
                 generateDisplayX(this, position),
                 generateDisplayY(this, position),
                 width,
@@ -411,7 +419,7 @@ Model.prototype.loadDisplay = async function (name, filter) {
                 loadObj.frames,
                 loadObj.timestamps,
                 loadObj.images,
-                dataset.filters,
+                loadObj.filters,
             );
         } else {
             throw new Error("Error: could not load dataset");
@@ -462,7 +470,7 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
         if (found) {
             resolve(found);
         } else {
-            this.loadDisplay(getDisplayNameFromId(id1), filter1).then(display => resolve(display))
+            this.loadDisplay(this.getDatasetFromName(getDisplayNameFromId(id1)), filter1).then(display => resolve(display))
                 .catch(() => reject(null));
         }
     });
@@ -471,7 +479,7 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
         if (found) {
             resolve(found);
         } else {
-            this.loadDisplay(getDisplayNameFromId(id2), filter2).then(display => resolve(display))
+            this.loadDisplay(this.getDatasetFromName(getDisplayNameFromId(id2)), filter2).then(display => resolve(display))
                 .catch(() => reject(null));
         }
     })
@@ -538,13 +546,12 @@ Model.prototype.cycleLayers = function (overlay) {
 Model.prototype.filterImages = async function (display, filter) {
     const isOverlay = display instanceof Overlay;
     const name = isOverlay ? getSecondaryDisplayNameFromId(display.id) : getDisplayNameFromId(display.id);
-    const dataset = this.datasets.find(d => d.name === name);
+    const dataset = this.getDatasetFromName(name);
     if (dataset) {
-        const dir = filter !== "" ? filter : dataset.dir;
         const loadObj = await new Promise((resolve, reject) => {
             this.loadDataset({
                 dataset: dataset,
-                dir: dir,
+                filter: filter !== "" ? filter : "original",
                 callback: (loadObj) => resolve(loadObj),
                 errCallback: () => resolve(null),
             });
@@ -668,7 +675,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
         const json = { ...snapshotDisplays[i] };
         if (!display) {
             /* Create new display from JSON */
-            display = await this.loadDisplay(getDisplayNameFromId(json.id), json.layers[0].filter);
+            display = await this.loadDisplay(this.getDatasetFromName(getDisplayNameFromId(json.id)), json.layers[0].filter);
         }
         if (display instanceof Display) {
             json.layers[0] = {
@@ -702,7 +709,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
             for (let i = 0; i < json.layers.length; i++) {
                 let layer = json.layers[i];
                 if (overlay.layers.length <= i) {
-                    let display = await this.loadDisplay(getDisplayNameFromId(layer.id), layer.filter);
+                    let display = await this.loadDisplay(this.getDatasetFromName(getDisplayNameFromId(layer.id)), layer.filter);
                     overlay.addLayer(display);
                 }
                 layer.frames = overlay.getLayerFrames(i);
@@ -809,17 +816,16 @@ Model.prototype.loadDataset = function (options = {}) {
     const callback = options.callback || (() => { });
     const errCallback = options.errCallback || (() => { });
     if (!!options.dataset) {
-        const dir = options.dir || options.dataset.dir;
         this.incrementLoading();
         const start = performance.now();
-        console.log(`Beginning load of ${options.dataset.name} from /${dir}...`);
+        console.log(`Beginning load of ${basename(options.dataset.dir)} from /${options.filter}...`);
         this.loader.initDatasetLoad(
-            options.dataset.name,
-            dir,
+            options.dataset,
+            options.filter,
             loadObj => {
                 this.decrementLoading();
                 console.log(
-                    `Finished loading ${options.dataset.name} in ${Math.floor(performance.now() - start)}ms. \
+                    `Finished loading ${loadObj.dir}/${loadObj.filter} in ${Math.floor(performance.now() - start)}ms. \
                     \nLoaded ${loadObj.frames.length} frames. \
                     \nLoaded ${loadObj.timestamps.length} timestamps. \
                     \nLoaded ${loadObj.images.length} images.`

@@ -177,17 +177,11 @@ def write_list_to_txt(path, listy):
         file_out.close()
 
 
-def write_dataset_to_json(path_to_json, name):
+def write_dataset_to_json(path_to_json, data):
     """
     Write a processed dataset to datasets.json file.
     TODO: Add in sub-foldering.
     """
-    data = {
-        "name": name,
-        "dir": "original",
-        "visible": True,
-        "filters": ["edges", "emboss", "grayscale", "black_and_white"],
-    }
 
     if not os.path.isfile(path_to_json):
         with open(path_to_json, "w", encoding="utf-8") as f:
@@ -196,7 +190,7 @@ def write_dataset_to_json(path_to_json, name):
     else:
         with open(path_to_json, "r+", encoding="utf-8") as f:
             file_data = json.load(f)
-            file_data = [data for data in file_data if data["name"] != name]
+            file_data = [item for item in file_data if item["dir"] != data["dir"]]
             file_data.append(data)
             f.seek(0)
             json.dump(file_data, f, indent=4)
@@ -214,7 +208,8 @@ def remove_dataset_from_json(path_to_json, name):
 
     with open(path_to_json, "r", encoding="utf-8") as f:
         file_data = json.load(f)
-        filtered_data = [data for data in file_data if data["name"] != name]
+        # filtered_data = [data for data in file_data if data["name"] != name]
+        filtered_data = [ data for data in file_data if os.path.basename(data["dir"]) != name]
         f.close()
         if len(file_data) == len(filtered_data):
             raise RuntimeError("Dataset with name " + name + " does not exist in datasets.json")
@@ -241,17 +236,13 @@ def process_images(src_dir, output_dir, options):
 
     print("Image Processing Started for " + src_dir)
 
-    # Create target image directories if they don't already exist
-    if not os.path.isdir(output_dir + "/original"):
-        os.mkdir(output_dir + "/original")
-    if not os.path.isdir(output_dir + "/edges"):
-        os.mkdir(output_dir + "/edges")
-    if not os.path.isdir(output_dir + "/emboss"):
-        os.mkdir(output_dir + "/emboss")
-    if not os.path.isdir(output_dir + "/grayscale"):
-        os.mkdir(output_dir + "/grayscale")
-    if not os.path.isdir(output_dir + "/black_and_white"):
-        os.mkdir(output_dir + "/black_and_white")
+    data = {
+        "dir": output_dir[1:],
+        "containsImages": False,
+        "visible": True,
+        "sub": [],
+    }
+
     processed = 0
     raw_timestamps = get_timestamps(src_dir)
     frames = []
@@ -259,10 +250,29 @@ def process_images(src_dir, output_dir, options):
     files = os.listdir(src_dir)
     for filename in files:
         if os.path.isdir(src_dir + "/" + filename):
-            process_images(src_dir + "/" + filename,
-                           output_dir + "/" + filename, options)
+            sub_data = process_images(src_dir + "/" + filename, output_dir + "/" + filename, options)
+            data["sub"].append(sub_data)
         elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db":
             print("Progress: " + str(processed) + "/" + str(len(files)), end="\r")
+            # Create target image directories if they don't already exist
+            if "filters" not in data:
+                if not os.path.isdir(output_dir + "/original"):
+                    os.makedirs(output_dir + "/original")
+                if not os.path.isdir(output_dir + "/edges"):
+                    os.makedirs(output_dir + "/edges")
+                if not os.path.isdir(output_dir + "/emboss"):
+                    os.makedirs(output_dir + "/emboss")
+                if not os.path.isdir(output_dir + "/grayscale"):
+                    os.makedirs(output_dir + "/grayscale")
+                if not os.path.isdir(output_dir + "/black_and_white"):
+                    os.makedirs(output_dir + "/black_and_white")
+                data["containsImages"] = True
+                data["filters"] = [
+                    "edges",
+                    "emboss",
+                    "grayscale",
+                    "black_and_white",
+                ]
             try:
                 img_path = src_dir + "/" + filename
                 img_name = os.path.basename(img_path)
@@ -283,40 +293,39 @@ def process_images(src_dir, output_dir, options):
                         im = im_resized
 
                     # Save orignal (or resized) image in the "original" directory
-                    im.save(output_dir + "/original/" +
-                            img_name, optimize=True)
+                    im.save(output_dir + "/original/" + img_name, optimize=True)
 
                     # Edge filter
                     im_edge = im.filter(ImageFilter.FIND_EDGES)
-                    im_edge.save(output_dir + "/edges/" +
-                                 img_name, optimize=True)
+                    im_edge.save(output_dir + "/edges/" + img_name, optimize=True)
 
                     # Emboss filter
                     im_emboss = im.filter(ImageFilter.EMBOSS)
-                    im_emboss.save(output_dir + "/emboss/" +
-                                   img_name, optimize=True)
+                    im_emboss.save(output_dir + "/emboss/" + img_name, optimize=True)
 
                     # Grayscale filter
                     im_grayscale = im.convert("L")
-                    im_grayscale.save(
-                        output_dir + "/grayscale/" + img_name, optimize=True)
+                    im_grayscale.save(output_dir + "/grayscale/" + img_name, optimize=True)
 
                     # Black and White filter
                     im_black_and_white = im.convert("1")
-                    im_black_and_white.save(
-                        output_dir + "/black_and_white/" + img_name, optimize=True)
+                    im_black_and_white.save(output_dir + "/black_and_white/" + img_name, optimize=True)
 
                     im_edge.close()
+                    im_emboss.close()
                     im_grayscale.close()
+                    im_black_and_white.close()
 
                 im.close()
             except OSError:
                 print("Error while processing " + filename + ". Ignorning file and continuing...")
             processed += 1
 
-    write_list_to_txt(output_dir + "/frames.txt", frames)
-    write_list_to_txt(output_dir + "/timestamps.txt", timestamps)
+    if data["containsImages"]:
+        write_list_to_txt(output_dir + "/frames.txt", frames)
+        write_list_to_txt(output_dir + "/timestamps.txt", timestamps)
     print("Processing Done for " + src_dir)
+    return data
 
 
 def delete_directory(dir):
@@ -363,6 +372,7 @@ if __name__ == "__main__":
         options["resize"] = True
         options["width"] = find_optimal_image_width(src_dir, 60000)
 
-    process_images(src_dir, output_dir, options)
-    write_dataset_to_json("./datasets.json", dataset_name)
+    dataDict = process_images(src_dir, output_dir, options)
+    # dataDict["name"] = dataset_name
+    write_dataset_to_json("./datasets.json", dataDict)
     print("Image Processing complete.")

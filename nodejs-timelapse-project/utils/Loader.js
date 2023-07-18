@@ -18,8 +18,13 @@ function Loader(capacity = 100, imgPath) {
  * Load datasets from the datasets.json file.
  */
 Loader.prototype.loadDatasets = function () {
-    return fetch("./img/datasets.json")
+    return fetch(this.imgPath + "/datasets.json")
         .then(response => response.json())
+        .then(datasets => {
+            let flattened = [];
+            datasets.forEach(dataset => flattened.push(...flattenDataset(dataset)));
+            return flattened;
+        })
         .then(datasets => datasets.filter(dataset => dataset.visible))
         .catch(error => console.error(error));
 }
@@ -42,19 +47,21 @@ Loader.prototype.loadSnapshots = function () {
 
 /**
  * Begin a new dataset load.
- * @param {string} dataset name of the dataset to load
- * @param {string} dir directory of the dataset images to load
+ * @param {Object} dataset dataset we want to load in
  * @param {Function=} callback callback function called once all information has loaded 
  * @param {Function=} errCallback callback function called if an error occurs
  */
-Loader.prototype.initDatasetLoad = function (dataset, dir, callback = () => { }, errCallback = () => { }) {
-    let loadObj = {
-        name: dataset,
-        dir: dir,
+Loader.prototype.initDatasetLoad = async function (dataset, filter, callback = () => { }, errCallback = () => { }) {
+    const loadObj = {
+        dir: dataset.dir,
+        filters: dataset.filters,
+        filter: filter,
         onSuccess: callback,
         onError: errCallback,
-    };
-    this._loadFrames(loadObj);
+    }
+    await this._loadFrames(loadObj);
+    await this._loadTimestamps(loadObj);
+    await this._loadImages(loadObj);
     // fetch(`http://localhost:30500/getImages?dataset=${dataset}`, { method: "GET" })
     //     .then(response => response.json())
     //     .then(responseJSON => {
@@ -103,14 +110,19 @@ Loader.prototype.initDatasetLoad = function (dataset, dir, callback = () => { },
  */
 Loader.prototype._loadFrames = function (loadObj) {
     // Load image frames
-    loadStrings(
-        this.imgPath + loadObj.name + "/frames.txt",
-        loadedFrames => {
-            loadObj.frames = loadedFrames.filter(frame => frame !== "");
-            this._loadTimestamps(loadObj);
-        },
-        loadObj.onError,
-    );
+    return new Promise((resolve, reject) => {
+        loadStrings(
+            this.imgPath + loadObj.dir + "/frames.txt",
+            loadedFrames => {
+                loadObj.frames = loadedFrames.filter(frame => frame !== "");
+                resolve();
+            },
+            err => {
+                loadObj.onError();
+                reject();
+            },
+        );
+    });
 }
 
 /**
@@ -118,20 +130,20 @@ Loader.prototype._loadFrames = function (loadObj) {
  * @param {Object} loadObj object containing collected information during the load
  */
 Loader.prototype._loadTimestamps = function (loadObj) {
-    // Load image timestamps (if they exist)
-    loadStrings(
-        this.imgPath + loadObj.name + "/timestamps.txt",
-        loadedTimestamps => {
-            loadObj.timestamps = loadedTimestamps.filter(timestamp => timestamp !== "");
-            this._loadImages(loadObj);
-        },
-        err => {
-            // Lack of timestamps shouldn't end the load
-            console.error(err);
-            loadObj.timestamps = [];
-            this._loadImages(loadObj);
-        },
-    );
+    // Load image timestamps
+    return new Promise((resolve, reject) => {
+        loadStrings(
+            this.imgPath + loadObj.dir + "/timestamps.txt",
+            loadedTimestamps => {
+                loadObj.timestamps = loadedTimestamps.filter(timestamp => timestamp !== "");
+                resolve();
+            },
+            err => {
+                loadObj.onError();
+                reject();
+            },
+        );
+    })
 }
 
 /**
@@ -139,34 +151,41 @@ Loader.prototype._loadTimestamps = function (loadObj) {
  * @param {Object} loadObj object containing collected information during the load
  */
 Loader.prototype._loadImages = function (loadObj) {
-    loadObj.images = [];
-    // let numLoaded = 0;
-    let finished = false;
-    let total = Math.min(this.capacity, loadObj.frames.length);
-    let timer = null;
-    loadObj.images.fillWith(null, 0, total);
-    const addImage = (index) => {
-        loadImage(
-            this.imgPath + loadObj.name + `/${loadObj.dir}/` + loadObj.frames[index],
-            loadedImage => {
-                loadObj.images[index] = loadedImage;
-                // numLoaded++;
-                if (!finished && !loadObj.images.includes(null)) {
-                    finished = true;
-                    clearTimeout(timer);
-                    loadObj.onSuccess(loadObj);
-                }
-            },
-            loadObj.onError,
-        );
-    }
-    for (let i = 0; i < total; i++) {
-        addImage(i);
-    }
-    timer = setTimeout(() => {
-        console.log("Load timeout. Looping back to catch the stragglers.")
-        let missing = [];
-        loadObj.images.forEach((image, index) => { if (image === null) missing.push(index) });
-        missing.forEach(index => addImage(index));
-    }, 15000);
+    // Load images
+    return new Promise((resolve, reject) => {
+        loadObj.images = [];
+        // let numLoaded = 0;
+        let finished = false;
+        let total = Math.min(this.capacity, loadObj.frames.length);
+        let timer = null;
+        loadObj.images.fillWith(null, 0, total);
+        const addImage = (index) => {
+            loadImage(
+                this.imgPath + loadObj.dir + `/${loadObj.filter}/` + loadObj.frames[index],
+                loadedImage => {
+                    loadObj.images[index] = loadedImage;
+                    // numLoaded++;
+                    if (!finished && !loadObj.images.includes(null)) {
+                        finished = true;
+                        clearTimeout(timer);
+                        loadObj.onSuccess(loadObj);
+                        resolve();
+                    }
+                },
+                err => {
+                    loadObj.onError();
+                    reject();
+                },
+            );
+        }
+        for (let i = 0; i < total; i++) {
+            addImage(i);
+        }
+        timer = setTimeout(() => {
+            console.log("Load timeout. Looping back to catch the stragglers.")
+            let missing = [];
+            loadObj.images.forEach((image, index) => { if (image === null) missing.push(index) });
+            missing.forEach(index => addImage(index));
+        }, 15000);
+    });
 }

@@ -14,6 +14,26 @@ function createElementWithID(tag, content, id, className) {
 }
 
 /**
+ * Retrieve the basename of a path.
+ * @param {string} path path (relative or absolute)
+ * @returns {string}
+ */
+function basename(path) {
+    return path.split(/[\\/]/).pop();
+}
+
+/**
+ * Gather and spread sub-directory datasets out into an array.
+ * @param {Object} dataset dataset JSON object
+ * @returns {Array<Object>}
+ */
+function flattenDataset(dataset) {
+    let result = [dataset];
+    dataset.sub.forEach(sub => result.push(...flattenDataset(sub)));
+    return result;
+}
+
+/**
  * Generate a unique display id
  * @param {Model} model model from which to generate a new display id
  * @param {string} name name of the dataset
