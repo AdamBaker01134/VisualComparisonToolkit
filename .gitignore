@@ -2,7 +2,7 @@
 
 /nodejs-timelapse-project/img/*/*
 
-/nodejs-timelapse-project/img/datasets.json
+/nodejs-timelapse-project/img/*.json
 
 /nodejs-timelapse-project/node_modules/
 

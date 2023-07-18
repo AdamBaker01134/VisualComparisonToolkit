@@ -13,11 +13,11 @@ from PIL import Image, ImageOps, ImageFilter, ImageStat
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    "--input",
+    "--root",
     type=str,
     required=False,
     default="../../../greenskeye/20230522",
-    help="Path to folder of images"
+    help="Path to root directory of images"
 )
 
 parser.add_argument(
@@ -30,7 +30,7 @@ parser.add_argument(
 parser.add_argument(
     "--noresize",
     action="store_true",
-    help="disable resizing in processing steps"
+    help="Disable resizing in processing steps"
 )
 
 parser.add_argument(
@@ -43,7 +43,7 @@ parser.add_argument(
 parser.add_argument(
     "--delete",
     action="store_true",
-    help="Delete the 'input' dataset and its entry in the datasets.json file"
+    help="Delete named dataset and its entry in the datasets.json file"
 )
 
 
@@ -114,7 +114,7 @@ def find_optimizing_properties(src_dir):
                 largest_image_size = sub_dir_largest_image_size
             if sub_dir_smallest_image_width < smallest_image_width:
                 smallest_image_width = sub_dir_smallest_image_width
-        elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db":
+        elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db" and filename != "files_timestamps.json":
             img_size = os.path.getsize(src_dir + "/" + filename)
             if img_size > largest_image_size:
                 largest_image = src_dir + "/" + filename
@@ -133,6 +133,8 @@ def brightness(im):
     http://alienryderflex.com/hsp.html
     """
     stat = ImageStat.Stat(im)
+    if len(stat.mean) < 3:
+        return 100
     r = stat.mean[0]
     g = stat.mean[1]
     b = stat.mean[2]
@@ -149,8 +151,6 @@ def get_timestamps(src_dir):
     result = []
     if os.path.isfile(src_dir + "/files_timestamps.json"):
         dir = src_dir + "/files_timestamps.json"
-    elif os.path.isfile(src_dir + "/../files_timestamps.json"):
-        dir = src_dir + "/../files_timestamps.json"
     else:
         return result
 
@@ -180,7 +180,6 @@ def write_list_to_txt(path, listy):
 def write_dataset_to_json(path_to_json, data):
     """
     Write a processed dataset to datasets.json file.
-    TODO: Add in sub-foldering.
     """
 
     if not os.path.isfile(path_to_json):
@@ -231,7 +230,6 @@ def process_images(src_dir, output_dir, options):
         - find edges
         - emboss
         - grayscale
-        - black_and_white
     """
 
     print("Image Processing Started for " + src_dir)
@@ -252,7 +250,7 @@ def process_images(src_dir, output_dir, options):
         if os.path.isdir(src_dir + "/" + filename):
             sub_data = process_images(src_dir + "/" + filename, output_dir + "/" + filename, options)
             data["sub"].append(sub_data)
-        elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db":
+        elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db" and filename != "files_timestamps.json":
             print("Progress: " + str(processed) + "/" + str(len(files)), end="\r")
             # Create target image directories if they don't already exist
             if "filters" not in data:
@@ -264,14 +262,11 @@ def process_images(src_dir, output_dir, options):
                     os.makedirs(output_dir + "/emboss")
                 if not os.path.isdir(output_dir + "/grayscale"):
                     os.makedirs(output_dir + "/grayscale")
-                if not os.path.isdir(output_dir + "/black_and_white"):
-                    os.makedirs(output_dir + "/black_and_white")
                 data["containsImages"] = True
                 data["filters"] = [
                     "edges",
                     "emboss",
                     "grayscale",
-                    "black_and_white",
                 ]
             try:
                 img_path = src_dir + "/" + filename
@@ -307,14 +302,9 @@ def process_images(src_dir, output_dir, options):
                     im_grayscale = im.convert("L")
                     im_grayscale.save(output_dir + "/grayscale/" + img_name, optimize=True)
 
-                    # Black and White filter
-                    im_black_and_white = im.convert("1")
-                    im_black_and_white.save(output_dir + "/black_and_white/" + img_name, optimize=True)
-
                     im_edge.close()
                     im_emboss.close()
                     im_grayscale.close()
-                    im_black_and_white.close()
 
                 im.close()
             except OSError:
@@ -345,7 +335,7 @@ def delete_directory(dir):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    src_dir = args.input
+    src_dir = args.root
     dataset_name = args.name
     output_dir = "./" + dataset_name
     if args.delete:
@@ -373,6 +363,5 @@ if __name__ == "__main__":
         options["width"] = find_optimal_image_width(src_dir, 60000)
 
     dataDict = process_images(src_dir, output_dir, options)
-    # dataDict["name"] = dataset_name
     write_dataset_to_json("./datasets.json", dataDict)
     print("Image Processing complete.")
