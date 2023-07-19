@@ -261,6 +261,7 @@ def process_images(src_dir, output_dir, options):
     frames = []
     timestamps = []
     files = os.listdir(src_dir)
+    total_files = len(files)
     for filename in files:
         if filename in IGNORED_FILES:
             processed += 1
@@ -269,7 +270,7 @@ def process_images(src_dir, output_dir, options):
             sub_data = process_images(src_dir + "/" + filename, output_dir + "/" + filename, options)
             data["sub"].append(sub_data)
         elif os.path.isfile(src_dir + "/" + filename):
-            print("Progress: " + str(processed) + "/" + str(len(files)), end="\r")
+            print("Progress: " + str(processed) + "/" + str(total_files), end="\r")
             # Create target image directories if they don't already exist
             if "filters" not in data:
                 if not os.path.isdir(output_dir + "/original"):
