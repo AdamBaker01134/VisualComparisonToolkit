@@ -10,6 +10,12 @@ import argparse
 import json
 from PIL import Image, ImageOps, ImageFilter, ImageStat
 
+IGNORED_FILES = [
+    "Thumbs.db",
+    "files_timestamps.json",
+    ".AppleDouble",
+]
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
@@ -25,6 +31,14 @@ parser.add_argument(
     type=str,
     required=True,
     help="Name of the dataset"
+)
+
+parser.add_argument(
+    "--size",
+    type=int,
+    required=False,
+    default=0,
+    help="Specified width parameter to avoid searching for optimal width",
 )
 
 parser.add_argument(
@@ -105,16 +119,17 @@ def find_optimizing_properties(src_dir):
     largest_image_size = 0
     smallest_image_width = 1000000000
     for filename in files:
+        if filename in IGNORED_FILES:
+            continue
         if os.path.isdir(src_dir + "/" + filename):
             # Recurse into the sub-directory
-            sub_dir_largest_image, sub_dir_largest_image_size, sub_dir_smallest_image_width = find_optimizing_properties(
-                src_dir + "/" + filename)
+            sub_dir_largest_image, sub_dir_largest_image_size, sub_dir_smallest_image_width = find_optimizing_properties(src_dir + "/" + filename)
             if sub_dir_largest_image_size > largest_image_size:
                 largest_image = sub_dir_largest_image
                 largest_image_size = sub_dir_largest_image_size
             if sub_dir_smallest_image_width < smallest_image_width:
                 smallest_image_width = sub_dir_smallest_image_width
-        elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db" and filename != "files_timestamps.json":
+        elif os.path.isfile(src_dir + "/" + filename):
             img_size = os.path.getsize(src_dir + "/" + filename)
             if img_size > largest_image_size:
                 largest_image = src_dir + "/" + filename
@@ -247,10 +262,13 @@ def process_images(src_dir, output_dir, options):
     timestamps = []
     files = os.listdir(src_dir)
     for filename in files:
+        if filename in IGNORED_FILES:
+            processed += 1
+            continue
         if os.path.isdir(src_dir + "/" + filename):
             sub_data = process_images(src_dir + "/" + filename, output_dir + "/" + filename, options)
             data["sub"].append(sub_data)
-        elif os.path.isfile(src_dir + "/" + filename) and filename != "Thumbs.db" and filename != "files_timestamps.json":
+        elif os.path.isfile(src_dir + "/" + filename):
             print("Progress: " + str(processed) + "/" + str(len(files)), end="\r")
             # Create target image directories if they don't already exist
             if "filters" not in data:
@@ -312,6 +330,7 @@ def process_images(src_dir, output_dir, options):
             processed += 1
 
     if data["containsImages"]:
+        frames.sort()
         write_list_to_txt(output_dir + "/frames.txt", frames)
         write_list_to_txt(output_dir + "/timestamps.txt", timestamps)
     print("Processing Done for " + src_dir)
@@ -358,7 +377,10 @@ if __name__ == "__main__":
         "resize": False,
         "brightness_threshold": args.brightness,
     }
-    if not args.noresize:
+    if args.size > 0:
+        options["resize"] = True
+        options["width"] = args.size
+    elif not args.noresize:
         options["resize"] = True
         options["width"] = find_optimal_image_width(src_dir, 60000)
 
