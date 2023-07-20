@@ -48,6 +48,22 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--max",
+    type=int,
+    required=False,
+    default=-1,
+    help="Specified max number of images to process per directory"
+)
+
+parser.add_argument(
+    "--start",
+    type=int,
+    required=False,
+    default=0,
+    help="Specified start index for each directory of images"
+)
+
+parser.add_argument(
     "--brightness",
     type=int,
     default=100,
@@ -271,6 +287,13 @@ def process_images(src_dir, output_dir, options):
             data["sub"].append(sub_data)
         elif os.path.isfile(src_dir + "/" + filename):
             print("Progress: " + str(processed) + "/" + str(total_files), end="\r")
+            if processed < options["start_index"]:
+                processed += 1
+                continue
+            if options["max_images"] >= 0:
+                if processed >= options["max_images"] + options["start_index"]:
+                    processed += 1
+                    continue
             # Create target image directories if they don't already exist
             if "filters" not in data:
                 if not os.path.isdir(output_dir + "/original"):
@@ -324,11 +347,11 @@ def process_images(src_dir, output_dir, options):
                     im_edge.close()
                     im_emboss.close()
                     im_grayscale.close()
+                    processed += 1
 
                 im.close()
             except OSError:
                 print("Error while processing " + filename + ". Ignorning file and continuing...")
-            processed += 1
 
     if data["containsImages"]:
         frames.sort()
@@ -377,6 +400,8 @@ if __name__ == "__main__":
     options = {
         "resize": False,
         "brightness_threshold": args.brightness,
+        "start_index": args.start,
+        "max_images": args.max,
     }
     if args.size > 0:
         options["resize"] = True
