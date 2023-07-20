@@ -64,6 +64,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--step",
+    type=int,
+    required=False,
+    default=1,
+    help="Step size to move through the dataset (essentially frame rate)"
+)
+
+parser.add_argument(
     "--brightness",
     type=int,
     default=100,
@@ -182,6 +190,8 @@ def get_timestamps(src_dir):
     result = []
     if os.path.isfile(src_dir + "/files_timestamps.json"):
         dir = src_dir + "/files_timestamps.json"
+    elif os.path.isfile(src_dir + "/../files_timestamps.json"):
+        dir = src_dir + "/../files_timestamps.json" # sometimes this is required
     else:
         return result
 
@@ -287,11 +297,14 @@ def process_images(src_dir, output_dir, options):
             data["sub"].append(sub_data)
         elif os.path.isfile(src_dir + "/" + filename):
             print("Progress: " + str(processed) + "/" + str(total_files), end="\r")
+            if processed % options["step"] != 0:
+                processed += 1
+                continue
             if processed < options["start_index"]:
                 processed += 1
                 continue
             if options["max_images"] >= 0:
-                if processed >= options["max_images"] + options["start_index"]:
+                if processed >= options["max_images"] * options["step"] + options["start_index"]:
                     processed += 1
                     continue
             # Create target image directories if they don't already exist
@@ -402,6 +415,7 @@ if __name__ == "__main__":
         "brightness_threshold": args.brightness,
         "start_index": args.start,
         "max_images": args.max,
+        "step": args.step,
     }
     if args.size > 0:
         options["resize"] = True
