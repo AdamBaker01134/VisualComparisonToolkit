@@ -355,7 +355,7 @@ function _attachHeaderListeners() {
     document.getElementById("uploadButton")?.addEventListener("click", async e => {
         let value = document.getElementById("uploadSelect")?.value;
         if (value.includes(" ***")) value = value.replace(" ***", "");
-        const datasets = model.datasets.filter(dataset => dataset.containsImages && dataset.dir.includes(value));
+        const datasets = model.datasets.filter(dataset => dataset.containsImages && dataset.dir.startsWith(value));
         for (let i = 0; i < datasets.length; i++) {
             await model.addDisplay(datasets[i], "").then(display => imodel.select(display));
         }

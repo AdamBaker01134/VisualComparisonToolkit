@@ -23,6 +23,11 @@ Loader.prototype.loadDatasets = function () {
         .then(datasets => {
             let flattened = [];
             datasets.forEach(dataset => flattened.push(...flattenDataset(dataset)));
+            flattened.sort((d1, d2) => {
+                if (d1.dir === d2.dir) return 0;
+                else if (d1.dir < d2.dir) return -1;
+                else return 1;
+            });
             return flattened;
         })
         .then(datasets => datasets.filter(dataset => dataset.visible))

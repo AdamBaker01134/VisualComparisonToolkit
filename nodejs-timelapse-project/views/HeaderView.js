@@ -131,12 +131,42 @@ Headerview.prototype.updateUploadSelect = function () {
     let defaultOption = document.createElement("option");
     defaultOption.text = "---";
     uploadSelect.add(defaultOption);
+    /* Collect datasets into a hierarchy and a list of standalone datasets */
+    const hierarchy = {};
+    const standalones = [];
     this.model.datasets.forEach(dataset => {
-        let option = document.createElement("option");
-        option.text = dataset.dir;
-        if (!dataset.containsImages) option.text += " ***";
-        uploadSelect.add(option);
+        if (!dataset.containsImages) hierarchy[dataset.dir] = [];
+        let standalone = true;
+        Object.keys(hierarchy).forEach(key => {
+            if (dataset.dir.startsWith(key)) {
+                hierarchy[key].push(dataset);
+                standalone = false;
+            }
+        });
+        if (standalone) standalones.push(dataset);
     });
+    /* Add hierarchy to select element using optgroups and options */
+    Object.keys(hierarchy).forEach(key => {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = key.slice(1);
+        hierarchy[key].forEach(dataset => {
+            const option = document.createElement("option");
+            option.text = dataset.dir;
+            optgroup.appendChild(option);
+        });
+        uploadSelect.add(optgroup);
+    });
+    /* Add an additional optgroup for standalones and add all standalone datasets to that optgroup */
+    if (standalones.length > 0) {
+        const standaloneOptGroup = document.createElement("optgroup");
+        standaloneOptGroup.label = "standalones";
+        standalones.forEach(standalone => {
+            const option = document.createElement("option");
+            option.text = standalone.dir;
+            standaloneOptGroup.appendChild(option);
+        });
+        uploadSelect.add(standaloneOptGroup);
+    }
     this.datasetSnapshot = [...this.model.datasets];
 }
 
