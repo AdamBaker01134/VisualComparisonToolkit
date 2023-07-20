@@ -346,6 +346,12 @@ function keyPressed(event) {
                     playing = null;
                 }
                 return false;
+            } else if (keyCode === DELETE) {
+                if (imodel.selection !== null) {
+                    console.log(`Removing ${imodel.selection.id}...`);
+                    model.removeDisplay(imodel.selection);
+                    imodel.select(imodel.selection); /* Need to unselect display */
+                }
             }
     }
 }
