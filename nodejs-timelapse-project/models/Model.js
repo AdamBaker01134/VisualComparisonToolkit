@@ -544,8 +544,8 @@ Model.prototype.cycleLayers = function (overlay) {
  * @param {string} filter name of the filter
  */
 Model.prototype.filterImages = async function (display, filter) {
-    const isOverlay = display instanceof Overlay;
-    const name = isOverlay ? getSecondaryDisplayNameFromId(display.id) : getDisplayNameFromId(display.id);
+    const layerId = display.getLayerId();
+    const name = getDisplayNameFromId(layerId);
     const dataset = this.getDatasetFromName(name);
     if (dataset) {
         const loadObj = await new Promise((resolve, reject) => {

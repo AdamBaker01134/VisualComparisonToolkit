@@ -90,11 +90,11 @@ Display.prototype.getLayerOpacity = function (index=0) {
 }
 
 /* Set the displays images */
-Display.prototype.setImages = function (images, filter = "") {
-    const layer = this.getLayer();
+Display.prototype.setImages = function (images, filter = "", index=0) {
+    const layer = this.getLayer(index);
     layer.images = images;
     layer.filter = filter;
-    this.scrollbars[0].setSize(layer.images.length);
+    this.scrollbars[layer.scrollbarIndex].setSize(layer.images.length);
 }
 
 /**
