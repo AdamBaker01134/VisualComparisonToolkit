@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const cloudinary = require("cloudinary").v2;
 const app = express();
-const PORT = 30500;
+const PORT = 3019;
 
 cloudinary.config({
     cloud_name: "dvlz4uiyo",
