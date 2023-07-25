@@ -644,7 +644,7 @@ Model.prototype.addSnapshot = function () {
             normalized: this.normalized,
         };
         alert(`Successfully created snapshot with name "${name}"`);
-        fetch("http://localhost:30500/addSnapshot", {
+        fetch("http://localhost:3019/addSnapshot", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ snapshot: snapshot }),
