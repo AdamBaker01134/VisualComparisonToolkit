@@ -8,8 +8,11 @@
 const fs = require("fs");
 const bodyParser = require("body-parser");
 const express = require("express");
+const cors = require("cors");
 const cloudinary = require("cloudinary").v2;
 const app = express();
+// const HOST = "localhost";
+const HOST = "hci-sandbox.usask.ca";
 const PORT = 3019;
 
 cloudinary.config({
@@ -18,6 +21,8 @@ cloudinary.config({
     api_secret: "DIVDhTMDuGGz1McSZhA-VozdKLc",
     secure: true,
 });
+
+app.use(cors());
 
 app.use(express.static(__dirname));
 
@@ -94,5 +99,5 @@ app.get("/getImages", (req, res) => {
 });
 
 app.listen(PORT, () => {
-	console.log(`Successfully started express node js server. Listening on http://localhost:${PORT}.`);
+	console.log(`Successfully started express node js server. Listening on http://${HOST}:${PORT}.`);
 });

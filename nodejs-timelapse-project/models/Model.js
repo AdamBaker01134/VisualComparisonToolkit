@@ -644,11 +644,18 @@ Model.prototype.addSnapshot = function () {
             normalized: this.normalized,
         };
         alert(`Successfully created snapshot with name "${name}"`);
-        fetch("http://localhost:3019/addSnapshot", {
+	// fetch("http://localhost:3019/addSnapshot", {
+        fetch("http://hci-sandbox.usask.ca:3019/addSnapshot", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ snapshot: snapshot }),
-        }).then(() => this.loadSnapshots()).catch(err => console.error(err));
+        }).then(response => {
+		if (response.status !== 200) {
+			alert("Error: Did not write to snapshots JSON.");
+		} else {
+			this.loadSnapshots();
+		}
+	}).catch(err => console.error(err));
         this.notifySubscribers();
     } else {
         alert(`Error: invalid snapshot name`);

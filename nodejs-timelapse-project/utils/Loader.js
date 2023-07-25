@@ -68,6 +68,7 @@ Loader.prototype.initDatasetLoad = async function (dataset, filter, callback = (
     await this._loadTimestamps(loadObj);
     await this._loadImages(loadObj);
     // fetch(`http://localhost:3019/getImages?dataset=${dataset}`, { method: "GET" })
+    // fetch(`http://hci-sandbox.usask.ca:3019/getImages?dataset=${dataset}`, { method: "GET" })
     //     .then(response => response.json())
     //     .then(responseJSON => {
     //         let result = [];
