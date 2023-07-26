@@ -129,7 +129,7 @@ Headerview.prototype.updateUploadSelect = function () {
     let uploadSelect = document.getElementById("uploadSelect");
     uploadSelect.innerHTML = "";
     let defaultOption = document.createElement("option");
-    defaultOption.text = "---";
+    defaultOption.text = "Select dataset";
     uploadSelect.add(defaultOption);
     /* Collect datasets into a hierarchy and a list of standalone datasets */
     const hierarchy = {};
@@ -177,7 +177,7 @@ Headerview.prototype.updateSnapshotSelect = function () {
     let snapshotSelect = document.getElementById("snapshotSelect");
     snapshotSelect.innerHTML = "";
     let defaultOption = document.createElement("option");
-    defaultOption.text = "---";
+    defaultOption.text = "Select snapshot";
     snapshotSelect.add(defaultOption);
     this.model.snapshots.forEach(snapshot => {
         let option = document.createElement("option");
@@ -195,7 +195,7 @@ Headerview.prototype.updateAnnotationSelect = function () {
         let annotationSelect = document.getElementById("annotationSelect");
         annotationSelect.innerHTML = "";
         let defaultOption = document.createElement("option");
-        defaultOption.text = "---";
+        defaultOption.text = "Select annotation";
         annotationSelect.add(defaultOption);
         let scrollbar = this.imodel.selection.getMainScrollbar();
         scrollbar.annotations.forEach(annotation => {
@@ -236,7 +236,7 @@ Headerview.prototype.updateFilterSelect = function () {
             filterSelect.add(resetOption);
         } else {
             let defaultOption = document.createElement("option");
-            defaultOption.text = "---";
+            defaultOption.text = "Select filter";
             filterSelect.add(defaultOption);
             filters.forEach(filterName => {
                 let option = document.createElement("option");

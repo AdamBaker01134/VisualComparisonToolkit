@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 
 <head>
-    <title>Video Comparison Application</title>
+    <title>Video Comparison Toolkit</title>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.min.js"></script>
     <script src="canvas.js"></script>
@@ -19,6 +19,10 @@
 </head>
 
 <body>
+    <div class="title">
+        Video Comparison Toolkit
+        <button id="help" style="display: none;">Help</button>
+    </div>
     <header>
         <div class="headerContainer">
             <div id="loading-spinner" class="loading" style="display: none;"></div>
@@ -26,14 +30,14 @@
         <div class="vLine"></div>
         <div class="headerContainer">
             <select id="uploadSelect">
-                <option>---</option>
+                <option>Select dataset</option>
             </select>
             <button id="uploadButton">Load</button>
         </div>
         <div class="vLine"></div>
         <div class="headerContainer">
             <select id="snapshotSelect">
-                <option>---</option>
+                <option>Select snapshot</option>
             </select>
             <button id="loadSnapshotButton">Load Snapshot</button>
             <button id="saveSnapshotButton">Save Snapshot</button>
@@ -63,7 +67,7 @@
             </div>
             <div class="headerContainer">
                 <select id="annotationSelect">
-                    <option>---</option>
+                    <option>Select annotation</option>
                 </select>
                 <button id="loadAnnotationButton">Load Annotation</button>
                 <button id="saveAnnotationButton">Save Annotation</button>

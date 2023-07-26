@@ -390,7 +390,7 @@ function _attachHeaderListeners() {
     document.getElementById("filterSelect").addEventListener("change", e => {
         let value = e.target.value;
         let filterName = e.target.value;
-        if (value !== "---" && imodel.selection !== null) {
+        if (value !== "Select filter" && imodel.selection !== null) {
             if (value === "Reset") {
                 filterName = "";
             }

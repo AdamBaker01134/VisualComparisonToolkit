@@ -1,6 +1,6 @@
 /* Application Interaction Model */
 "use strict";
-function iModel () {
+function iModel() {
     this.cursor = "default";
     this.focused = null;
     this.selection = null;
@@ -122,7 +122,7 @@ iModel.prototype.select = function (display) {
  * Set the selections comparison slider value.
  * @param {number} mx x coordinate of the mouse
  */
-iModel.prototype.setComparisonSlider = function (mx=mouseX) {
+iModel.prototype.setComparisonSlider = function (mx = mouseX) {
     if (this.selection instanceof Overlay) {
         let value = (map(
             mx,
@@ -164,17 +164,25 @@ iModel.prototype.setOpacity = function (opacity) {
  */
 iModel.prototype.saveAnnotation = function () {
     if (this.selection !== null) {
-        const defaultValue = "Enter valid name";
-        const name = prompt("Enter a name for this annotation:", defaultValue);
-        if (!!name && name !== defaultValue) {
-            if (this.selection.addAnnotation(this.selection.mainScrollbarIndex, name)) {
-                alert(`Successfully created annotation with the name "${name}"`);
-                this.notifySubscribers();
+        let name = null;
+        let validName = false;
+        while (!validName) {
+            name = prompt("Enter a name for this annotation:", `annotation-${this.selection.annotations.length}`);
+            if (name === null) {
+                return;
+            } else if (name.trim() === "") {
+                alert("Error: Annotation name must not be empty");
+            } else if (this.selection.hasAnnotation(name)) {
+                alert("Error: Annotation name already exists in selected display");
             } else {
-                alert("Error: annotation name already exists in scrollbar")
+                validName = true;
             }
+        }
+        if (this.selection.addAnnotation(this.selection.mainScrollbarIndex, name)) {
+            alert(`Successfully created annotation with the name "${name}"`);
+            this.notifySubscribers();
         } else {
-            alert("Error: invalid annotation name")
+            alert("Error: failed to add annotation to display")
         }
     }
 }

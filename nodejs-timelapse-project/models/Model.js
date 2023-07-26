@@ -3,7 +3,7 @@
 function Model() {
     this.imagePath = "./img";
     this.maxImages = 1000;
-    this.headerHeight = 100;
+    this.headerHeight = 170;
     this.canvasWidth = windowWidth * 0.98;
     this.canvasHeight = windowHeight * 3;
     this.displayPadding = 10;
@@ -629,37 +629,46 @@ Model.prototype.removeDisplay = function (display) {
  * Add a system snapshot in JSON format to the model.
  */
 Model.prototype.addSnapshot = function () {
-    let name = prompt("Enter a name for this snapshot:", `snapshot-${this.snapshots.length}`);
-    if (!!name && !this.snapshots.some(snapshot => snapshot.name === name)) {
-        let snapshot = {
-            name: name,
-            displays: this.displays.map((display, position) => {
-                if (display === null) return null;
-                let json = display.toJSON();
-                json.position = position;
-                return json;
-            }).filter(display => display !== null),
-            globalScrollbar: this.globalScrollbar.toJSON(),
-            scrollPos: [scrollX, scrollY],
-            normalized: this.normalized,
-        };
-        alert(`Successfully created snapshot with name "${name}"`);
-	// fetch("http://localhost:3019/addSnapshot", {
-        fetch("http://hci-sandbox.usask.ca:3019/addSnapshot", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ snapshot: snapshot }),
-        }).then(response => {
-		if (response.status !== 200) {
-			alert("Error: Did not write to snapshots JSON.");
-		} else {
-			this.loadSnapshots();
-		}
-	}).catch(err => console.error(err));
-        this.notifySubscribers();
-    } else {
-        alert(`Error: invalid snapshot name`);
+    let name = null;
+    let validName = false;
+    while (!validName) {
+        name = prompt("Enter a name for this snapshot:", `snapshot-${this.snapshots.length}`);
+        if (name === null) {
+            return;
+        } else if (name.trim() === "") {
+            alert("Error: Snapshot name must not be empty");
+        } else if (this.snapshots.some(snapshot => snapshot.name === name)) {
+            alert("Error: Snapshot name already exists");
+        } else {
+            validName = true;
+        }
     }
+    let snapshot = {
+        name: name,
+        displays: this.displays.map((display, position) => {
+            if (display === null) return null;
+            let json = display.toJSON();
+            json.position = position;
+            return json;
+        }).filter(display => display !== null),
+        globalScrollbar: this.globalScrollbar.toJSON(),
+        scrollPos: [scrollX, scrollY],
+        normalized: this.normalized,
+    };
+    alert(`Successfully created snapshot with name "${name}"`);
+    // fetch("http://localhost:3019/addSnapshot", {
+    fetch("http://hci-sandbox.usask.ca:3019/addSnapshot", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ snapshot: snapshot }),
+    }).then(response => {
+        if (response.status !== 200) {
+            alert("Error: Did not write to snapshots JSON.");
+        } else {
+            this.loadSnapshots();
+        }
+    }).catch(err => console.error(err));
+    this.notifySubscribers();
 }
 
 /**
