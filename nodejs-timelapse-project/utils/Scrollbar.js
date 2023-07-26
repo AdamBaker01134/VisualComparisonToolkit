@@ -309,6 +309,20 @@ Scrollbar.prototype.hasAnnotation = function (name) {
     return false;
 }
 
+/**
+ * Retrieve all the annotations (no duplicates) from this scrollbar and its child scrollbars.
+ * @returns {Array<string>}
+ */
+Scrollbar.prototype.getAnnotations = function () {
+    let result = [...this.annotations];
+    let childAnnotations = [];
+    this.children.forEach(child => childAnnotations.push(...child.getAnnotations()));
+    childAnnotations.forEach(annotation => {
+        if (!result.includes(annotation)) result.push(annotation);
+    });
+    return result;
+}
+
 /* Convert scrollbar to JSON */
 Scrollbar.prototype.toJSON = function () {
     return {

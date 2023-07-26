@@ -631,8 +631,9 @@ Model.prototype.removeDisplay = function (display) {
 Model.prototype.addSnapshot = function () {
     let name = null;
     let validName = false;
+    const defaultName = `snapshot-${this.snapshots.length}`;
     while (!validName) {
-        name = prompt("Enter a name for this snapshot:", `snapshot-${this.snapshots.length}`);
+        name = prompt("Enter a name for this snapshot:", defaultName);
         if (name === null) {
             return;
         } else if (name.trim() === "") {

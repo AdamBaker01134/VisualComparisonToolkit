@@ -310,15 +310,6 @@ Display.prototype.checkEndHit = function (mx) {
 }
 
 /**
- * Check if this display contains an annotation in one of its scrollbars with a given name.
- * @param {string} name annotation name
- * @returns {boolean}
- */
-Display.prototype.hasAnnotation = function (name) {
-    return this.getMainScrollbar().hasAnnotation(name);
-}
-
-/**
  * Add an annotation to a scrollbar.
  * @param {number} scrollbarPos index of the desired scrollbar
  * @param {string} name customized annotation name

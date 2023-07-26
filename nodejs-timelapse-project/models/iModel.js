@@ -166,13 +166,14 @@ iModel.prototype.saveAnnotation = function () {
     if (this.selection !== null) {
         let name = null;
         let validName = false;
+        const defaultName = `annotation-${this.selection.getMainScrollbar().getAnnotations().length}`;
         while (!validName) {
-            name = prompt("Enter a name for this annotation:", `annotation-${this.selection.annotations.length}`);
+            name = prompt("Enter a name for this annotation:", defaultName);
             if (name === null) {
                 return;
             } else if (name.trim() === "") {
                 alert("Error: Annotation name must not be empty");
-            } else if (this.selection.hasAnnotation(name)) {
+            } else if (this.selection.getMainScrollbar().hasAnnotation(name)) {
                 alert("Error: Annotation name already exists in selected display");
             } else {
                 validName = true;
