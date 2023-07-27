@@ -32,7 +32,7 @@ Headerview.prototype.draw = function () {
     this.updateLoadingSpinner();
     this.updateNormalized();
     this.updateLocked();
-    this.updateOpacitySlider();
+    this.updateOpacityElements();
     this.updateDisplayControlVisibility();
 
     if (this.datasetSnapshot !== this.model.datasets) {
@@ -90,11 +90,14 @@ Headerview.prototype.updateLocked = function () {
 /**
  * Update the value of the opacity slider if it has changed.
  */
-Headerview.prototype.updateOpacitySlider = function () {
+Headerview.prototype.updateOpacityElements = function () {
     if (this.imodel.selection !== null && this.imodel.selection instanceof Overlay) {
         const opacity = this.imodel.selection.getLayerOpacity(this.imodel.selection.layers.length - 1);
         const opacityInput = document.getElementById("opacityInput");
         if (opacityInput?.value !== opacity) opacityInput.value = opacity;
+        const opacityText = `Opacity ${Math.floor(opacity / 255 * 100)}%`;
+        const opacityLabel = document.getElementById("opacityLabel");
+        if (opacityLabel?.innerHTML !== opacityText) opacityLabel.innerHTML = opacityText
     }
 }
 
