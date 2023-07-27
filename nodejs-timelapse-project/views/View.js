@@ -25,21 +25,31 @@ View.prototype.draw = function () {
         const bottom = display.y + display.padding + display.height;
 
         let index = 0;
-        if (display instanceof Overlay && display.comparisonSliderActive) {
+        if (display instanceof Overlay && (display.comparisonSliderType === "vertical" || display.comparisonSliderType === "horizontal")) {
             /* Render the two overlay images with a comparison slider and dotted line in the middle */
             noTint();
-            const sliderPosition = left + display.width * display.comparisonSliderValue;
             const layer1 = display.layers[0];
             const layer2 = display.layers[1];
             /* Floor indices in case they have been affected by ratio */
             const img1 = layer1.images[Math.floor(display.getIndex(layer1.scrollbarIndex))];
             const img2 = layer2.images[Math.floor(display.getIndex(layer2.scrollbarIndex))];
-            renderImage(img1, left, sliderPosition, top, bottom, layer1.viewport);
-            renderImage(img2, sliderPosition, right, top, bottom, layer2.viewport);
-            fill("rgba(70, 130, 180, 0.5)");
-            stroke("rgba(70, 130, 180, 0.5)");
-            line(sliderPosition, top, sliderPosition, bottom);
-            circle(sliderPosition, top + display.height / 2, display.width / 10);
+            if (display.comparisonSliderType === "vertical") {
+                const sliderPosition = left + display.width * display.comparisonSliderValue;
+                renderImage(img1, left, sliderPosition, top, bottom, layer1.viewport);
+                renderImage(img2, sliderPosition, right, top, bottom, layer2.viewport);
+                fill("rgba(70, 130, 180, 0.5)");
+                stroke("rgba(70, 130, 180, 0.5)");
+                line(sliderPosition, top, sliderPosition, bottom);
+                circle(sliderPosition, top + display.height / 2, display.width / 10);
+            } else {
+                const sliderPosition = top + display.height * display.comparisonSliderValue;
+                renderImage(img1, left, right, top, sliderPosition, layer1.viewport);
+                renderImage(img2, left, right, sliderPosition, bottom, layer2.viewport);
+                fill("rgba(70, 130, 180, 0.5)");
+                stroke("rgba(70, 130, 180, 0.5)");
+                line(left, sliderPosition, right, sliderPosition);
+                circle(left + display.width / 2, sliderPosition, display.width / 10);
+            }
         } else {
             for (let i = 0; i < display.layers.length; i++) {
                 const layer = display.layers[i];

@@ -122,28 +122,43 @@ iModel.prototype.select = function (display) {
  * Set the selections comparison slider value.
  * @param {number} mx x coordinate of the mouse
  */
-iModel.prototype.setComparisonSlider = function (mx = mouseX) {
+iModel.prototype.setComparisonSliderValue = function (mx = mouseX, my = mouseY) {
     if (this.selection instanceof Overlay) {
-        let value = (map(
-            mx,
-            this.selection.x + this.selection.padding,
-            this.selection.x + this.selection.padding + this.selection.width,
-            0,
-            1,
-        ));
+        let value = 0.5;
+        if (this.selection.comparisonSliderType === "vertical") {
+            value = (map(
+                mx,
+                this.selection.x + this.selection.padding,
+                this.selection.x + this.selection.padding + this.selection.width,
+                0,
+                1,
+            ));
+        } else if (this.selection.comparisonSliderType === "horizontal") {
+            value = (map(
+                my,
+                this.selection.y + this.selection.padding,
+                this.selection.y + this.selection.padding + this.selection.height,
+                0,
+                1,
+            ));
+        } else {
+            /* Don't update the comparison slider value if its not on */
+            return;
+        }
         if (value < 0.1) value = 0.1;
         if (value > 0.9) value = 0.9;
-        this.selection.setComparisonSlider(value);
+        this.selection.setComparisonSliderValue(value);
         this.notifySubscribers();
     }
 }
 
 /**
  * Toggle the comparison slider in a selected
+ * @param {string} type either horizontal or vertical
  */
-iModel.prototype.toggleComparisonSlider = function () {
+iModel.prototype.setComparisonSliderType = function (type) {
     if (this.selection instanceof Overlay) {
-        this.selection.toggleComparisonSliderActive();
+        this.selection.setComparisonSliderType(type);
         this.notifySubscribers();
     }
 }

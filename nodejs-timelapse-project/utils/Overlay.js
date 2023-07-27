@@ -73,7 +73,7 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
     ));
     this.mainScrollbarIndex = 2;
 
-    this.comparisonSliderActive = false;
+    this.comparisonSliderType = null;
     this.comparisonSliderValue = 0.5; /* Ratio of the overlay width to represent the width */
 }
 
@@ -168,20 +168,21 @@ Overlay.prototype.cycleLayers = function () {
 // }
 
 /**
- * Toggle the comparison slider on/off.
- * Will not toggle unless only 2 layers are within the overlay.
+ * Set the comparison slider type
+ * Will not change if the overlay have more than 2 layers.
+ * @param {string} type either horizontal or vertical
  */
-Overlay.prototype.toggleComparisonSliderActive = function () {
+Overlay.prototype.setComparisonSliderType = function (type) {
     if (this.locked || this.layers.length !== 2) return;
-    this.comparisonSliderActive = !this.comparisonSliderActive;
+    this.comparisonSliderType = type;
 }
 
 /**
  * Set a new value for the comparison slider value. Must be between 0.1 and 0.9 to avoid image errors.
  * @param {number} value new value for the comparison slider value
  */
-Overlay.prototype.setComparisonSlider = function (value) {
-    if (this.locked || !this.comparisonSliderActive) return;
+Overlay.prototype.setComparisonSliderValue = function (value) {
+    if (this.locked || !this.comparisonSliderType) return;
     this.comparisonSliderValue = value;
     if (this.comparisonSliderValue < 0.1) this.comparisonSliderValue = 0.1;
     if (this.comparisonSliderValue > 0.9) this.comparisonSliderValue = 0.9;
@@ -194,13 +195,22 @@ Overlay.prototype.setComparisonSlider = function (value) {
  * @param {number} my y coordinate of the mouse
  * @returns {boolean}
  */
-Overlay.prototype.checkComparisonSliderHit = function (mx=mouseX, my=mouseY) {
-    if (this.locked || !this.comparisonSliderActive) return false;
+Overlay.prototype.checkComparisonSliderHit = function (mx = mouseX, my = mouseY) {
+    if (this.locked || !this.comparisonSliderType) return false;
     const sliderRadius = this.width / 10;
-    return mx > this.x + this.padding + this.width * this.comparisonSliderValue - sliderRadius &&
-        mx < this.x + this.padding + this.width * this.comparisonSliderValue + sliderRadius &&
-        my > this.y + this.padding + this.height / 2 - sliderRadius &&
-        my < this.y + this.padding + this.height / 2 + sliderRadius;
+    if (this.comparisonSliderType === "vertical") {
+        return mx > this.x + this.padding + this.width * this.comparisonSliderValue - sliderRadius &&
+            mx < this.x + this.padding + this.width * this.comparisonSliderValue + sliderRadius &&
+            my > this.y + this.padding + this.height / 2 - sliderRadius &&
+            my < this.y + this.padding + this.height / 2 + sliderRadius;
+    } else if (this.comparisonSliderType === "horizontal") {
+        return mx > this.x + this.padding + this.width / 2 - sliderRadius &&
+            mx < this.x + this.padding + this.width / 2 + sliderRadius &&
+            my > this.y + this.padding + this.height * this.comparisonSliderValue - sliderRadius &&
+            my < this.y + this.padding + this.height * this.comparisonSliderValue + sliderRadius;
+    } else {
+        return false;
+    }
 }
 
 /**

@@ -112,7 +112,7 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
                 if (hit = model.checkCornerHit(mx, my)) {
                     imodel.setCursor("nwse-resize");
                 } else if (hit = model.checkComparisonSliderHit(mx, my)) {
-                    imodel.setCursor("ew-resize");
+                    imodel.setCursor(hit.comparisonSliderType === "horizontal" ? "ns-resize" : "ew-resize");
                 } else {
                     imodel.setCursor("default");
                 }
@@ -159,7 +159,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                if (hit instanceof Display && !(imodel.ghost instanceof Overlay) && !hit.comparisonSliderActive) {
+                if (hit instanceof Display && !(imodel.ghost instanceof Overlay) && !hit.comparisonSliderType) {
                     currentState = STATE.PREPARE_OVERLAY;
                 }
             }
@@ -187,7 +187,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.COMPARE_SLIDING:
             if (imodel.selection !== null) {
-                imodel.setComparisonSlider(mouseX);
+                imodel.setComparisonSliderValue(mouseX, mouseY);
             }
             break;
     }
@@ -324,10 +324,18 @@ function keyPressed(event) {
                     }
                     return false;
                 }
+            } else if (keyCode === 189) {
+                /* Handle dash key pressed events */
+                if (imodel.selection instanceof Overlay) {
+                    const type = imodel.selection.comparisonSliderType === "horizontal" ? null : "horizontal";
+                    imodel.setComparisonSliderType(type);
+                    return false;
+                }
             } else if (keyCode === 220) {
                 /* Handle backslash key pressed events */
                 if (imodel.selection instanceof Overlay) {
-                    imodel.toggleComparisonSlider();
+                    const type = imodel.selection.comparisonSliderType === "vertical" ? null : "vertical";
+                    imodel.setComparisonSliderType(type);
                     return false;
                 }
             } else if (keyCode === 32) {
