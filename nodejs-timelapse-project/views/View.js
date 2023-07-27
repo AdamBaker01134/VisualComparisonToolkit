@@ -27,7 +27,6 @@ View.prototype.draw = function () {
         let index = 0;
         if (display instanceof Overlay && (display.comparisonSliderType === "vertical" || display.comparisonSliderType === "horizontal")) {
             /* Render the two overlay images with a comparison slider and dotted line in the middle */
-            noTint();
             const layer1 = display.layers[0];
             const layer2 = display.layers[1];
             /* Floor indices in case they have been affected by ratio */
@@ -35,16 +34,22 @@ View.prototype.draw = function () {
             const img2 = layer2.images[Math.floor(display.getIndex(layer2.scrollbarIndex))];
             if (display.comparisonSliderType === "vertical") {
                 const sliderPosition = left + display.width * display.comparisonSliderValue;
-                renderImage(img1, left, sliderPosition, top, bottom, layer1.viewport);
+                tint(255, parseInt(layer1.opacity));
+                renderImage(img1, left, right, top, bottom, layer1.viewport);
+                tint(255, parseInt(layer2.opacity));
                 renderImage(img2, sliderPosition, right, top, bottom, layer2.viewport);
+                noTint();
                 fill("rgba(70, 130, 180, 0.5)");
                 stroke("rgba(70, 130, 180, 0.5)");
                 line(sliderPosition, top, sliderPosition, bottom);
                 circle(sliderPosition, top + display.height / 2, display.width / 10);
             } else {
                 const sliderPosition = top + display.height * display.comparisonSliderValue;
-                renderImage(img1, left, right, top, sliderPosition, layer1.viewport);
+                tint(255, parseInt(layer1.opacity));
+                renderImage(img1, left, right, top, bottom, layer1.viewport);
+                tint(255, parseInt(layer2.opacity));
                 renderImage(img2, left, right, sliderPosition, bottom, layer2.viewport);
+                noTint();
                 fill("rgba(70, 130, 180, 0.5)");
                 stroke("rgba(70, 130, 180, 0.5)");
                 line(left, sliderPosition, right, sliderPosition);
