@@ -60,10 +60,6 @@
                     <select id="filterSelect"></select>
                 </div>
                 <button id="removeButton">Remove</button>
-                <div class="hidden" id="opacityContainer">
-                    <label for="opacityInput" id="opacityLabel">Opacity 50%</label>
-                    <input type="range" min="0" max="255" value="128" id="opacityInput" />
-                </div>
             </div>
             <div class="headerContainer">
                 <select id="annotationSelect">
@@ -71,6 +67,13 @@
                 </select>
                 <button id="loadAnnotationButton">Load Annotation</button>
                 <button id="saveAnnotationButton">Save Annotation</button>
+            </div>
+            <div class="headerContainer">
+                <div class="hidden" id="opacityContainer">
+                    <u>Top Layer</u>
+                    <div id="opacityLabel">Opacity: 50%</div>
+                    <input type="range" min="0" max="255" value="128" id="opacityInput" />
+                </div>
             </div>
         </div>
     </header>

@@ -95,7 +95,7 @@ Headerview.prototype.updateOpacityElements = function () {
         const opacity = this.imodel.selection.getLayerOpacity(this.imodel.selection.layers.length - 1);
         const opacityInput = document.getElementById("opacityInput");
         if (opacityInput?.value !== opacity) opacityInput.value = opacity;
-        const opacityText = `Opacity ${Math.floor(opacity / 255 * 100)}%`;
+        const opacityText = `Opacity: ${Math.floor(opacity / 255 * 100)}%`;
         const opacityLabel = document.getElementById("opacityLabel");
         if (opacityLabel?.innerHTML !== opacityText) opacityLabel.innerHTML = opacityText
     }
