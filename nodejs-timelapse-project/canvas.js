@@ -61,9 +61,9 @@ const STATE = {
     USING_MAGIC: "usingMagic",
 }
 let currentState = STATE.READY;
-let moveTimer, cycleTimer, playTimer;
-let cycling = null;
-let playing = null;
+let moveTimer;
+let cyclingTimers = {};
+let playingTimers = {};
 let previousX;
 let previousY;
 
@@ -80,8 +80,8 @@ function startTimedMoveInterval() {
 
 /* Start an interval timer that continually checks if displays  */
 function startAutoCycleInterval(overlay) {
-    clearInterval(cycleTimer);
-    cycleTimer = setInterval(() => {
+    clearInterval(cyclingTimers[overlay.id]);
+    cyclingTimers[overlay.id] = setInterval(() => {
         switch (currentState) {
             case STATE.READY:
                 model.cycleLayers(overlay);
@@ -92,8 +92,8 @@ function startAutoCycleInterval(overlay) {
 
 /* Start an interval timer that "plays" the selected video at a given frame rate. */
 function startPlayInterval(scrollbar, frameRate = 10) {
-    clearInterval(playTimer);
-    playTimer = setInterval(() => {
+    clearInterval(playingTimers[scrollbar.id]);
+    playingTimers[scrollbar.id] = setInterval(() => {
         switch (currentState) {
             case STATE.READY:
             case STATE.COMPARE_SLIDING:
@@ -324,16 +324,15 @@ function keyPressed(event) {
                 /* Handle tab key pressed events */
                 if (imodel.selection instanceof Overlay) {
                     const overlay = imodel.selection;
-                    if (cycling !== overlay) {
+                    if (Object.keys(cyclingTimers).includes(overlay.id)) {
+                        clearInterval(cyclingTimers[overlay.id]);
+                        delete cyclingTimers[overlay.id];
+                    } else {
                         if (event.shiftKey) {
                             startAutoCycleInterval(overlay);
-                            cycling = overlay;
                         } else {
                             model.cycleLayers(overlay);
                         }
-                    } else {
-                        clearInterval(cycleTimer);
-                        cycling = null;
                     }
                     return false;
                 }
@@ -360,18 +359,15 @@ function keyPressed(event) {
                 }
             } else if (keyCode === 32) {
                 /* Handle spacebar key pressed events */
-                let scrollbar = null;
-                if (event.ctrlKey || imodel.selection === null) {
-                    scrollbar = model.globalScrollbar;
-                } else if (imodel.selection !== null) {
+                let scrollbar = model.globalScrollbar;
+                if (imodel.selection !== null && !event.ctrlKey) {
                     scrollbar = imodel.selection.getMainScrollbar();
                 }
-                if (playing !== scrollbar) {
-                    startPlayInterval(scrollbar);
-                    playing = scrollbar;
+                if (Object.keys(playingTimers).includes(scrollbar.id)) {
+                    clearInterval(playingTimers[scrollbar.id]);
+                    delete playingTimers[scrollbar.id];
                 } else {
-                    clearInterval(playTimer);
-                    playing = null;
+                    startPlayInterval(scrollbar);
                 }
                 return false;
             } else if (keyCode === DELETE) {
