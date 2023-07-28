@@ -107,21 +107,21 @@ Headerview.prototype.updateOpacityElements = function () {
  */
 Headerview.prototype.updateDisplayControlVisibility = function () {
     /* Regular display controls visibility control */
-    let visible = this.imodel.selection !== null;
-    let controls = document.getElementById("displayControls");
-    if (visible && controls?.classList.contains("hidden")) {
-        controls.classList.remove("hidden");
-    } else if (!visible && controls?.classList.contains("hidden") === false) {
-        controls.classList.add("hidden");
+    const visible = this.imodel.selection !== null;
+    const displayControls = document.getElementById("displayControls");
+    if (visible && displayControls?.classList.contains("hidden")) {
+        displayControls.classList.remove("hidden");
+    } else if (!visible && displayControls?.classList.contains("hidden") === false) {
+        displayControls.classList.add("hidden");
     }
 
+    const isOverlay = this.imodel.selection instanceof Overlay;
     /* Opacity container visibility control */
-    let overlay = this.imodel.selection instanceof Overlay;
-    let opacity = document.getElementById("opacityContainer");
-    if (overlay && opacity?.classList.contains("hidden")) {
-        opacity.classList.remove("hidden");
-    } else if (!overlay && opacity?.classList.contains("hidden") === false) {
-        opacity.classList.add("hidden");
+    const opacityContainer = document.getElementById("opacityContainer");
+    if (isOverlay && opacityContainer?.classList.contains("hidden")) {
+        opacityContainer.classList.remove("hidden");
+    } else if (!isOverlay && opacityContainer?.classList.contains("hidden") === false) {
+        opacityContainer.classList.add("hidden");
     }
 }
 

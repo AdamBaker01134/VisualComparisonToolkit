@@ -125,7 +125,7 @@ iModel.prototype.select = function (display) {
 iModel.prototype.setComparisonSliderValue = function (mx = mouseX, my = mouseY) {
     if (this.selection instanceof Overlay) {
         let value = 0.5;
-        if (this.selection.comparisonSliderType === "vertical") {
+        if (this.selection.mode === "vertical") {
             value = (map(
                 mx,
                 this.selection.x + this.selection.padding,
@@ -133,7 +133,7 @@ iModel.prototype.setComparisonSliderValue = function (mx = mouseX, my = mouseY) 
                 0,
                 1,
             ));
-        } else if (this.selection.comparisonSliderType === "horizontal") {
+        } else if (this.selection.mode === "horizontal") {
             value = (map(
                 my,
                 this.selection.y + this.selection.padding,
@@ -153,12 +153,24 @@ iModel.prototype.setComparisonSliderValue = function (mx = mouseX, my = mouseY) 
 }
 
 /**
- * Toggle the comparison slider in a selected
- * @param {string} type either horizontal or vertical
+ * Set the magic lens' location in the selection
+ * @param {number} newX new x coordinate of the magic lens
+ * @param {number} newY new y coordinate of the magic lens
  */
-iModel.prototype.setComparisonSliderType = function (type) {
+iModel.prototype.setMagicLensLocation = function (newX, newY) {
     if (this.selection instanceof Overlay) {
-        this.selection.setComparisonSliderType(type);
+        this.selection.setMagicLensLocation(newX, newY);
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Set the mode of an overlay display
+ * @param {string} mode overlay, horizontal, vertical, or magic_lens
+ */
+iModel.prototype.setMode = function (mode) {
+    if (this.selection instanceof Overlay) {
+        this.selection.setMode(mode);
         this.notifySubscribers();
     }
 }

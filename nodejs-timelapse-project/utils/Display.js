@@ -163,8 +163,8 @@ Display.prototype.checkImageHit = function (mx, my) {
  */
 Display.prototype.setLocation = function (newX, newY) {
     if (isNaN(newX) || isNaN(newY)) return;
-    let dx = newX - this.x;
-    let dy = newY - this.y;
+    const dx = newX - this.x;
+    const dy = newY - this.y;
     this.x = newX;
     this.y = newY;
     for (let i = 0; i < this.layers.length; i++) {

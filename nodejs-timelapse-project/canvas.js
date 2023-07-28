@@ -58,6 +58,7 @@ const STATE = {
     PANNING: "panning",
     RESIZING: "resizing",
     COMPARE_SLIDING: "compareSliding",
+    USING_MAGIC: "usingMagic",
 }
 let currentState = STATE.READY;
 let moveTimer, cycleTimer, playTimer;
@@ -95,6 +96,8 @@ function startPlayInterval(scrollbar, frameRate = 10) {
     playTimer = setInterval(() => {
         switch (currentState) {
             case STATE.READY:
+            case STATE.COMPARE_SLIDING:
+            case STATE.USING_MAGIC:
                 model.setIndex(scrollbar, scrollbar.index + 1);
                 break;
         }
@@ -112,7 +115,7 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
                 if (hit = model.checkCornerHit(mx, my)) {
                     imodel.setCursor("nwse-resize");
                 } else if (hit = model.checkComparisonSliderHit(mx, my)) {
-                    imodel.setCursor(hit.comparisonSliderType === "horizontal" ? "ns-resize" : "ew-resize");
+                    imodel.setCursor(hit.mode === "horizontal" ? "ns-resize" : "ew-resize");
                 } else {
                     imodel.setCursor("default");
                 }
@@ -159,7 +162,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.GHOSTING:
             if (hit = model.checkImageHit(mx, my)) {
-                if (hit instanceof Display && !(imodel.ghost instanceof Overlay) && !hit.comparisonSliderType) {
+                if (hit instanceof Display && !(imodel.ghost instanceof Overlay) && (!hit.mode || hit.mode === "overlay")) {
                     currentState = STATE.PREPARE_OVERLAY;
                 }
             }
@@ -190,6 +193,11 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
                 imodel.setComparisonSliderValue(mouseX, mouseY);
             }
             break;
+        case STATE.USING_MAGIC:
+            if (imodel.selection !== null) {
+                imodel.setMagicLensLocation(mouseX, mouseY);
+            }
+            break;
     }
     /* Highlighted objects are unhighlighted on drag */
     imodel.highlightSnapshot(null);
@@ -212,12 +220,17 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 } else {
                     currentState = STATE.FOCUSED;
                 }
-            } else if (hit = model.checkComparisonSliderHit(mx, my)) {
-                currentState = STATE.COMPARE_SLIDING;
-                if (imodel.selection !== hit) imodel.select(hit);
             } else if (hit = model.checkImageHit(mx, my)) {
                 if (event.which === 1) {
-                    currentState = STATE.PREPARE_SELECT;
+                    if (model.checkComparisonSliderHit(mx, my)) {
+                        currentState = STATE.COMPARE_SLIDING;
+                        if (imodel.selection !== hit) imodel.select(hit);
+                    } else if (model.checkMagicLensHit(mx, my)) {
+                        currentState = STATE.USING_MAGIC;
+                        if (imodel.selection !== hit) imodel.select(hit);
+                    } else {
+                        currentState = STATE.PREPARE_SELECT;
+                    }
                 } else if (event.which === 2) {
                     event.preventDefault();
                     previousX = mouseX;
@@ -327,15 +340,22 @@ function keyPressed(event) {
             } else if (keyCode === 189) {
                 /* Handle dash key pressed events */
                 if (imodel.selection instanceof Overlay) {
-                    const type = imodel.selection.comparisonSliderType === "horizontal" ? null : "horizontal";
-                    imodel.setComparisonSliderType(type);
+                    const mode = imodel.selection.mode === "horizontal" ? "overlay" : "horizontal";
+                    imodel.setMode(mode);
                     return false;
                 }
             } else if (keyCode === 220) {
                 /* Handle backslash key pressed events */
                 if (imodel.selection instanceof Overlay) {
-                    const type = imodel.selection.comparisonSliderType === "vertical" ? null : "vertical";
-                    imodel.setComparisonSliderType(type);
+                    const mode = imodel.selection.mode === "vertical" ? "overlay" : "vertical";
+                    imodel.setMode(mode);
+                    return false;
+                }
+            } else if (keyCode === 48) {
+                /* Handle '0' key pressed events */
+                if (imodel.selection instanceof Overlay) {
+                    const mode = imodel.selection.mode === "magic_lens" ? "overlay" : "magic_lens";
+                    imodel.setMode(mode);
                     return false;
                 }
             } else if (keyCode === 32) {

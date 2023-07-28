@@ -73,8 +73,18 @@ function Overlay(id, x, y, width, height, padding, scrollbarHeight, display, sec
     ));
     this.mainScrollbarIndex = 2;
 
-    this.comparisonSliderType = null;
-    this.comparisonSliderValue = 0.5; /* Ratio of the overlay width to represent the width */
+    this.mode = "overlay";
+
+    /* Ratio of the overlay width to represent the width */
+    this.comparisonSliderValue = 0.5;
+
+    /* Position of the magic lens in the overlay */
+    this.magicLens = {
+        x: this.x + this.padding  + this.width / 2,
+        y: this.y + this.padding + this.height / 2,
+        width: this.width / 2,
+        height: this.height / 2,
+    };
 }
 
 Overlay.prototype = Object.create(Display.prototype);
@@ -168,13 +178,12 @@ Overlay.prototype.cycleLayers = function () {
 // }
 
 /**
- * Set the comparison slider type
- * Will not change if the overlay have more than 2 layers.
- * @param {string} type either horizontal or vertical
+ * Set the overlay mode if the overlay has only 2 layers.
+ * @param {string} mode overlay, horizontal, vertical, or magic_lens
  */
-Overlay.prototype.setComparisonSliderType = function (type) {
+Overlay.prototype.setMode = function (mode) {
     if (this.locked || this.layers.length !== 2) return;
-    this.comparisonSliderType = type;
+    this.mode = mode;
 }
 
 /**
@@ -182,10 +191,60 @@ Overlay.prototype.setComparisonSliderType = function (type) {
  * @param {number} value new value for the comparison slider value
  */
 Overlay.prototype.setComparisonSliderValue = function (value) {
-    if (this.locked || !this.comparisonSliderType) return;
+    if (this.locked || !(this.mode === "horizontal" || this.mode === "vertical")) return;
     this.comparisonSliderValue = value;
     if (this.comparisonSliderValue < 0.1) this.comparisonSliderValue = 0.1;
     if (this.comparisonSliderValue > 0.9) this.comparisonSliderValue = 0.9;
+}
+
+/**
+ * Set the magic lens' location in the display. Will not go beyond the displays boundary
+ * @param {number} newX new x coordinate of the magic lens
+ * @param {number} newY new y coordinate of the magic lens
+ */
+Overlay.prototype.setMagicLensLocation = function (newX, newY) {
+    const left = this.x + this.padding;
+    const right = this.x + this.padding + this.width;
+    const top = this.y + this.padding;
+    const bottom = this.y + this.padding + this.height;
+
+    this.magicLens.x = newX;
+    this.magicLens.y = newY;
+
+    if (this.magicLens.x - this.magicLens.width / 2 < left)
+        this.magicLens.x = left + this.magicLens.width / 2;
+    if (this.magicLens.x + this.magicLens.width / 2 > right)
+        this.magicLens.x = right - this.magicLens.width / 2;
+    if (this.magicLens.y - this.magicLens.height / 2 < top)
+        this.magicLens.y = top + this.magicLens.height / 2;
+    if (this.magicLens.y + this.magicLens.height / 2 > bottom)
+        this.magicLens.y = bottom - this.magicLens.height / 2;
+}
+
+/**
+ * Resize the image display, and also updates the magic lens.
+ * @param {number} dx change to the width of the display
+ * @param {number} dy change to the height of the display
+ */
+Overlay.prototype.resize = function (dx, dy) {
+    Display.prototype.resize.call(this, dx, dy);
+    this.magicLens.width = this.width / 2;
+    this.magicLens.height = this.height / 2;
+    this.setMagicLensLocation(this.magicLens.x + dx, this.magicLens.y + dy);
+}
+
+/**
+ * Update the location parameters in the overlay and update the magic lens position as well.
+ * @param {number} newX new x coordinate for the display
+ * @param {number} newY new y coordinate for the display
+ */
+Overlay.prototype.setLocation = function (newX, newY) {
+    if (isNaN(newX) || isNaN(newY)) return;
+    const dx = newX - this.x;
+    const dy = newY - this.y;
+    Display.prototype.setLocation.call(this, newX, newY);
+    this.magicLens.x += dx;
+    this.magicLens.y += dy;
 }
 
 /**
@@ -196,21 +255,32 @@ Overlay.prototype.setComparisonSliderValue = function (value) {
  * @returns {boolean}
  */
 Overlay.prototype.checkComparisonSliderHit = function (mx = mouseX, my = mouseY) {
-    if (this.locked || !this.comparisonSliderType) return false;
+    if (this.locked || !(this.mode === "horizontal" || this.mode === "vertical")) return false;
     const sliderRadius = this.width / 10;
-    if (this.comparisonSliderType === "vertical") {
+    if (this.mode === "vertical") {
         return mx > this.x + this.padding + this.width * this.comparisonSliderValue - sliderRadius &&
             mx < this.x + this.padding + this.width * this.comparisonSliderValue + sliderRadius &&
             my > this.y + this.padding + this.height / 2 - sliderRadius &&
             my < this.y + this.padding + this.height / 2 + sliderRadius;
-    } else if (this.comparisonSliderType === "horizontal") {
+    } else {
         return mx > this.x + this.padding + this.width / 2 - sliderRadius &&
             mx < this.x + this.padding + this.width / 2 + sliderRadius &&
             my > this.y + this.padding + this.height * this.comparisonSliderValue - sliderRadius &&
             my < this.y + this.padding + this.height * this.comparisonSliderValue + sliderRadius;
-    } else {
-        return false;
     }
+}
+
+/**
+ * Check if the magic lens was hit in a mouse event.
+ * If the magic lens is not active, this will always return false.
+ * @param {number} mx x coordinate of the mouse
+ * @param {number} my y coordinate of the mouse
+ * @returns {boolean}
+ */
+Overlay.prototype.checkMagicLensHit = function (mx = mouseX, my = mouseY) {
+    if (this.locked || !(this.mode === "magic_lens")) return false;
+    return mx > this.magicLens.x - this.magicLens.width / 2 && mx < this.magicLens.x + this.magicLens.width / 2 &&
+        my > this.magicLens.y - this.magicLens.height / 2 && my < this.magicLens.y + this.magicLens.height / 2;
 }
 
 /**
