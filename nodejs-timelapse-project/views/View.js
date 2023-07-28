@@ -61,6 +61,13 @@ View.prototype.draw = function () {
                 tint(255, parseInt(layer2.opacity));
                 renderImage(img2, left, right, top, bottom, layer2.viewport);
                 noTint();
+                /* Draw magic lens window */
+                fill("rgb(0 ,0 ,0)");
+                noStroke();
+                rect(magicLens.x - magicLens.width / 2,
+                    magicLens.y - magicLens.height / 2,
+                    magicLens.width,
+                    magicLens.height);
                 renderImage(img1,
                     magicLens.x - magicLens.width / 2,
                     magicLens.x + magicLens.width / 2,
