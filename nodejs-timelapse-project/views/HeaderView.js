@@ -34,6 +34,7 @@ Headerview.prototype.draw = function () {
     this.updateLocked();
     this.updateOpacityElements();
     this.updateDisplayControlVisibility();
+    this.updateHelpVisibility();
 
     if (this.datasetSnapshot !== this.model.datasets) {
         this.updateUploadSelect();
@@ -122,6 +123,28 @@ Headerview.prototype.updateDisplayControlVisibility = function () {
         opacityContainer.classList.remove("hidden");
     } else if (!isOverlay && opacityContainer?.classList.contains("hidden") === false) {
         opacityContainer.classList.add("hidden");
+    }
+}
+
+/**
+ * Update the visibility of the help section.
+ */
+Headerview.prototype.updateHelpVisibility = function () {
+    const header = document.getElementsByTagName("header")[0];
+    const main = document.getElementsByTagName("main")[0];
+    const helpButton = document.getElementById("help");
+    const helpSection = document.getElementById("helpSection");
+    const helpState = this.model.help;
+    if (helpState && helpSection?.classList.contains("hidden")) {
+        header?.classList.add("hidden");
+        main?.classList.add("hidden");
+        helpSection.classList.remove("hidden");
+        helpButton.innerText = "Done";
+    } else if (!helpState && helpSection?.classList.contains("hidden") === false) {
+        header?.classList.remove("hidden");
+        main?.classList.remove("hidden");
+        helpSection.classList.add("hidden");
+        helpButton.innerText = "Help";
     }
 }
 

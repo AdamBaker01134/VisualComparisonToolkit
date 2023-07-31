@@ -59,6 +59,7 @@ const STATE = {
     RESIZING: "resizing",
     COMPARE_SLIDING: "compareSliding",
     USING_MAGIC: "usingMagic",
+    HELP: "help",
 }
 let currentState = STATE.READY;
 let moveTimer;
@@ -294,6 +295,8 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             imodel.setGhost(null);
             currentState = STATE.READY;
             break;
+        case STATE.HELP:
+            break;
         default:
             currentState = STATE.READY;
             break;
@@ -441,6 +444,18 @@ function _attachHeaderListeners() {
     });
     document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {
         imodel.saveAnnotation();
+    });
+    document.getElementById("help")?.addEventListener("click", e => {
+        switch(currentState) {
+            case STATE.HELP:
+                model.setHelp(false);
+                currentState = STATE.READY;
+                break;
+            default:
+                model.setHelp(true);
+                currentState = STATE.HELP;
+                break;
+        }
     });
 }
 

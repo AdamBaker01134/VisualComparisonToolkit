@@ -29,6 +29,8 @@ function Model() {
     this.rows = Math.floor((this.canvasHeight - this.displayPadding - this.globalScrollbarHeight) / this.cellHeight);
     this.columns = Math.floor((this.canvasWidth - this.displayPadding) / this.cellWidth);
 
+    this.help = false;
+
     this.subscribers = [];
 }
 
@@ -873,6 +875,15 @@ Model.prototype.loadDataset = function (options = {}) {
     } else {
         errCallback("Error: dataset does not exist in model");
     }
+}
+
+/**
+ * Set the state of Help
+ * @param {boolean} state help on/off
+ */
+Model.prototype.setHelp = function (state) {
+    this.help = state;
+    this.notifySubscribers();
 }
 
 Model.prototype.addSubscriber = function (subscriber) {
