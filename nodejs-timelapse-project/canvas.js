@@ -410,6 +410,10 @@ function _attachHeaderListeners() {
     });
 
     /* Individual display header functions */
+    document.getElementById("stampCheckbox").addEventListener("change", e => {
+        let checked = e.target.checked;
+        imodel.setTimestamped(checked);
+    })
     document.getElementById("lockCheckbox").addEventListener("change", e => {
         let checked = e.target.checked;
         imodel.setLocked(checked);

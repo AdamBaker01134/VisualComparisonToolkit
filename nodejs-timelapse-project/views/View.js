@@ -94,7 +94,7 @@ View.prototype.draw = function () {
 
         /* Timestamp */
         noTint();
-        if (display.layers.length === 1) {
+        if (display.timestamped) {
             stroke("rgb(0, 0, 0)");
             fill("rgb(255, 255, 255)");
             const minWidth = 24;

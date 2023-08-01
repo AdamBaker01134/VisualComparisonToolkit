@@ -32,6 +32,7 @@ Headerview.prototype.draw = function () {
     this.updateLoadingSpinner();
     this.updateNormalized();
     this.updateLocked();
+    this.updateTimestamped();
     this.updateOpacityElements();
     this.updateDisplayControlVisibility();
     this.updateHelpVisibility();
@@ -77,6 +78,15 @@ Headerview.prototype.updateNormalized = function () {
     let normalized = this.model.normalized;
     let checkbox = document.getElementById("normalizeCheckbox");
     if (checkbox?.checked !== normalized) checkbox.checked = normalized;
+}
+
+/**
+ * Update the state of the timestamp checkbox if it has changed.
+ */
+Headerview.prototype.updateTimestamped = function () {
+    let timestamped = this.imodel.selection?.timestamped;
+    let checkbox = document.getElementById("stampCheckbox");
+    if (checkbox?.checked !== timestamped) checkbox.checked = timestamped;
 }
 
 /**
