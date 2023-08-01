@@ -99,8 +99,8 @@ View.prototype.draw = function () {
             fill("rgb(255, 255, 255)");
             const minWidth = 24;
             textSize(minWidth);
-            const timestamps = display.getLayerTimestamps();
-            const txt = index > timestamps.length - 1 ? display.getLayerFrames()[index] : timestamps[index];
+            const timestamps = display.getLayerTimestamps(display.layers.length - 1);
+            const txt = index > timestamps.length - 1 ? display.getLayerFrames(display.layers.length - 1)[index] : timestamps[index];
             const txtWidth = textWidth(txt);
             let txtSize = minWidth * (display.width - display.padding * 2) / txtWidth;
             if (txtSize > minWidth) {

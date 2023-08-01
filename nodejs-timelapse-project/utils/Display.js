@@ -197,7 +197,7 @@ Display.prototype.pan = function (dx, dy) {
     const top = this.y + this.padding;
     const bottom = this.y + this.padding + this.height;
 
-    const viewport = this.getLayerViewport();
+    const viewport = this.getLayerViewport(this.layers.length - 1);
     const hPadding = viewport.width * 2 / 3;
     const vPadding = viewport.height * 2 / 3;
     
@@ -231,7 +231,7 @@ Display.prototype.zoom = function (delta) {
     const maxHeight = this.height * 2;
     const zoomRatio = -delta / 1000;
 
-    const viewport = this.getLayerViewport();
+    const viewport = this.getLayerViewport(this.layers.length - 1);
 
     viewport.width += (viewport.width * zoomRatio);
     if (viewport.width < minWidth) viewport.width = minWidth;

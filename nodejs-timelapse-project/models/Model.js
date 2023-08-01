@@ -556,7 +556,7 @@ Model.prototype.cycleLayers = function (overlay) {
 }
 
 /**
- * Load in filtered images and set in an display existing
+ * Load in filtered images and set them as the bottom layer of an existing display
  * @param {Display|Overlay} display display to filter
  * @param {string} filter name of the filter
  */
