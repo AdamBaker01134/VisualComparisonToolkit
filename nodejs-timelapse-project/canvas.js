@@ -182,10 +182,17 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.RESIZING:
             if (imodel.selection !== null) {
-                /* Only change one dimension to preserve aspect ratio */
+                const aspectRatio = imodel.selection.height / imodel.selection.width;
                 let dx = mouseX - previousX;
-                if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) dx = 0;
-                imodel.resize(dx, dx);
+                if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) {
+                    dx = 0;
+                }
+                let dy = aspectRatio * (imodel.selection.width + dx) - imodel.selection.height;
+                if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) {
+                    dx = 0;
+                    dy = 0;
+                }
+                imodel.resize(dx, dy);
             }
             previousX = mouseX;
             previousY = mouseY;
