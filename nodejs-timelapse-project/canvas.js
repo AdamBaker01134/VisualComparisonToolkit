@@ -185,13 +185,13 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
                 const aspectRatio = imodel.selection.height / imodel.selection.width;
                 let dx = mouseX - previousX;
                 if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) {
-                    if (model.layoutType === "grid") {
+                    if (model.layoutType === "static") {
                         dx = 0;
                     }
                 }
                 let dy = aspectRatio * (imodel.selection.width + dx) - imodel.selection.height;
                 if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) {
-                    if (model.layoutType === "grid") {
+                    if (model.layoutType === "static") {
                         dx = 0;
                         dy = 0;
                     }
@@ -414,11 +414,11 @@ function _attachHeaderListeners() {
     });
 
     /* Global header functions */
-    document.getElementById("normalLayoutCheckbox")?.addEventListener("click", e => {
-        model.setLayoutType("normal");
+    document.getElementById("dynamicLayoutCheckbox")?.addEventListener("click", e => {
+        model.setLayoutType("dynamic");
     });
-    document.getElementById("gridLayoutCheckbox")?.addEventListener("click", e => {
-        model.setLayoutType("grid");
+    document.getElementById("staticLayoutCheckbox")?.addEventListener("click", e => {
+        model.setLayoutType("static");
     });
     document.getElementById("loadSnapshotButton")?.addEventListener("click", e => {
         let snapshotName = document.getElementById("snapshotSelect")?.value;

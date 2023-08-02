@@ -9,7 +9,7 @@ function Model() {
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
 
-    this.layoutType = "grid";
+    this.layoutType = "static";
 
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
@@ -26,8 +26,10 @@ function Model() {
         this.globalScrollbarHeight,
         this.maxImages,
     );
-    this.cellWidth = 350;
-    this.cellHeight = 350;
+    this.defaultCellWidth = 350;
+    this.defaultCellHeight = 350;
+    this.cellWidth = this.defaultCellWidth;
+    this.cellHeight = this.defaultCellHeight;
     this.rows = Math.floor((this.canvasHeight - this.displayPadding - this.globalScrollbarHeight) / this.cellHeight);
     this.columns = Math.floor((this.canvasWidth - this.displayPadding) / this.cellWidth);
 
@@ -50,19 +52,21 @@ Model.prototype.updateCanvas = function () {
     this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
-    if (this.layoutType === "grid") {
-        this.setCellDimensions(350, 350);
+    if (this.layoutType === "static") {
+        this.setCellDimensions(this.defaultCellWidth, this.defaultCellHeight);
     } else {
-        const largestWidth = this.displays.reduce((largest, display) => {
+        let largestWidth = this.displays.reduce((largest, display) => {
             if (display === null) return largest;
             if (display.width + display.padding * 2 > largest) return display.width + display.padding * 2;
             else return largest;
         }, 0);
-        const largestHeight = this.displays.reduce((largest, display) => {
+        let largestHeight = this.displays.reduce((largest, display) => {
             if (display === null) return largest;
             if (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length > largest) return display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length;
             else return largest;
         }, 0);
+        if (largestWidth === 0) largestWidth = this.defaultCellWidth;
+        if (largestHeight === 0) largestHeight = this.defaultCellHeight;
         this.setCellDimensions(largestWidth, largestHeight);
     }
     this.displays.forEach((display, index) => {
@@ -136,10 +140,10 @@ Model.prototype.setNormalized = function (normalized) {
 
 /**
  * Set the layout type in the model.
- * @param {string} type layout type (must be "normal" or "grid")
+ * @param {string} type layout type (must be "static" or "dynamic")
  */
 Model.prototype.setLayoutType = function (type) {
-    if ((type === "normal" || type === "grid") && this.layoutType !== type) {
+    if ((type === "static" || type === "dynamic") && this.layoutType !== type) {
         this.layoutType = type;
         this.updateCanvas();
     }

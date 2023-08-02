@@ -77,20 +77,20 @@ Headerview.prototype.updateLoadingSpinner = function () {
  */
 Headerview.prototype.updateLayoutType = function () {
     let layoutType = this.model.layoutType;
-    let normalLayoutCheckbox = document.getElementById("normalLayoutCheckbox");
-    let gridLayoutCheckbox = document.getElementById("gridLayoutCheckbox");
-    if (normalLayoutCheckbox.checked && gridLayoutCheckbox.checked) {
-        if (layoutType === "normal") {
-            gridLayoutCheckbox.checked = false;
+    let staticLayoutCheckbox = document.getElementById("staticLayoutCheckbox");
+    let dynamicLayoutCheckbox = document.getElementById("dynamicLayoutCheckbox");
+    if (dynamicLayoutCheckbox.checked && staticLayoutCheckbox.checked) {
+        if (layoutType === "dynamic") {
+            staticLayoutCheckbox.checked = false;
         } else {
-            normalLayoutCheckbox.checked = false;
+            dynamicLayoutCheckbox.checked = false;
         }
     }
-    if (!normalLayoutCheckbox.checked && !gridLayoutCheckbox.checked) {
-        if (layoutType === "normal") {
-            normalLayoutCheckbox.checked = true;
+    if (!dynamicLayoutCheckbox.checked && !staticLayoutCheckbox.checked) {
+        if (layoutType === "dynamic") {
+            dynamicLayoutCheckbox.checked = true;
         } else {
-            gridLayoutCheckbox.checked = true;
+            staticLayoutCheckbox.checked = true;
         }
     }
 }
