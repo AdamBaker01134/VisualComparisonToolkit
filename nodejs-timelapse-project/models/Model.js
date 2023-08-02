@@ -29,6 +29,8 @@ function Model() {
     this.rows = Math.floor((this.canvasHeight - this.displayPadding - this.globalScrollbarHeight) / this.cellHeight);
     this.columns = Math.floor((this.canvasWidth - this.displayPadding) / this.cellWidth);
 
+    this.gridActive = false;
+
     this.help = false;
 
     this.subscribers = [];
@@ -875,6 +877,15 @@ Model.prototype.loadDataset = function (options = {}) {
     } else {
         errCallback("Error: dataset does not exist in model");
     }
+}
+
+/**
+ * Set the gridActive model state.
+ * @param {boolean} active active state
+ */
+Model.prototype.setGridActive = function (active) {
+    this.gridActive = active;
+    this.notifySubscribers();
 }
 
 /**

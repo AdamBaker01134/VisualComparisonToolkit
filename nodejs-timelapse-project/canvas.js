@@ -150,6 +150,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.setGhost(hit);
                 currentState = STATE.GHOSTING;
+                model.setGridActive(true);
                 startTimedMoveInterval();
             } else {
                 currentState = STATE.READY;
@@ -158,6 +159,7 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_OVERLAY:
             if (!(hit = model.checkImageHit(mx, my))) {
                 currentState = STATE.GHOSTING;
+                model.setGridActive(true);
             }
             imodel.updateGhost();
             break;
@@ -180,11 +182,10 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.RESIZING:
             if (imodel.selection !== null) {
+                /* Only change one dimension to preserve aspect ratio */
                 let dx = mouseX - previousX;
-                let dy = mouseY - previousY;
                 if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) dx = 0;
-                if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) dy = 0;
-                imodel.resize(dx, dy);
+                imodel.resize(dx, dx);
             }
             previousX = mouseX;
             previousY = mouseY;
@@ -243,6 +244,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 previousX = mouseX;
                 previousY = mouseY;
                 currentState = STATE.RESIZING;
+                model.setGridActive(true);
                 if (imodel.selection !== hit) imodel.select(hit);
             }
             break;
@@ -293,7 +295,12 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             }
             clearInterval(moveTimer);
             imodel.setGhost(null);
+            model.setGridActive(false);
             currentState = STATE.READY;
+            break;
+        case STATE.RESIZING:
+            currentState = STATE.READY;
+            model.setGridActive(false);
             break;
         case STATE.HELP:
             break;

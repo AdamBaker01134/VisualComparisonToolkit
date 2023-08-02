@@ -215,10 +215,8 @@ View.prototype.draw = function () {
         });
     });
 
-    /* Dragging ghost */
-    let ghost = this.imodel.ghost;
-    if (ghost instanceof Display || ghost instanceof Overlay) {
-        /* Display grid lines */
+    /* Display grid lines */
+    if (this.model.gridActive) {
         const padding = this.model.displayPadding;
         stroke("rgb(0, 0, 0)");
         for (let row = 0; row <= this.model.rows; row++) {
@@ -227,6 +225,11 @@ View.prototype.draw = function () {
         for (let column = 0; column <= this.model.columns; column++) {
             line(column * this.model.cellWidth + padding, padding, column * this.model.cellWidth + padding, this.model.cellHeight * this.model.rows + padding);
         }
+    }
+
+    /* Dragging ghost */
+    let ghost = this.imodel.ghost;
+    if (ghost instanceof Display || ghost instanceof Overlay) {
         let ghostX = mouseX - (ghost.width + ghost.padding * 2) / 2;
         let ghostY = mouseY - (ghost.height + ghost.padding * 2 + ghost.scrollbarHeight) / 2;
         renderDisplaySkeleton(ghost, false, 0.5, ghostX, ghostY);
