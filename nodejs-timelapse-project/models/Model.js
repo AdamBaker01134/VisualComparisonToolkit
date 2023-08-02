@@ -9,6 +9,8 @@ function Model() {
     this.displayPadding = 10;
     this.displayScrollbarHeight = 30;
 
+    this.layoutType = "grid";
+
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
     this.normalized = true;
@@ -48,11 +50,49 @@ Model.prototype.updateCanvas = function () {
     this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
+    if (this.layoutType === "grid") {
+        this.setCellDimensions(350, 350);
+    } else {
+        const largestWidth = this.displays.reduce((largest, display) => {
+            if (display === null) return largest;
+            if (display.width + display.padding * 2 > largest) return display.width + display.padding * 2;
+            else return largest;
+        }, 0);
+        const largestHeight = this.displays.reduce((largest, display) => {
+            if (display === null) return largest;
+            if (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length > largest) return display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length;
+            else return largest;
+        }, 0);
+        this.setCellDimensions(largestWidth, largestHeight);
+    }
     this.displays.forEach((display, index) => {
         if (display === null) return;
         display.setLocation(generateDisplayX(this, index), generateDisplayY(this, index));
+        if (display.width + display.padding * 2 > this.cellWidth) {
+            const aspectRatio = display.height / display.width;
+            let dx = this.cellWidth - (display.width + display.padding * 2);
+            let dy = aspectRatio * (display.width + dx) - display.height;
+            display.resize(dx, dy);
+        }
+        if (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length > this.cellHeight) {
+            const aspectRatio = display.width / display.height;
+            let dy = this.cellHeight - (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length);
+            let dx = aspectRatio * (display.height + dy) - display.width;
+            display.resize(dx, dy);
+        }
     });
     resizeCanvas(this.canvasWidth, this.canvasHeight);
+    this.notifySubscribers();
+}
+
+/**
+ * Set the width and height of the grid cells.
+ * @param {number} width new cell width
+ * @param {*} height new cell height
+ */
+Model.prototype.setCellDimensions = function (width, height) {
+    this.cellWidth = width;
+    this.cellHeight = height;
     this.notifySubscribers();
 }
 
@@ -91,6 +131,27 @@ Model.prototype.setGlobalScrollbarLocation = function (newX, newY) {
  */
 Model.prototype.setNormalized = function (normalized) {
     this.normalized = normalized;
+    this.notifySubscribers();
+}
+
+/**
+ * Set the layout type in the model.
+ * @param {string} type layout type (must be "normal" or "grid")
+ */
+Model.prototype.setLayoutType = function (type) {
+    if ((type === "normal" || type === "grid") && this.layoutType !== type) {
+        this.layoutType = type;
+        this.updateCanvas();
+    }
+    this.notifySubscribers();
+}
+
+/**
+ * Set the gridActive model state.
+ * @param {boolean} active active state
+ */
+Model.prototype.setGridActive = function (active) {
+    this.gridActive = active;
     this.notifySubscribers();
 }
 
@@ -877,15 +938,6 @@ Model.prototype.loadDataset = function (options = {}) {
     } else {
         errCallback("Error: dataset does not exist in model");
     }
-}
-
-/**
- * Set the gridActive model state.
- * @param {boolean} active active state
- */
-Model.prototype.setGridActive = function (active) {
-    this.gridActive = active;
-    this.notifySubscribers();
 }
 
 /**

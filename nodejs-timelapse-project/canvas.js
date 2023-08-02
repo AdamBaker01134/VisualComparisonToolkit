@@ -185,14 +185,19 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
                 const aspectRatio = imodel.selection.height / imodel.selection.width;
                 let dx = mouseX - previousX;
                 if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) {
-                    dx = 0;
+                    if (model.layoutType === "grid") {
+                        dx = 0;
+                    }
                 }
                 let dy = aspectRatio * (imodel.selection.width + dx) - imodel.selection.height;
                 if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) {
-                    dx = 0;
-                    dy = 0;
+                    if (model.layoutType === "grid") {
+                        dx = 0;
+                        dy = 0;
+                    }
                 }
                 imodel.resize(dx, dy);
+                model.updateCanvas();
             }
             previousX = mouseX;
             previousY = mouseY;
@@ -409,6 +414,12 @@ function _attachHeaderListeners() {
     });
 
     /* Global header functions */
+    document.getElementById("normalLayoutCheckbox")?.addEventListener("click", e => {
+        model.setLayoutType("normal");
+    });
+    document.getElementById("gridLayoutCheckbox")?.addEventListener("click", e => {
+        model.setLayoutType("grid");
+    });
     document.getElementById("loadSnapshotButton")?.addEventListener("click", e => {
         let snapshotName = document.getElementById("snapshotSelect")?.value;
         let snapshot = model.snapshots.find(snapshot => snapshot.name === snapshotName);

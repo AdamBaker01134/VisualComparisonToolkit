@@ -250,12 +250,10 @@ Display.prototype.zoom = function (delta) {
 Display.prototype.resize = function (dx, dy) {
     if (this.locked) return;
 
-    const maxWidth = 500;
-    const maxHeight = 500;
     const minWidth = 50;
     const minHeight = 50;
-    if (this.width + dx < minWidth || this.width + dx > maxWidth) return;
-    if (this.height + dy < minHeight || this.height + dy > maxHeight) return;
+    if (this.width + dx < minWidth) return;
+    if (this.height + dy < minHeight) return;
     this.width += dx;
     this.height += dy;
     for (let i = 0; i < this.layers.length; i++) {

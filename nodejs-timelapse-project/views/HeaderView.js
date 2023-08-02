@@ -30,6 +30,7 @@ Headerview.prototype.setInteractionModel = function (imodel) {
 Headerview.prototype.draw = function () {
     this.updateCursor();
     this.updateLoadingSpinner();
+    this.updateLayoutType();
     this.updateNormalized();
     this.updateLocked();
     this.updateTimestamped();
@@ -69,6 +70,29 @@ Headerview.prototype.updateLoadingSpinner = function () {
     let displayValue = this.model.loading ? "block" : "none";
     let spinner = document.getElementById("loading-spinner");
     if (spinner.style.display !== displayValue) spinner.style.display = displayValue;
+}
+
+/**
+ * Update the state of the layout type checkboxes.
+ */
+Headerview.prototype.updateLayoutType = function () {
+    let layoutType = this.model.layoutType;
+    let normalLayoutCheckbox = document.getElementById("normalLayoutCheckbox");
+    let gridLayoutCheckbox = document.getElementById("gridLayoutCheckbox");
+    if (normalLayoutCheckbox.checked && gridLayoutCheckbox.checked) {
+        if (layoutType === "normal") {
+            gridLayoutCheckbox.checked = false;
+        } else {
+            normalLayoutCheckbox.checked = false;
+        }
+    }
+    if (!normalLayoutCheckbox.checked && !gridLayoutCheckbox.checked) {
+        if (layoutType === "normal") {
+            normalLayoutCheckbox.checked = true;
+        } else {
+            gridLayoutCheckbox.checked = true;
+        }
+    }
 }
 
 /**
