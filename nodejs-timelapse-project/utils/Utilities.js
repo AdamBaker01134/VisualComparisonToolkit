@@ -40,14 +40,10 @@ function flattenDataset(dataset) {
  * @returns {string}
  */
 function generateDisplayId(model, name) {
-    let idNum = 1;
-    model.displays.forEach(display => {
-        if (display === null) return;
-        let displayName = getDisplayNameFromId(display.id);
-        let displayIdNum = getDisplayIdNumberFromId(display.id);
-        if (displayName === name) idNum = displayIdNum + 1;
-    });
-    return name + ID_DELIMITER + idNum;
+    while (true) {
+        const id = name + ID_DELIMITER + Math.floor(Math.random() * 1000000);
+        if (!model.displays.some(display => display.id === id)) return id;
+    }
 }
 
 /**
@@ -58,16 +54,10 @@ function generateDisplayId(model, name) {
  * @returns {string}
  */
 function generateOverlayId(model, id1, id2) {
-    let idNum = 1;
-    model.displays.forEach(display => {
-        if (display instanceof Overlay) {
-            let primaryId = getPrimaryIdFromId(display.id);
-            let secondaryId = getSecondaryIdFromId(display.id);
-            let displayIdNum = getDisplayIdNumberFromId(display.id);
-            if (primaryId === id1 && secondaryId === id2) idNum = displayIdNum + 1;
-        }
-    });
-    return id1 + ID_DELIMITER + id2 + ID_DELIMITER + idNum;
+    while (true) {
+        const id = id1 + ID_DELIMITER + id2 + ID_DELIMITER + Math.floor(Math.random() * 1000000);
+        if (!model.displays.some(display => display.id === id)) return id;
+    }
 }
 
 /**
