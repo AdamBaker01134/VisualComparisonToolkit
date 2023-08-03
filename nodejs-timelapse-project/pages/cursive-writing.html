@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cursive Writing Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        let paused = false;
+
+        let normal1, normal2, diffs, averages, singleLine, doubleLine;
+
+        let data1 = [];
+        let data2 = [];
+        let dataDiff = [];
+        let dataAvg = [];
+
+        let drawIndex = 0;
+
+        const CANVAS_WIDTH = 1000;
+        const CANVAS_HEIGHT = 500;
+        function setup() {
+            let data1Promise = fetch("./cursive-points-1.csv")
+                .then(response => response.text())
+                .then(txt => Papa.parse(txt))
+                .then(parsed => {
+                    const startTimestamp = parseInt(parsed.data[0][0]);
+                    data1 = parsed.data.map(data => [data[0] - startTimestamp, data[1], data[2]]).filter(data => data[0] >= 0);
+                })
+                .catch(err => console.error(err));
+            let data2Promise = fetch("./cursive-points-2.csv")
+                .then(response => response.text())
+                .then(txt => Papa.parse(txt))
+                .then(parsed => {
+                    const startTimestamp = parseInt(parsed.data[0][0]);
+                    data2 = parsed.data.map(data => [data[0] - startTimestamp, data[1], data[2]]).filter(data => data[0] >= 0);
+                })
+                .catch(err => console.error(err));
+            Promise.all([data1Promise, data2Promise])
+                .then(() => {
+                    if (data1.length < data2.length) {
+                        let saved = [...data1];
+                        data1 = data2;
+                        data2 = saved;
+                    }
+                    let diffX = data1[0][1] - data2[0][1];
+                    let diffY = data1[0][2] - data2[0][2];
+                    data2.forEach(data => {
+                        data[1] = parseFloat(data[1]) + diffX;
+                        data[2] = parseFloat(data[2]) + diffY;
+                    });
+                    console.log("Loaded in data1");
+                    // console.log(data1);
+                    console.log("Loaded in data2");
+                    // console.log(data2);
+                    dataDiff = calculateDiffs();
+                    dataAvg = calculateAverages();
+                });
+            createToggleButtons();
+            createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+        }
+
+        function draw() {
+            if (paused) return;
+            if ((drawIndex += 20) > 10000) drawIndex = 0;
+
+            let diffStep = data2.length / data1.length;
+            clear();
+            strokeWeight(3);
+            colorMode(RGB, 255, 255, 255, 1);
+            /** Differences **/
+            /* Every line difference */
+            if (diffs.checked()) {
+                stroke(135, 206, 235, 0.3);
+                for (let i = 0; i < dataDiff.length && drawIndex >= dataDiff[i][0]; i++) {
+                    line(dataDiff[i][1], dataDiff[i][2], dataDiff[i][3], dataDiff[i][4]);
+                };
+            }
+            /* Single line difference */
+            if (data1.length > 0 && data2.length > 0 && singleLine.checked()) {
+                stroke(255, 128, 0);
+                let index1 = data1.findLastIndex(element => drawIndex >= element[0]);
+                let index2 = data2.findLastIndex(element => drawIndex * diffStep >= element[0]);
+                line(data1[index1][1], data1[index1][2], data2[index2][1], data2[index2][2]);
+            }
+            /* Double line difference */
+            if (data1.length > 0 && data2.length > 0 && doubleLine.checked()) {
+                stroke(160, 32, 240);
+                let index1 = data1.findLastIndex(element => drawIndex >= element[0]);
+                let index2 = data2.findLastIndex(element => drawIndex * diffStep >= element[0]);
+                line(data1[0][1], data1[0][2], data1[index1][1], data1[index1][2]);
+                stroke(214, 219, 69);
+                line(data2[0][1], data2[0][2], data2[index2][1], data2[index2][2]);
+            }
+            noStroke();
+            /* Averages */
+            if (averages.checked()) {
+                fill(0, 255, 0);
+                for (let i = 0; i < dataAvg.length && drawIndex >= dataAvg[i][0]; i++) {
+                    circle(dataAvg[i][1], dataAvg[i][2], 5);
+                }
+            }
+            /* Data 1 */
+            if (normal1.checked()) {
+                fill(0, 0, 255);
+                for (let j = 0; j < data1.length && drawIndex >= data1[j][0]; j++) {
+                    circle(data1[j][1], data1[j][2], 5);
+                }
+            }
+            /* Data 2 */
+            if (normal2.checked()) {
+                fill(255, 0, 0);
+                for (let k = 0; k < data2.length && drawIndex * diffStep >= data2[k][0]; k++) {
+                    circle(data2[k][1], data2[k][2], 5);
+                }
+            }
+
+            stroke(128, 128, 128);
+            line(0, CANVAS_HEIGHT - 5, CANVAS_WIDTH, CANVAS_HEIGHT - 5);
+            stroke(255, 0, 0);
+            line(0, CANVAS_HEIGHT - 5, CANVAS_WIDTH * (drawIndex / 10000), CANVAS_HEIGHT - 5);
+        }
+
+        function calculateAverages() {
+            let averages = [];
+            let diffStep = data2.length / data1.length;
+            for (let i = 0; i < data1.length; i++) {
+                let t1 = data1[i][0];
+                let x1 = parseInt(data1[i][1]);
+                let y1 = parseInt(data1[i][2]);
+                let t2 = data2[Math.floor(i * diffStep)][0];
+                let x2 = data2[Math.floor(i * diffStep)][1];
+                let y2 = data2[Math.floor(i * diffStep)][2];
+                averages.push([(t1 + t2) / 2, (x1 + x2) / 2, (y1 + y2) / 2]);
+            }
+            return averages;
+        }
+
+        function calculateDiffs() {
+            let diffs = [];
+            let diffStep = data2.length / data1.length;
+            for (let i = 0; i < data1.length; i++) {
+                let t = data1[i][0];
+                let x1 = parseInt(data1[i][1]);
+                let y1 = parseInt(data1[i][2]);
+                let x2 = data2[Math.floor(i * diffStep)][1];
+                let y2 = data2[Math.floor(i * diffStep)][2];
+                diffs.push([t, x1, y1, x2, y2]);
+            }
+            return diffs;
+        }
+
+        function createToggleButtons() {
+            normal1 = createCheckbox("Data 1", true);
+            normal2 = createCheckbox("Data 2", true);
+            diffs = createCheckbox("Difference", false);
+            averages = createCheckbox("Averaged", false);
+            singleLine = createCheckbox("Single Line Difference", false);
+            doubleLine = createCheckbox("Double Line Difference", false);
+        }
+
+        function keyPressed(event) {
+            if (event.keyCode === 32) paused = !paused;
+            if (event.keyCode === LEFT_ARROW) drawIndex -= 1000;
+            if (event.keyCode === RIGHT_ARROW) drawIndex += 1000;
+            if (drawIndex < 0) drawIndex = 0;
+            if (drawIndex > 10000) drawIndex = 0;
+        }
+    </script>
+</head>
+
+<body>
+    <main></main>
+</body>
+
+</html>

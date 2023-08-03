@@ -28,9 +28,12 @@ app.use(express.static(__dirname));
 
 app.use(bodyParser.json());
 
+app.use(express.static("pages"));
+
 app.get("/", (req, res) => {
 	res.sendFile("video-comparison.html", { root: __dirname });
 });
+
 
 app.put("/addSnapshot", (req, res) => {
     const snapshot = req.body.snapshot;

@@ -1,11 +1,19 @@
+# Demo project ignores
 /demo-project/img/
 
+# Node JS project image ignores
 /nodejs-timelapse-project/img/*/*
 
 /nodejs-timelapse-project/img/*.json
 
+# Node JS project server file ignores
 /nodejs-timelapse-project/node_modules/
 
 /nodejs-timelapse-project/package-lock.json
 
 /nodejs-timelapse-project/snapshots.json
+
+# Node JS project extra page ignores
+/nodejs-timelapse-project/pages/*-images/
+
+/nodejs-timelapse-project/pages/*.csv
