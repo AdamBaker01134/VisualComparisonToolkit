@@ -42,7 +42,7 @@ function flattenDataset(dataset) {
 function generateDisplayId(model, name) {
     while (true) {
         const id = name + ID_DELIMITER + Math.floor(Math.random() * 1000000);
-        if (!model.displays.some(display => display.id === id)) return id;
+        if (!model.displays.some(display => display !== null && display.id === id)) return id;
     }
 }
 
@@ -56,7 +56,7 @@ function generateDisplayId(model, name) {
 function generateOverlayId(model, id1, id2) {
     while (true) {
         const id = id1 + ID_DELIMITER + id2 + ID_DELIMITER + Math.floor(Math.random() * 1000000);
-        if (!model.displays.some(display => display.id === id)) return id;
+        if (!model.displays.some(display => display !== null && display.id === id)) return id;
     }
 }
 
