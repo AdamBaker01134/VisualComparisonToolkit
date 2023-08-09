@@ -2,6 +2,7 @@
 "use strict";
 function iModel() {
     this.cursor = "default";
+    this.shadowCursor = null;
     this.focused = null;
     this.selection = null;
     this.highlightedAnnotation = null;
@@ -19,6 +20,15 @@ iModel.prototype.setCursor = function (cursorStyle) {
         this.cursor = cursorStyle;
         this.notifySubscribers();
     }
+}
+
+/**
+ * Set the shadow cursor object in the interaction model.
+ * @param {Object} cursorObj shadow cursor object containing information about where to draw the cursor in each display
+ */
+iModel.prototype.setShadowCursor = function (cursorObj) {
+    this.shadowCursor = cursorObj;
+    this.notifySubscribers();
 }
 
 /**

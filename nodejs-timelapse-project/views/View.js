@@ -14,6 +14,7 @@ View.prototype.setInteractionModel = function (imodel) {
 
 View.prototype.draw = function () {
     clear();
+    strokeWeight(1);
 
     this.model.displays.forEach(display => {
         if (display === null) return;
@@ -108,6 +109,20 @@ View.prototype.draw = function () {
             }
             textSize(txtSize);
             text(txt, display.x + display.padding + 5, display.y + display.padding + txtSize);
+        }
+
+        /* Shadow cursor */
+        if (this.imodel.shadowCursor !== null) {
+            noStroke();
+            fill("rgb(255, 255, 255)");
+            stroke("rgb(0, 0, 0)");
+            const cursorX = display.x + display.padding + display.width * this.imodel.shadowCursor.widthRatio;
+            const cursorY = display.y + display.padding + display.height * this.imodel.shadowCursor.heightRatio;
+            const cursorLength = this.imodel.shadowCursor.length;
+            rect(cursorX - 2, cursorY - cursorLength / 2, 4, cursorLength);
+            rect(cursorX - cursorLength / 2, cursorY - 2, cursorLength, 4);
+            noFill();
+            rect(cursorX - 2, cursorY - cursorLength / 2, 4, cursorLength);
         }
 
         /* Scrollbars */
@@ -280,6 +295,15 @@ View.prototype.draw = function () {
             trianglePos + 5,
             scrollbar.y + scrollbar.height - 0.5
         )
+    }
+
+    /* Canvas outline for specific events */
+    if (this.imodel.cursor === "crosshair") {
+        /* We're in shadow cursor mode, outline canvas with yellow border */
+        stroke("rgb(255, 204, 0)");
+        strokeWeight(3);
+        noFill();
+        rect(0, 0, this.model.canvasWidth, this.model.canvasHeight);
     }
 }
 

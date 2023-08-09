@@ -59,6 +59,7 @@ const STATE = {
     RESIZING: "resizing",
     COMPARE_SLIDING: "compareSliding",
     USING_MAGIC: "usingMagic",
+    SHADOW_CURSOR: "shadowCursor",
     NO_RIGHT_CLICK: "noRightClick",
     HELP: "help",
 }
@@ -281,6 +282,14 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 if (imodel.selection !== hit) imodel.select(hit);
             }
             break;
+        case STATE.SHADOW_CURSOR:
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.setShadowCursor({
+                    widthRatio: (mx - (hit.x + hit.padding)) / hit.width,
+                    heightRatio: (my - (hit.y + hit.padding)) / hit.height,
+                    length: 20,
+                });
+            }
     }
 
 }
@@ -337,6 +346,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.HELP:
         case STATE.NO_RIGHT_CLICK:
+        case STATE.SHADOW_CURSOR:
             break;
         default:
             currentState = STATE.READY;
@@ -415,11 +425,28 @@ function keyPressed(event) {
                 }
                 return false;
             } else if (keyCode === DELETE) {
+                /* Handle delete key pressed events */
                 if (imodel.selection !== null) {
                     console.log(`Removing ${imodel.selection.id}...`);
                     model.removeDisplay(imodel.selection);
                     imodel.select(imodel.selection); /* Need to unselect display */
+                    return false;
                 }
+            } else if (keyCode === 190) {
+                /* Handle period key pressed events */
+                imodel.setCursor("crosshair");
+                currentState = STATE.SHADOW_CURSOR;
+                return false;
+            }
+            break;
+        case STATE.SHADOW_CURSOR:
+            if (keyCode === 190) {
+                imodel.setCursor("default");
+                currentState = STATE.READY;
+                return false;
+            } else if (keyCode === DELETE) {
+                imodel.setShadowCursor(null);
+                return false;
             }
     }
 }
@@ -497,7 +524,7 @@ function _attachHeaderListeners() {
         imodel.saveAnnotation();
     });
     document.getElementById("help")?.addEventListener("click", e => {
-        switch(currentState) {
+        switch (currentState) {
             case STATE.HELP:
                 model.setHelp(false);
                 currentState = STATE.READY;
