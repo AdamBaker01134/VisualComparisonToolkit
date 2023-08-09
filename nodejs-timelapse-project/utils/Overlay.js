@@ -118,7 +118,7 @@ Overlay.prototype.addLayer = function (display) {
             width: this.width + (display.getLayerViewport().width - display.width),
             height: this.height + (display.getLayerViewport().height - display.height),
         },
-        opacity: "128",
+        opacity: Math.floor(255 / (this.layers.length + 1)).toString(),
         scrollbarIndex: this.mainScrollbarIndex,
     };
     const scrollbar = new Scrollbar(

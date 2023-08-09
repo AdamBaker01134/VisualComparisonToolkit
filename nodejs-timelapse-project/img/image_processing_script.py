@@ -84,6 +84,14 @@ parser.add_argument(
     help="Delete named dataset and its entry in the datasets.json file"
 )
 
+parser.add_argument(
+    "--pattern",
+    type=str,
+    required=False,
+    default="",
+    help="Filename pattern to only include in output"
+)
+
 
 def find_optimal_image_width(src_dir, max_img_size):
     """
@@ -283,6 +291,7 @@ def process_images(src_dir, output_dir, options):
     }
 
     processed = 0
+    ignored = 0
     raw_timestamps = get_timestamps(src_dir)
     frames = []
     timestamps = []
@@ -297,14 +306,16 @@ def process_images(src_dir, output_dir, options):
     for filename in files:
         if filename in IGNORED_FILES:
             processed += 1
+            ignored += 1
             continue
         if os.path.isdir(src_dir + "/" + filename):
             sub_data = process_images(src_dir + "/" + filename, output_dir + "/" + filename, options)
             data["sub"].append(sub_data)
         elif os.path.isfile(src_dir + "/" + filename):
             print("Progress: " + str(processed) + "/" + str(total_files), end="\r")
-            if processed % options["step"] != 0 or processed < start_index or processed >= max_images * options["step"] + start_index:
+            if options["pattern"] not in os.path.splitext(filename)[0] or (processed - ignored) % options["step"] != 0 or (processed - ignored) < start_index or (processed - ignored) >= max_images * options["step"] + start_index:
                 processed += 1
+                ignored += 1
                 continue
             # Create target image directories if they don't already exist
             if "filters" not in data:
@@ -415,6 +426,7 @@ if __name__ == "__main__":
         "start_index": args.start,
         "max_images": args.max,
         "step": args.step,
+        "pattern": args.pattern,
     }
     if args.size > 0:
         options["resize"] = True

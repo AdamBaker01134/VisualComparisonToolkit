@@ -59,6 +59,7 @@ const STATE = {
     RESIZING: "resizing",
     COMPARE_SLIDING: "compareSliding",
     USING_MAGIC: "usingMagic",
+    NO_RIGHT_CLICK: "noRightClick",
     HELP: "help",
 }
 let currentState = STATE.READY;
@@ -229,10 +230,30 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
                 if (startFocused) {
                     currentState = STATE.START_FOCUSED;
+                    if (event.which === 3) {
+                        model.setStart(imodel.focused, imodel.focused.index);
+                        imodel.setFocused(null);
+                        currentState = STATE.NO_RIGHT_CLICK;
+                    } else {
+                        model.setStartFromMouse(imodel.focused, mx);
+                    }
                 } else if (endFocused) {
                     currentState = STATE.END_FOCUSED;
+                    if (event.which === 3) {
+                        model.setEnd(imodel.focused, imodel.focused.index);
+                        imodel.setFocused(null);
+                        currentState = STATE.NO_RIGHT_CLICK;
+                    } else {
+                        model.setEndFromMouse(imodel.focused, mx);
+                    }
                 } else {
-                    currentState = STATE.FOCUSED;
+                    if (event.which === 3) {
+                        imodel.setFocused(null);
+                        currentState = STATE.NO_RIGHT_CLICK;
+                    } else {
+                        currentState = STATE.FOCUSED;
+                        model.setIndexFromMouse(imodel.focused, mx);
+                    }
                 }
             } else if (hit = model.checkImageHit(mx, my)) {
                 if (event.which === 1) {
@@ -315,6 +336,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             model.setGridActive(false);
             break;
         case STATE.HELP:
+        case STATE.NO_RIGHT_CLICK:
             break;
         default:
             currentState = STATE.READY;
@@ -483,6 +505,14 @@ function _attachHeaderListeners() {
             default:
                 model.setHelp(true);
                 currentState = STATE.HELP;
+                break;
+        }
+    });
+    document.getElementById("defaultCanvas0")?.addEventListener("contextmenu", e => {
+        switch (currentState) {
+            case STATE.NO_RIGHT_CLICK:
+                e.preventDefault();
+                currentState = STATE.READY;
                 break;
         }
     });
