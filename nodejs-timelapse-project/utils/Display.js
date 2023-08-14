@@ -268,6 +268,19 @@ Display.prototype.resize = function (dx, dy) {
 }
 
 /**
+ * Scale a specific viewport
+ * @param {number} factor scale factor
+ * @param {number=} index layer index
+ */
+Display.prototype.scaleViewport = function (factor, index=0) {
+    if (this.locked) return;
+
+    const viewport = this.getLayerViewport(index);
+    viewport.width *= factor;
+    viewport.height *= factor;
+}
+
+/**
  * Check to see if mouse is on a scrollbar
  * @param {number} mx x coordinate of cursor
  * @param {number} my y coordinate of cursor

@@ -3,6 +3,7 @@
 function iModel() {
     this.cursor = "default";
     this.shadowCursor = null;
+    this.coincidentPoints = [];
     this.focused = null;
     this.selection = null;
     this.highlightedAnnotation = null;
@@ -194,6 +195,63 @@ iModel.prototype.setOpacity = function (opacity) {
         this.selection.setOpacity(opacity);
         this.notifySubscribers();
     }
+}
+
+/**
+ * Apply a coincident point transformation on two displays.
+ * If you don't have enough points, or if the 1st/2nd or 3rd/4th points don't have matching displays, an error message will display and coincident points will be reset.
+ */
+iModel.prototype.coincidentTransform = function () {
+    if (this.coincidentPoints.length !== 4 ||
+        this.coincidentPoints[0].display === this.coincidentPoints[2].display ||
+        this.coincidentPoints[0].display !== this.coincidentPoints[1].display ||
+        this.coincidentPoints[2].display !== this.coincidentPoints[3].display) {
+        alert("Error: Invalid coincident points. Ensure that you set the points in order 1 and 2 in the first video, then 3 and 4 in the second video.");
+        this.coincidentPoints = [];
+        this.notifySubscribers();
+        return;
+    }
+    const d1 = dist(this.coincidentPoints[0].x, this.coincidentPoints[0].y, this.coincidentPoints[1].x, this.coincidentPoints[1].y);
+    const d2 = dist(this.coincidentPoints[2].x, this.coincidentPoints[2].y, this.coincidentPoints[3].x, this.coincidentPoints[3].y);
+    const scaleFactor = d2/d1;
+
+    const display1 = this.coincidentPoints[0].display;
+    const display2 = this.coincidentPoints[2].display;
+    const viewport1 = display1.getLayerViewport();
+    const viewport2 = display2.getLayerViewport();
+    const x1 = (this.coincidentPoints[0].x - viewport1.x) * scaleFactor - (display1.x + display1.padding - viewport1.x);
+    const x2 = this.coincidentPoints[2].x - viewport2.x - (display2.x + display2.padding - viewport2.x);
+    const dx = x2 - x1;
+    const y1 = (this.coincidentPoints[0].y - viewport1.y) * scaleFactor - (display1.y + display1.padding - viewport1.y);
+    const y2 = this.coincidentPoints[2].y - viewport2.y - (display2.y + display2.padding - viewport2.y);
+    const dy = y2 - y1;
+
+    display1.pan(dx, dy);
+    display1.scaleViewport(scaleFactor);
+    this.coincidentPoints = [];
+    this.notifySubscribers();
+}
+
+/**
+ * Add a coincident point into a display.
+ * @param {Display|Overlay} display display that coincident point is paired to
+ * @param {number} x x coordinate of the coincident point
+ * @param {number} y y coordinate of the coincident point
+ */
+iModel.prototype.addCoincidentPoint = function (display, x, y) {
+    this.coincidentPoints.push({ display: display, x: x, y: y, });
+    if (this.coincidentPoints.length === 4) {
+        this.coincidentTransform();
+    }
+    this.notifySubscribers();
+}
+
+/**
+ * Clear the collected coincident points.
+ */
+iModel.prototype.clearCoincidentPoints = function () {
+    this.coincidentPoints = [];
+    this.notifySubscribers();
 }
 
 /**

@@ -125,6 +125,13 @@ View.prototype.draw = function () {
             rect(cursorX - 2, cursorY - cursorLength / 2, 4, cursorLength);
         }
 
+        /* Coincident points */
+        this.imodel.coincidentPoints.forEach(point => {
+            stroke("rgb(0, 0, 0)");
+            fill("rgb(255, 255, 255)");
+            ellipse(point.x, point.y, 10, 10);
+        });
+
         /* Scrollbars */
         display.scrollbars.forEach(scrollbar => {
             let trianglePos = scrollbar.getMainPosition();
@@ -301,6 +308,12 @@ View.prototype.draw = function () {
     if (this.imodel.cursor === "crosshair") {
         /* We're in shadow cursor mode, outline canvas with yellow border */
         stroke("rgb(255, 204, 0)");
+        strokeWeight(3);
+        noFill();
+        rect(0, 0, this.model.canvasWidth, this.model.canvasHeight);
+    } else if (this.imodel.cursor === "pointer") {
+        /* We're in coincident point mode, outline canvas with blue border */
+        stroke("rgb(32, 78, 207)");
         strokeWeight(3);
         noFill();
         rect(0, 0, this.model.canvasWidth, this.model.canvasHeight);
