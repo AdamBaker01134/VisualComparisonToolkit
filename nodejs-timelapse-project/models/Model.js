@@ -743,6 +743,7 @@ Model.prototype.addSnapshot = function () {
         globalScrollbar: this.globalScrollbar.toJSON(),
         scrollPos: [scrollX, scrollY],
         normalized: this.normalized,
+        layoutType: this.layoutType,
     };
     alert(`Successfully created snapshot with name "${name}"`);
     // fetch("http://localhost:3019/addSnapshot", {
@@ -765,6 +766,8 @@ Model.prototype.addSnapshot = function () {
  * @param {Object} snapshot snapshot object
  */
 Model.prototype.loadSnapshot = async function (snapshot) {
+    this.setNormalized(snapshot.normalized);
+    this.setLayoutType(snapshot.layoutType);
     /* Load global scrollbar from JSON */
     this.globalScrollbar.fromJSON(snapshot.globalScrollbar);
     /* Clear all displays that are not included in the snapshot */
@@ -873,7 +876,6 @@ Model.prototype.loadSnapshot = async function (snapshot) {
             });
         });
     });
-    this.setNormalized(snapshot.normalized);
     window.scrollTo(snapshot.scrollPos[0], snapshot.scrollPos[1]);
     this.updateCanvas();
     console.log(`Successfully loaded snapshot "${snapshot.name}"`);
