@@ -429,7 +429,7 @@ function keyPressed(event) {
                     clearInterval(playingTimers[scrollbar.id]);
                     delete playingTimers[scrollbar.id];
                 } else {
-                    startPlayInterval(scrollbar);
+                    startPlayInterval(scrollbar, scrollbar.size / 10);
                 }
                 return false;
             } else if (keyCode === DELETE) {
