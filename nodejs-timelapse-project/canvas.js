@@ -496,8 +496,6 @@ function _attachHeaderListeners() {
         if (value.includes(" ***")) value = value.replace(" ***", "");
         const datasets = model.datasets.filter(dataset => dataset.containsImages && dataset.dir.startsWith(value));
         for (let i = 0; i < datasets.length; i++) {
-            /* Ensure layout is updated after the first display is loaded in */
-            if (model.displays.length === 1 && model.layoutType === "dynamic") model.updateCanvas();
             await model.addDisplay(datasets[i], "").then(display => imodel.select(display));
         }
     });

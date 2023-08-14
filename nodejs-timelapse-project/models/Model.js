@@ -454,6 +454,8 @@ Model.prototype.addDisplay = async function (dataset, filter) {
         }
         this.globalScrollbar.addChild(display.getMainScrollbar());
 
+        if (this.layoutType === "dynamic") this.updateCanvas();
+
         this.notifySubscribers();
 
         return display;
@@ -533,6 +535,8 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         }
 
         this.globalScrollbar.addChild(overlay.getMainScrollbar());
+
+        if (this.layoutType === "dynamic") this.updateCanvas();
 
         this.notifySubscribers();
 
