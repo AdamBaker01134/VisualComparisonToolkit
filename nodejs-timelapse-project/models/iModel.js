@@ -221,7 +221,7 @@ iModel.prototype.coincidentTransform = function () {
     const x1 = this.coincidentPoints[0].x * scaleFactor + viewport1.x * (1 - scaleFactor) - display1.x - display1.padding;
     const x2 = this.coincidentPoints[2].x - display2.x - display2.padding;
     const dx = x2 - x1;
-    const y1 = this.coincidentPoints[0].y * scaleFactor + viewport1.y * (1 - scaleFactor) - display1.x - display1.padding;
+    const y1 = this.coincidentPoints[0].y * scaleFactor + viewport1.y * (1 - scaleFactor) - display1.y - display1.padding;
     const y2 = this.coincidentPoints[2].y - display2.y - display2.padding;
     const dy = y2 - y1;
 
