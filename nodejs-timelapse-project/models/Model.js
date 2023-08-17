@@ -106,7 +106,7 @@ Model.prototype.setCellDimensions = function (width, height) {
  * @returns {Object|undefined}
  */
 Model.prototype.getDatasetFromName = function (name) {
-    const dataset = this.datasets.find(dataset => basename(dataset.dir) === name);
+    const dataset = this.datasets.find(dataset => dataset.dir === name);
     if (dataset) return dataset;
     return null;
 }
@@ -495,7 +495,7 @@ Model.prototype.loadDisplay = async function (dataset, filter) {
                 position = this.displays.length;
             }
             return new Display(
-                generateDisplayId(this, basename(loadObj.dir)),
+                generateDisplayId(this, loadObj.dir),
                 generateDisplayX(this, position),
                 generateDisplayY(this, position),
                 width,
@@ -632,7 +632,8 @@ Model.prototype.cycleLayers = function (overlay) {
  * @param {string} filter name of the filter
  */
 Model.prototype.filterImages = async function (display, filter) {
-    const layerId = display.getLayerId();
+    const layerIndex = display.layers.length - 1;
+    const layerId = display.getLayerId(layerIndex);
     const name = getDisplayNameFromId(layerId);
     const dataset = this.getDatasetFromName(name);
     if (dataset) {
@@ -645,7 +646,7 @@ Model.prototype.filterImages = async function (display, filter) {
             });
         });
         if (loadObj !== null) {
-            display.setImages(loadObj.images, filter);
+            display.setImages(loadObj.images, filter, layerIndex);
             this.notifySubscribers();
         }
     }
@@ -925,7 +926,7 @@ Model.prototype.loadDataset = function (options = {}) {
     if (!!options.dataset) {
         this.incrementLoading();
         const start = performance.now();
-        console.log(`Beginning load of ${basename(options.dataset.dir)} from /${options.filter}...`);
+        console.log(`Beginning load of ${options.dataset.dir} from /${options.filter}...`);
         this.loader.initDatasetLoad(
             options.dataset,
             options.filter,

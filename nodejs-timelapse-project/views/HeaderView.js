@@ -276,8 +276,8 @@ Headerview.prototype.updateFilterSelect = function () {
         let filterSelect = document.getElementById("filterSelect");
         filterSelect.innerHTML = "";
 
-        const filters = selection.getLayerFilters();
-        const selectedFilter = selection.getLayerFilter();
+        const filters = selection.getLayerFilters(selection.layers.length - 1);
+        const selectedFilter = selection.getLayerFilter(selection.layers.length - 1);
 
         if (selectedFilter !== "") {
             let currentOption = document.createElement("option");

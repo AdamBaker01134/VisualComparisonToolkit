@@ -120,7 +120,8 @@ Loader.prototype._loadFrames = function (loadObj) {
         loadStrings(
             this.imgPath + loadObj.dir + "/frames.txt",
             loadedFrames => {
-                loadObj.frames = loadedFrames.map(frame => frame.replace("%", "%25"))
+                loadObj.frames = loadedFrames.map(frame => frame.replace("%", "%25"));
+                if (loadObj.filter === "foreground") loadObj.frames = loadObj.frames.map(frame => frame.replace(".jpg", ".png"));
                 loadObj.frames = loadObj.frames.filter(frame => frame !== "");
                 resolve();
             },

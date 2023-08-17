@@ -2,6 +2,7 @@
 "use strict";
 
 const ID_DELIMITER = "?";
+const PATH_DELIMITER = "|";
 
 /*
  * Extend p5.dom functionality.
@@ -41,7 +42,8 @@ function flattenDataset(dataset) {
  */
 function generateDisplayId(model, name) {
     while (true) {
-        const id = name + ID_DELIMITER + Math.floor(Math.random() * 1000000);
+        const formattedName = name.replaceAll("/", PATH_DELIMITER).replaceAll("\\", PATH_DELIMITER);
+        const id = formattedName + ID_DELIMITER + Math.floor(Math.random() * 1000000);
         if (!model.displays.some(display => display !== null && display.id === id)) return id;
     }
 }
@@ -68,7 +70,7 @@ function generateOverlayId(model, id1, id2) {
 function getDisplayNameFromId(id) {
     let idTokens = id.split(ID_DELIMITER);
     if (idTokens.length === 2 || idTokens.length === 5) {
-        return idTokens[0];
+        return idTokens[0].replaceAll(PATH_DELIMITER, "/");
     }
     return "";
 }
