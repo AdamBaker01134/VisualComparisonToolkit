@@ -7,8 +7,10 @@
 
 const fs = require("fs");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
 const cloudinary = require("cloudinary").v2;
 const app = express();
 // const HOST = "localhost";
@@ -28,9 +30,12 @@ app.use(express.static(__dirname));
 
 app.use(bodyParser.json());
 
+app.use(cookieParser());
+
 app.use(express.static("pages"));
 
 app.get("/", (req, res) => {
+    if (!req.cookies.userId) res.cookie("userId", uuidv4())
 	res.sendFile("video-comparison.html", { root: __dirname });
 });
 
