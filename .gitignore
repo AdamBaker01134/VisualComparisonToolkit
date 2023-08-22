@@ -17,3 +17,7 @@
 /nodejs-timelapse-project/pages/*-images/
 
 /nodejs-timelapse-project/pages/*.csv
+
+# Logging files
+
+/nodejs-timelapse-project/app.log
