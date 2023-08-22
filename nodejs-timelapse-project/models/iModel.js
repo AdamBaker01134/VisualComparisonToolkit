@@ -2,7 +2,7 @@
 "use strict";
 function iModel() {
     this.cursor = "default";
-    this.shadowCursor = null;
+    this.shadowMarker = null;
     this.coincidentPoints = [];
     this.focused = null;
     this.selection = null;
@@ -24,11 +24,11 @@ iModel.prototype.setCursor = function (cursorStyle) {
 }
 
 /**
- * Set the shadow cursor object in the interaction model.
- * @param {Object} cursorObj shadow cursor object containing information about where to draw the cursor in each display
+ * Set the shadow marker object in the interaction model.
+ * @param {Object} markerObj shadow marker object containing information about where to draw the marker in each display
  */
-iModel.prototype.setShadowCursor = function (cursorObj) {
-    this.shadowCursor = cursorObj;
+iModel.prototype.setShadowMarker = function (markerObj) {
+    this.shadowMarker = markerObj;
     this.notifySubscribers();
 }
 

@@ -111,14 +111,14 @@ View.prototype.draw = function () {
             text(txt, display.x + display.padding + 5, display.y + display.padding + txtSize);
         }
 
-        /* Shadow cursor */
-        if (this.imodel.shadowCursor !== null) {
+        /* Shadow marker */
+        if (this.imodel.shadowMarker !== null) {
             noStroke();
             fill("rgb(255, 255, 255)");
             stroke("rgb(0, 0, 0)");
-            const cursorX = display.x + display.padding + display.width * this.imodel.shadowCursor.widthRatio;
-            const cursorY = display.y + display.padding + display.height * this.imodel.shadowCursor.heightRatio;
-            const cursorLength = this.imodel.shadowCursor.length;
+            const cursorX = display.x + display.padding + display.width * this.imodel.shadowMarker.widthRatio;
+            const cursorY = display.y + display.padding + display.height * this.imodel.shadowMarker.heightRatio;
+            const cursorLength = this.imodel.shadowMarker.length;
             rect(cursorX - 2, cursorY - cursorLength / 2, 4, cursorLength);
             rect(cursorX - cursorLength / 2, cursorY - 2, cursorLength, 4);
             noFill();
@@ -306,7 +306,7 @@ View.prototype.draw = function () {
 
     /* Canvas outline for specific events */
     if (this.imodel.cursor === "crosshair") {
-        /* We're in shadow cursor mode, outline canvas with yellow border */
+        /* We're in shadow marker mode, outline canvas with yellow border */
         stroke("rgb(255, 204, 0)");
         strokeWeight(3);
         noFill();

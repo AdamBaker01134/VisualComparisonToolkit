@@ -59,7 +59,7 @@ const STATE = {
     RESIZING: "resizing",
     COMPARE_SLIDING: "compareSliding",
     USING_MAGIC: "usingMagic",
-    SHADOW_CURSOR: "shadowCursor",
+    SHADOW_MARKER: "shadowMarker",
     COINCIDENT_POINTING: "coincidentPointing",
     NO_RIGHT_CLICK: "noRightClick",
     HELP: "help",
@@ -283,9 +283,9 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 if (imodel.selection !== hit) imodel.select(hit);
             }
             break;
-        case STATE.SHADOW_CURSOR:
+        case STATE.SHADOW_MARKER:
             if (hit = model.checkImageHit(mx, my)) {
-                imodel.setShadowCursor({
+                imodel.setShadowMarker({
                     widthRatio: (mx - (hit.x + hit.padding)) / hit.width,
                     heightRatio: (my - (hit.y + hit.padding)) / hit.height,
                     length: 20,
@@ -353,7 +353,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.HELP:
         case STATE.NO_RIGHT_CLICK:
-        case STATE.SHADOW_CURSOR:
+        case STATE.SHADOW_MARKER:
         case STATE.COINCIDENT_POINTING:
             break;
         default:
@@ -443,7 +443,7 @@ function keyPressed(event) {
             } else if (keyCode === 190) {
                 /* Handle period key pressed events */
                 imodel.setCursor("crosshair");
-                currentState = STATE.SHADOW_CURSOR;
+                currentState = STATE.SHADOW_MARKER;
                 return false;
             } else if (keyCode === 188) {
                 /* Handle comma key pressed events */
@@ -452,20 +452,20 @@ function keyPressed(event) {
                 return false;
             }
             break;
-        case STATE.SHADOW_CURSOR:
+        case STATE.SHADOW_MARKER:
             if (keyCode === 190) {
-                /* Handle shadow cursor period key pressed events */
+                /* Handle shadow marker period key pressed events */
                 imodel.setCursor("default");
                 currentState = STATE.READY;
                 return false;
             } else if (keyCode === 188) {
-                /* Handle shadow cursor comma key pressed events */
+                /* Handle shadow marker comma key pressed events */
                 imodel.setCursor("pointer");
                 currentState = STATE.COINCIDENT_POINTING;
                 return false;
             } else if (keyCode === DELETE) {
-                /* Handle shadow cursor delete key pressed events */
-                imodel.setShadowCursor(null);
+                /* Handle shadow marker delete key pressed events */
+                imodel.setShadowMarker(null);
                 return false;
             }
             break;
@@ -479,7 +479,7 @@ function keyPressed(event) {
             } else if (keyCode === 190) {
                 /* Handle coincident points period key pressed events */
                 imodel.setCursor("crosshair");
-                currentState = STATE.SHADOW_CURSOR;
+                currentState = STATE.SHADOW_MARKER;
                 return false;
             } else if (keyCode === DELETE) {
                 /* Handle coincident points delete key pressed events */
