@@ -49,8 +49,6 @@ Model.prototype.updateCanvas = function () {
     this.canvasWidth = windowWidth * 0.98;
     if (this.tutorialsOpen) this.canvasWidth -= 500;
     this.canvasHeight = windowHeight * 3;
-    this.rows = Math.floor((this.canvasHeight - this.displayPadding) / this.cellHeight);
-    this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
     this.globalScrollbar.setLocation(0, windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight);
     this.globalScrollbar.setDimensions(this.canvasWidth, this.globalScrollbarHeight);
     if (this.layoutType === "static") {
@@ -70,6 +68,8 @@ Model.prototype.updateCanvas = function () {
         if (largestHeight === 0) largestHeight = this.defaultCellHeight;
         this.setCellDimensions(largestWidth, largestHeight);
     }
+    this.rows = Math.floor((this.canvasHeight - this.displayPadding) / this.cellHeight);
+    this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
     this.displays.forEach((display, index) => {
         if (display === null) return;
         display.setLocation(generateDisplayX(this, index), generateDisplayY(this, index));
