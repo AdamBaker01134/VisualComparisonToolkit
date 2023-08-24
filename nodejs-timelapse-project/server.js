@@ -133,5 +133,6 @@ app.post("/log", (req, res) => {
 // });
 
 app.listen(PORT, () => {
+    console.log("Express server is running...");
     logger.info("Successfully started express node js server.");
 });

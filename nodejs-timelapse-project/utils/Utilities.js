@@ -193,6 +193,21 @@ function getIndexFromMouse(x, mx, segments, width) {
     return idx;
 }
 
+/**
+ * Log a message on the server.
+ * @param {string} type pino logging level (should be either 'info', 'trace', or 'error')
+ * @param {string} message pino logging message
+ */
+function pinoLog(type, message) {
+    fetch("http://localhost:3019/log", {
+        method: "POST",
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify({ type: type, msg: message }),
+    }).then(response => {
+        if (response.status !== 200) console.error("Logging error: ", response.text());
+    }).catch(err => console.error(err));
+}
+
 /*
  * Find the first value in an Array for which the supplied callback function
  *  returns true. Operates on each index in the Array, starting at 'fromIndex'

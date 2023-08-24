@@ -32,15 +32,6 @@ header {
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
-.title #help {
-    height: 24px;
-}
-
-#helpSection {
-    width: 50%;
-    margin: 5%;
-}
-
 .vLine {
     border-left: 1px solid grey;
 }
@@ -54,6 +45,31 @@ header {
 
 .hidden {
     display: none !important;
+}
+
+.content {
+    display: flex;
+}
+
+.sidebar {
+    top: 170.67px;
+    position: sticky;
+    width: 20px;
+    height: calc(100vh - 170.67px);
+    background-color: #BEBEBE;
+    border: 1px solid grey;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+
+.sidebar:hover {
+    background-color: #cfcfcf;
+}
+
+.sidebarContent {
+    width: 500px;
 }
 
 /* Loader css take from https://www.codingthesmartway.com/how-to-implement-a-css-loader/ */

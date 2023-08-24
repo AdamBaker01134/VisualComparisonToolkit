@@ -62,7 +62,6 @@ const STATE = {
     SHADOW_MARKER: "shadowMarker",
     COINCIDENT_POINTING: "coincidentPointing",
     NO_RIGHT_CLICK: "noRightClick",
-    HELP: "help",
 }
 let currentState = STATE.READY;
 let moveTimer;
@@ -351,7 +350,6 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             currentState = STATE.READY;
             model.setGridActive(false);
             break;
-        case STATE.HELP:
         case STATE.NO_RIGHT_CLICK:
         case STATE.SHADOW_MARKER:
         case STATE.COINCIDENT_POINTING:
@@ -561,17 +559,8 @@ function _attachHeaderListeners() {
     document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {
         imodel.saveAnnotation();
     });
-    document.getElementById("help")?.addEventListener("click", e => {
-        switch (currentState) {
-            case STATE.HELP:
-                model.setHelp(false);
-                currentState = STATE.READY;
-                break;
-            default:
-                model.setHelp(true);
-                currentState = STATE.HELP;
-                break;
-        }
+    document.getElementById("tutorialSidebar")?.addEventListener("click", e => {
+        model.toggleTutorials();
     });
     document.getElementById("defaultCanvas0")?.addEventListener("contextmenu", e => {
         switch (currentState) {

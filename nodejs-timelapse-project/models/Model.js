@@ -35,7 +35,7 @@ function Model() {
 
     this.gridActive = false;
 
-    this.help = false;
+    this.tutorialsOpen = false;
 
     this.subscribers = [];
 }
@@ -47,6 +47,7 @@ function Model() {
  */
 Model.prototype.updateCanvas = function () {
     this.canvasWidth = windowWidth * 0.98;
+    if (this.tutorialsOpen) this.canvasWidth -= 500;
     this.canvasHeight = windowHeight * 3;
     this.rows = Math.floor((this.canvasHeight - this.displayPadding) / this.cellHeight);
     this.columns = Math.floor((this.canvasWidth - this.displayPadding - this.globalScrollbarHeight) / this.cellWidth);
@@ -952,11 +953,11 @@ Model.prototype.loadDataset = function (options = {}) {
 }
 
 /**
- * Set the state of Help
- * @param {boolean} state help on/off
+ * Toggle the open state of the tutorials sidebar.
  */
-Model.prototype.setHelp = function (state) {
-    this.help = state;
+Model.prototype.toggleTutorials = function () {
+    this.tutorialsOpen = !this.tutorialsOpen;
+    this.updateCanvas();
     this.notifySubscribers();
 }
 
