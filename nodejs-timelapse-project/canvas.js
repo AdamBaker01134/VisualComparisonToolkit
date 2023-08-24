@@ -39,11 +39,41 @@ function setup() {
     _attachHeaderListeners();
     _attachUserEventListeners();
 
+    _setupTutorials();
+
     noLoop();
 }
 
 /* p5.js function that acts as the draw loop */
 function draw() { }
+
+/* Setup the tutorials sidebar depending on the tutorial we are currently in. */
+function _setupTutorials() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const tutorial = urlParams.get("tutorial");
+    const tutorialContent = document.getElementById("tutorialContent");
+    switch (tutorial) {
+        case "1":
+            tutorialContent.innerHTML = tutorial1;
+            break;
+        case "2":
+            tutorialContent.innerHTML = tutorial2;
+            break;
+        case "3":
+            tutorialContent.innerHTML = tutorial3;
+            break;
+        case "4":
+            tutorialContent.innerHTML = tutorial4;
+            break;
+        case "5":
+            tutorialContent.innerHTML = tutorial5;
+            break;
+        default:
+            tutorialContent.innerHTML = tutorial0;
+            break;
+    }
+}
 
 /* Controller */
 const STATE = {

@@ -70,6 +70,7 @@ header {
 
 .sidebarContent {
     width: 500px;
+    padding: 10px;
 }
 
 /* Loader css take from https://www.codingthesmartway.com/how-to-implement-a-css-loader/ */
