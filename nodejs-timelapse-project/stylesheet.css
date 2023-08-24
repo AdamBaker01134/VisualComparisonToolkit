@@ -69,8 +69,12 @@ header {
 }
 
 .sidebarContent {
+    top: 170.67px;
+    position: sticky;
     width: 500px;
+    height: calc(100vh - 170.67px);
     padding: 10px;
+    overflow-y: scroll;
 }
 
 /* Loader css take from https://www.codingthesmartway.com/how-to-implement-a-css-loader/ */
