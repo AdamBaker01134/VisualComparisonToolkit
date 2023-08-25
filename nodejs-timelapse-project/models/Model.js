@@ -259,6 +259,16 @@ Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
 }
 
 /**
+ * Resize all displays within the model.
+ * @param {number} dx change in the x direction of the mouse
+ * @param {number} dy change in the y direction of the mouse
+ */
+Model.prototype.resizeAll = function (dx, dy) {
+    this.displays.forEach(display => display.resize(dx, dy));
+    this.notifySubscribers();
+}
+
+/**
  * Model check if a display was hit in a mouse event
  * @param {number} mx x coordinate of the cursor
  * @param {number} my y coordinate of the cursor

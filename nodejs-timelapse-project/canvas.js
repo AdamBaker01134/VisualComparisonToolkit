@@ -233,7 +233,8 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
                         dy = 0;
                     }
                 }
-                imodel.resize(dx, dy);
+                if (event.ctrlKey) model.resizeAll(dx, dy);
+                else imodel.resize(dx, dy);
                 model.updateCanvas();
             }
             previousX = mouseX;
