@@ -34,6 +34,7 @@ function Model() {
     this.columns = Math.floor((this.canvasWidth - this.displayPadding) / this.cellWidth);
 
     this.gridActive = false;
+    this.showTimestamps = false;
 
     this.tutorialsOpen = false;
 
@@ -157,6 +158,14 @@ Model.prototype.setLayoutType = function (type) {
  */
 Model.prototype.setGridActive = function (active) {
     this.gridActive = active;
+    this.notifySubscribers();
+}
+
+/**
+ * Toggle the visibility of timestamps in the system.
+ */
+Model.prototype.toggleTimestamps = function () {
+    this.showTimestamps = !this.showTimestamps;
     this.notifySubscribers();
 }
 

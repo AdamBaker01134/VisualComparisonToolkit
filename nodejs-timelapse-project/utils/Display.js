@@ -42,7 +42,6 @@ function Display(id, x, y, width, height, padding, scrollbarHeight, frames, time
     this.mainScrollbarIndex = 0;
 
     this.locked = false;
-    this.timestamped = false;
 }
 
 /** Get layer */
@@ -113,14 +112,6 @@ Display.prototype.getIndex = function (scrollbarPos) {
 /* Retrieve the main scrollbar in the display */
 Display.prototype.getMainScrollbar = function () {
     return this.scrollbars[this.mainScrollbarIndex];
-}
-
-/**
- * Set the timestamped state of the display.
- * @param {boolean} timestamped timestamped value
- */
-Display.prototype.setTimestamped = function (timestamped) {
-    this.timestamped = timestamped;
 }
 
 /**

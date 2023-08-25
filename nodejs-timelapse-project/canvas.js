@@ -56,18 +56,23 @@ function _setupTutorials() {
     switch (tutorial) {
         case "1":
             tutorialContent.innerHTML = tutorial1;
+            model.toggleTutorials();
             break;
         case "2":
             tutorialContent.innerHTML = tutorial2;
+            model.toggleTutorials();
             break;
         case "3":
             tutorialContent.innerHTML = tutorial3;
+            model.toggleTutorials();
             break;
         case "4":
             tutorialContent.innerHTML = tutorial4;
+            model.toggleTutorials();
             break;
         case "5":
             tutorialContent.innerHTML = tutorial5;
+            model.toggleTutorials();
             break;
         default:
             tutorialContent.innerHTML = tutorial0;
@@ -551,8 +556,7 @@ function _attachHeaderListeners() {
 
     /* Individual display header functions */
     document.getElementById("stampCheckbox").addEventListener("change", e => {
-        let checked = e.target.checked;
-        imodel.setTimestamped(checked);
+        model.toggleTimestamps();
     })
     document.getElementById("lockCheckbox").addEventListener("change", e => {
         let checked = e.target.checked;

@@ -108,9 +108,9 @@ Headerview.prototype.updateNormalized = function () {
  * Update the state of the timestamp checkbox if it has changed.
  */
 Headerview.prototype.updateTimestamped = function () {
-    let timestamped = this.imodel.selection?.timestamped;
+    let showTimestamps = this.model.showTimestamps;
     let checkbox = document.getElementById("stampCheckbox");
-    if (checkbox?.checked !== timestamped) checkbox.checked = timestamped;
+    if (checkbox?.checked !== showTimestamps) checkbox.checked = showTimestamps;
 }
 
 /**

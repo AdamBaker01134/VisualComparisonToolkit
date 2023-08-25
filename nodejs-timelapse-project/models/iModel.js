@@ -296,17 +296,6 @@ iModel.prototype.loadAnnotation = function (scrollbar, name) {
 }
 
 /**
- * Set the timestamped state of the selected display
- * @param {boolean} timestamped true if we want to display timestamp/label, false otherwise
- */
-iModel.prototype.setTimestamped = function (timestamped) {
-    if (this.selection !== null) {
-        this.selection.setTimestamped(timestamped);
-        this.notifySubscribers();
-    }
-}
-
-/**
  * Set the locked state of the selected display
  * @param {boolean} lock true if we want to lock, false if we want to unlock
  */
