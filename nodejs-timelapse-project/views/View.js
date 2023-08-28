@@ -118,11 +118,11 @@ View.prototype.draw = function () {
             stroke("rgb(0, 0, 0)");
             const cursorX = display.x + display.padding + display.width * this.imodel.shadowMarker.widthRatio;
             const cursorY = display.y + display.padding + display.height * this.imodel.shadowMarker.heightRatio;
-            const cursorLength = this.imodel.shadowMarker.length;
-            rect(cursorX - 2, cursorY - cursorLength / 2, 4, cursorLength);
-            rect(cursorX - cursorLength / 2, cursorY - 2, cursorLength, 4);
+            const cursorLength = Math.max(display.width, display.height) / 12;
+            rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
+            rect(cursorX - cursorLength / 2, cursorY - 1.5, cursorLength, 3);
             noFill();
-            rect(cursorX - 2, cursorY - cursorLength / 2, 4, cursorLength);
+            rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
         }
 
         /* Coincident points */

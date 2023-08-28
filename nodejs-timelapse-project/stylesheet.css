@@ -75,6 +75,12 @@ header {
     height: calc(100vh - 170.67px);
     padding: 10px;
     overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebarContent img {
+    margin: 20px;
 }
 
 /* Loader css take from https://www.codingthesmartway.com/how-to-implement-a-css-loader/ */

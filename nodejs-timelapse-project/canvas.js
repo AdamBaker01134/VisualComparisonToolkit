@@ -70,10 +70,6 @@ function _setupTutorials() {
             tutorialContent.innerHTML = tutorial4;
             model.toggleTutorials();
             break;
-        case "5":
-            tutorialContent.innerHTML = tutorial5;
-            model.toggleTutorials();
-            break;
         default:
             tutorialContent.innerHTML = tutorial0;
             break;
@@ -323,7 +319,6 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 imodel.setShadowMarker({
                     widthRatio: (mx - (hit.x + hit.padding)) / hit.width,
                     heightRatio: (my - (hit.y + hit.padding)) / hit.height,
-                    length: 20,
                 });
             }
             break;

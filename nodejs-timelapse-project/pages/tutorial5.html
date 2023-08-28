@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tutorial 5 - Explicit Encoding</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .sidebar {
+            top: 170.67px;
+            position: sticky;
+            width: 20px;
+            height: 900px;
+            background-color: #BEBEBE;
+            border: 1px solid grey;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        .sidebar:hover {
+            background-color: #cfcfcf;
+        }
+
+        .sidebarContent {
+            top: 170.67px;
+            position: sticky;
+            width: 500px;
+            height: 875px;
+            padding: 10px;
+            overflow-y: scroll;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebarContent img {
+            margin: 20px;
+        }
+    </style>
+    <script>
+        let paused = false;
+
+        let data1 = [];
+        data1.length = 40;
+        let data2 = [];
+        data2.length = 40;
+
+        let backgroundImg = null;
+        let backgroundWidth = 0;
+        let backgroundHeight = 0;
+        let images1 = [];
+        let images2 = [];
+
+        let drawIndex = 0;
+
+        const CANVAS_WIDTH = 1200;
+        const CANVAS_HEIGHT = 900;
+        function preload() {
+            backgroundImg = loadImage(`./blob-images/site.png`);
+            for (let i = 0; i <= 310; i++) {
+                images1.push(loadImage(`./blob-images/blobs-1-frame-${i}.png`));
+            }
+            for (let j = 0; j <= 300; j++) {
+                images2.push(loadImage(`./blob-images/blobs-2-frame-${j}.png`));
+            }
+        }
+
+        function setup() {
+            let data1Promise = fetch("./blob-points-1.csv")
+                .then(response => response.text())
+                .then(txt => Papa.parse(txt))
+                .then(parsed => {
+                    parsed.data.forEach(point => {
+                        try {
+                            const index = parseInt(point[0]);
+                            if (!isNaN(index)) {
+                                if (data1[index]) data1[index].push([point[1], point[2], point[3]])
+                                else data1[index] = [];
+                            }
+                        } catch (err) { }
+                    });
+                })
+                .catch(err => console.error(err));
+            let data2Promise = fetch("./blob-points-2.csv")
+                .then(response => response.text())
+                .then(txt => Papa.parse(txt))
+                .then(parsed => {
+                    parsed.data.forEach(point => {
+                        try {
+                            const index = parseInt(point[0]);
+                            if (!isNaN(index)) {
+                                if (data2[index]) data2[index].push([point[1], point[2], point[3]])
+                                else data2[index] = [];
+                            }
+                        } catch (err) { }
+                    });
+                })
+                .catch(err => console.error(err));
+            Promise.all([data1Promise, data2Promise])
+                .then(() => {
+                    if (data1.length < data2.length) {
+                        let saved = [...data1];
+                        data1 = data2;
+                        data2 = saved;
+                    }
+                    console.log("Loaded in data1");
+                    // console.log(data1);
+                    console.log("Loaded in data2");
+                    // console.log(data2);
+                });
+            createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            toggleTutorials();
+            setupEventListeners();
+
+            const aspectRatio = backgroundImg.width / backgroundImg.height;
+            backgroundWidth = 250 * aspectRatio;
+            backgroundHeight = 250;
+        }
+
+        function draw() {
+            if (!data1[0] || !data2[0]) return;
+            if (!paused) drawIndex += 0.5;
+            if (drawIndex > 309) drawIndex = 0;
+
+            clear();
+
+            drawDisplay("Observed", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 0 + 20 * 1, true, false, false, false);
+            drawDisplay("Predicted", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 0 + 20 * 1, false, true, false, false);
+            drawDisplay("Observed + Predicted", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 0 + 20 * 1, true, true, false, false);
+
+            drawDisplay("Outlines", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 1 + 20 * 2, false, false, true, false);
+            drawDisplay("Original Image", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 1 + 20 * 2, false, false, false, false);
+            drawDisplay("Outlines + Observed + Predicted", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 1 + 20 * 2, true, true, true, false);
+
+            drawDisplay("Difference Lines (DL)", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 2 + 20 * 3, false, false, false, true);
+            drawDisplay("DL + Outlines", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 2 + 20 * 3, false, false, true, true);
+            drawDisplay("DL + Outlines + Observed + Predicted", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 2 + 20 * 3, true, true, true, true);
+        }
+
+        function findMiddle(index1, index2) {
+            let smallestX = 10000000;
+            let largestX = 0;
+            let smallestY = 10000000;
+            let largestY = 0;
+            for (let i = 0; i <= 40; i++) {
+                let data1X = +data1[i][index1][1];
+                let data1Y = +data1[i][index1][2];
+                let data2X = +data2[i][index2][1];
+                let data2Y = +data2[i][index2][2];
+
+                if (data1X < smallestX) smallestX = data1X;
+                if (data2X < smallestX) smallestX = data2X;
+                if (data1X > largestX) largestX = data1X;
+                if (data2X > largestX) largestX = data2X;
+
+                if (data1Y < smallestY) smallestY = data1Y;
+                if (data2Y < smallestY) smallestY = data2Y;
+                if (data1Y > largestY) largestY = data1Y;
+                if (data2Y > largestY) largestY = data2Y;
+            }
+            return [(largestX + smallestX) / 2, (largestY + smallestY) / 2]
+        }
+
+        function distance(x1, x2, y1, y2) {
+            return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+        }
+
+        /**
+         * Draw a display for the explicit encoding blob example.
+         */
+        function drawDisplay(label, left, top, observed, predicted, outlines, lines) {
+            colorMode(RGB, 255);
+            noStroke();
+            fill(190, 190, 190);
+            rect(left - 10, top - 10, backgroundWidth + 20, backgroundHeight + 20, 10);
+
+            const diffStep = data2[0].length / data1[0].length;
+            let index1 = Math.floor(drawIndex);
+            let index2 = Math.floor(drawIndex * diffStep);
+            tint(255);
+            const scaleRatio = backgroundWidth / backgroundImg.width;
+            image(backgroundImg, left, top, backgroundWidth, backgroundHeight);
+            if (observed) {
+                tint(255, 126);
+                image(images1[index1], left, top, backgroundWidth, backgroundHeight);
+            }
+            if (predicted) {
+                tint(255, 126);
+                image(images2[index2], left, top, backgroundWidth, backgroundHeight);
+            }
+            colorMode(RGB, 255, 255, 255, 1);
+            strokeWeight(5);
+            const pointOffsetX = 167;
+            const pointOffsetY = 125;
+            if (lines) {
+                let middle = findMiddle(index1, index2);
+                let middleX = middle[0];
+                let middleY = middle[1];
+
+                for (let k = 0; k <= 40; k++) {
+                    let x1 = +data1[k][index1][1];
+                    let y1 = +data1[k][index1][2];
+                    let x2 = +data2[k][index2][1];
+                    let y2 = +data2[k][index2][2];
+                    if (distance(middleX, x1, middleY, y1) > distance(middleX, x2, middleY, y2)) {
+                        stroke(255, 0, 0, 0.5);
+                    } else {
+                        stroke(48, 213, 200, 0.5);
+                    }
+                    line(
+                        x1 * scaleRatio + left + pointOffsetX,
+                        y1 * scaleRatio + top + pointOffsetY,
+                        x2 * scaleRatio + left + pointOffsetX,
+                        y2 * scaleRatio + top + pointOffsetY
+                    );
+                }
+            }
+            if (outlines) {
+                stroke(255, 165, 0, 1);
+                for (let i = 0; i <= 40; i++) {
+                    let x = +data1[i][index1][1];
+                    let y = +data1[i][index1][2];
+                    point(
+                        x * scaleRatio + left + pointOffsetX,
+                        y * scaleRatio + top + pointOffsetY
+                    );
+                }
+
+                stroke(0, 255, 0, 1);
+                for (let j = 0; j <= 40; j++) {
+                    let x = +data2[j][index2][1];
+                    let y = +data2[j][index2][2];
+                    point(
+                        x * scaleRatio + left + pointOffsetX,
+                        y * scaleRatio + top + pointOffsetY
+                    );
+                }
+            }
+
+            if (observed || predicted || outlines || lines) {
+                stroke(34, 154, 34);
+                line(left, top + backgroundHeight, left + backgroundWidth * (drawIndex / 309), top + backgroundHeight);
+            }
+
+            strokeWeight(2);
+            stroke(0, 0, 0);
+            fill(255, 255, 255);
+            textSize(18);
+            text(label, left + 10, top + 18);
+        }
+
+        function keyPressed(event) {
+            if (event.keyCode === 32) paused = !paused;
+            if (event.keyCode === LEFT_ARROW) drawIndex -= 20;
+            if (event.keyCode === RIGHT_ARROW) drawIndex += 20;
+            if (drawIndex < 0) drawIndex = 0;
+            if (drawIndex > 309) drawIndex = 309;
+        }
+
+        function setupEventListeners() {
+            document.getElementById("tutorialSidebar")?.addEventListener("click", e => toggleTutorials());
+        }
+
+        function toggleTutorials() {
+            const tutorialSidebar = document.getElementById("tutorialSidebar");
+            const tutorialContent = document.getElementById("tutorialContent");
+            if (tutorialContent?.classList.contains("hidden") === false) {
+                tutorialContent.classList.add("hidden");
+                tutorialSidebar.innerHTML = "<";
+            } else if (tutorialContent?.classList.contains("hidden")) {
+                tutorialContent.classList.remove("hidden");
+                tutorialSidebar.innerHTML = ">";
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <main></main>
+    <div>
+
+    </div>
+    <div id="tutorialSidebar" class="sidebar">&#60;</div>
+    <div id="tutorialContent" class="sidebarContent hidden">
+        <h1>Tutorial 5 - Explicit Encoding</h1>
+        <p>
+            For the final task, imagine that you are an environmental protection researcher working for Environment
+            Canada who has developed a method to predict the scope of on-land oil spillages. Now, you need to test the
+            accuracy of your prediction model using collected data from past oil spills.
+        </p>
+        <p>
+            To the left you will see nine juxtaposed displays that you can use to compare the predicted model with the
+            observed data. The displays have been laid out in small multiples for convenience. Each
+            display is labeled with what is being represented. Here is a brief description of each representation:
+        </p>
+        <img src="../tutorials/img/tutorial-task-5-1.png" />
+        <ol>
+            <li>
+                Display 1 is a video of the observed data from the oil spill, represented as a yellow blob and
+                superimposed over the original satellite image of the area of effect.
+            </li>
+            <li>
+                Display 2 is a video of the predicted model data of the oil spill. This is represented as a blue blob,
+                also superimposed over the original image.
+            </li>
+            <li>
+                Display 3 combines the observed and predicted data into a single overlayed video.
+            </li>
+            <li>
+                Display 4 takes the outlines of the perimeters of both the observed and predicted data blobs and
+                superimposes them into one video. The orange outline is the observed data, while the green outline is
+                the predicted data.
+            </li>
+            <li>
+                Display 5 is a static image of the original area of effect.
+            </li>
+            <li>
+                Display 6 combines the original blobs for the observed and predicted data with the outlined points in
+                one overlayed video.
+            </li>
+            <li>
+                Display 7 uses a technique called difference lines (DL). Difference lines is a representation of the
+                relationship between the observed and predicted blobs. You will notice that the colours of lines change
+                as the video plays. This means that the relationship has changed. If the observed data is farther from
+                the center than the predicted data, then the lines will be coloured red. If the predicted data is
+                farther from the center, then the lines will be coloured blue.
+            </li>
+            <li>
+                Display 8 combines difference lines and the perimeter outlines of the data into one video.
+            </li>
+            <li>
+                Display 9 combines every technique (i.e., observed & predicted data, perimeter outlines, and difference
+                lines) into one overlay.
+            </li>
+        </ol>
+        <p>
+            Each display is running in a constant loop. A video progress bar is drawn under each display to indicate the
+            position in the video. Press spacebar to pause and use the left and right arrow keys to rewind/fast-forward.
+            You can now test your model against observed data.
+        </p>
+        <ul>
+            <li>
+                Does your model do a good job of predicting the scope ofan oil spill?
+            </li>
+            <li>
+                Does your model over-predict/under-predict the scope of the spill?
+            </li>
+            <li>
+                If so, when, and where doesthis occur?
+            </li>
+        </ul>
+        <p>
+            Once you are satisfied with your analysis, you can leave this page.
+        </p>
+    </div>
+</body>
+
+</html>

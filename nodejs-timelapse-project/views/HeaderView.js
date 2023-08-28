@@ -79,19 +79,12 @@ Headerview.prototype.updateLayoutType = function () {
     let layoutType = this.model.layoutType;
     let staticLayoutCheckbox = document.getElementById("staticLayoutCheckbox");
     let dynamicLayoutCheckbox = document.getElementById("dynamicLayoutCheckbox");
-    if (dynamicLayoutCheckbox.checked && staticLayoutCheckbox.checked) {
-        if (layoutType === "dynamic") {
-            staticLayoutCheckbox.checked = false;
-        } else {
-            dynamicLayoutCheckbox.checked = false;
-        }
-    }
-    if (!dynamicLayoutCheckbox.checked && !staticLayoutCheckbox.checked) {
-        if (layoutType === "dynamic") {
-            dynamicLayoutCheckbox.checked = true;
-        } else {
-            staticLayoutCheckbox.checked = true;
-        }
+    if (layoutType === "dynamic") {
+        if (!dynamicLayoutCheckbox.checked) dynamicLayoutCheckbox.checked = true;
+        if (staticLayoutCheckbox.checked) staticLayoutCheckbox.checked = false;
+    } else {
+        if (dynamicLayoutCheckbox.checked) dynamicLayoutCheckbox.checked = false;
+        if (!staticLayoutCheckbox.checked) staticLayoutCheckbox.checked = true;
     }
 }
 

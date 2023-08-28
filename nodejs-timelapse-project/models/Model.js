@@ -264,7 +264,7 @@ Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
  * @param {number} dy change in the y direction of the mouse
  */
 Model.prototype.resizeAll = function (dx, dy) {
-    this.displays.forEach(display => display.resize(dx, dy));
+    this.displays.forEach(display => { if (display !== null) display.resize(dx, dy); });
     this.notifySubscribers();
 }
 
@@ -764,6 +764,7 @@ Model.prototype.addSnapshot = function () {
         globalScrollbar: this.globalScrollbar.toJSON(),
         scrollPos: [scrollX, scrollY],
         normalized: this.normalized,
+        timestamped: this.showTimestamps,
         layoutType: this.layoutType,
     };
     alert(`Successfully created snapshot with name "${name}"`);
@@ -788,6 +789,7 @@ Model.prototype.addSnapshot = function () {
  */
 Model.prototype.loadSnapshot = async function (snapshot) {
     this.setNormalized(snapshot.normalized);
+    if (snapshot.timestamped !== this.showTimestamps) this.toggleTimestamps();
     this.setLayoutType(snapshot.layoutType);
     /* Load global scrollbar from JSON */
     this.globalScrollbar.fromJSON(snapshot.globalScrollbar);
