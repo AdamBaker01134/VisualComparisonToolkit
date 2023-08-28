@@ -11,7 +11,7 @@ const tutorial0 = `
 <h3>Global Scrollbar</h3>
 <p>
     The global scrollbar (bottom of the application) is connected to all loaded in displays.
-    If you time-shift this scrollbar, all unlocked displays will be time-shifted, normalized
+    If you scrub this scrollbar, all unlocked displays will be scrubbed, normalized
     to the global scrollbar.
 </p>
 <h3>Loading Videos</h3>
@@ -32,9 +32,9 @@ const tutorial0 = `
     You can remove a display by selecting it and clicking on the "Remove" button found in
     the display control section of the header.
 </p>
-<h3>Time-Shifting Videos</h3>
+<h3>Scrubbing Videos</h3>
 <p>
-    You can play through a video manually (time-shift a video) by clicking and dragging the
+    You can play through a video manually (scrub a video) by clicking and dragging the
     green scrollbar found at the bottom of each display.
 </p>
 <h3>Playing Videos</h3>
@@ -65,7 +65,7 @@ const tutorial0 = `
 <h3>Locking Displays</h3>
 <p>
     You can lock a display by selecting it and toggling the "Lock" checkbox in the display
-    controls section of the header. Locking displays will block any form of time-shifting or
+    controls section of the header. Locking displays will block any form of scrubbing or
     video manipulation to the display.
 </p>
 <h3>Filtering Displays</h3>

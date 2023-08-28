@@ -199,8 +199,8 @@ function getIndexFromMouse(x, mx, segments, width) {
  * @param {string} message pino logging message
  */
 function pinoLog(type, message) {
-    // fetch("http://localhost:3019/log", {
-    fetch("http://hci-sandbox.usask.ca:3019/log", {
+    fetch("http://localhost:3019/log", {
+    // fetch("http://hci-sandbox.usask.ca:3019/log", {
         method: "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify({ type: type, msg: message }),

@@ -10,7 +10,7 @@ The videos span 1982-2022.
 <img src="./tutorials/img/tutorial-task-4-1.png" />
 <p>
 The videos have been placed in a grid layout with small dimensions to allow you to view everything at once.
-This is an example of the Small Multiples technique, which aids in comparison by reducing the strain on the user’s memory.
+This is meant to aid in comparison by reducing the strain on the user’s memory.
 To better explain this concept, let’s test it out on the arctic ice videos.
 </p>
 <p>
@@ -33,7 +33,7 @@ Are there any specific areas that were dense with ice in the 80s that are not as
 </li>
 </ul>
 <p>
-The last question is more specific and may be harder to answer with just small multiples alone.
+The last question is more specific and may be harder to answer since finding detail in small videos can be difficult.
 An additional technique can now be utilized to support your comparison.
 This technique is called shadow markers.
 It allows you to place a static marker anywhere within a video, and this marker will show up in all other displays.

@@ -295,8 +295,8 @@
         }
 
         function pinoLog(type, message) {
-            // fetch("http://localhost:3019/log", {
-            fetch("http://hci-sandbox.usask.ca:3019/log", {
+            fetch("http://localhost:3019/log", {
+                // fetch("http://hci-sandbox.usask.ca:3019/log", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ type: type, msg: message }),
@@ -320,38 +320,36 @@
                 accuracy of your prediction model using collected data from past oil spills.
             </p>
             <p>
-                To the left you will see nine juxtaposed displays that you can use to compare the predicted model with
+                To the left you will see nine side-by-side displays that you can use to compare the predicted model with
                 the
-                observed data. The displays have been laid out in small multiples for convenience. Each
+                observed data. The displays have been laid out in a grid. Each
                 display is labeled with what is being represented. Here is a brief description of each representation:
             </p>
             <img src="../tutorials/img/tutorial-task-5-1.png" />
             <ol>
                 <li>
                     Display 1 is a video of the observed data from the oil spill, represented as a yellow blob and
-                    superimposed over the original satellite image of the area of effect.
+                    stacked over the original satellite image of the area of effect.
                 </li>
                 <li>
                     Display 2 is a video of the predicted model data of the oil spill. This is represented as a blue
                     blob,
-                    also superimposed over the original image.
+                    also stacked over the original image.
                 </li>
                 <li>
                     Display 3 combines the observed and predicted data into a single overlayed video.
                 </li>
                 <li>
                     Display 4 takes the outlines of the perimeters of both the observed and predicted data blobs and
-                    superimposes them into one video. The orange outline is the observed data, while the green outline
-                    is
-                    the predicted data.
+                    stacks them into one video. The orange outline is the observed data, while the green outline
+                    is the predicted data.
                 </li>
                 <li>
                     Display 5 is a static image of the original area of effect.
                 </li>
                 <li>
                     Display 6 combines the original blobs for the observed and predicted data with the outlined points
-                    in
-                    one overlayed video.
+                    in one overlayed video.
                 </li>
                 <li>
                     Display 7 uses a technique called difference lines (DL). Difference lines is a representation of the

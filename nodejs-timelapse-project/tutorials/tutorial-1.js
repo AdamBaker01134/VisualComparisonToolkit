@@ -18,7 +18,7 @@ Or to save time, hold control while you drag to resize all displays. Once you’
 <strong style="text-align: center; font-size: small;">Note: Does not have to look like the above image.
 The resize technique is meant to allow you customize your layout to whatever you prefer.</strong> 
 <p>
-There are two methods to playing through a video. The first is the manual method that we call “time-shifting”.
+There are two methods to playing through a video. The first is the manual method that we call "scrubbing”.
 Under each video there are green timelines. Clicking and dragging on this timeline will play through the video.
 The second method is a simple play feature. Select a display by clicking on it (this will highlight it in green) and press spacebar.
 The video will auto-play until the end, at which point you can reset the position and continue playing.
@@ -26,7 +26,7 @@ The video will auto-play until the end, at which point you can reset the positio
 <img src="./tutorials/img/tutorial-task-1-3.png" />
 <p>
 Videos can be played individually or all at once using the global timeline at the bottom of the screen.
-Time-shifting works the same for the global timeline, and you can activate its auto-play feature by unselecting any selected videos (by clicking on them) and pressing spacebar.
+Scrubbing works the same for the global timeline, and you can activate its auto-play feature by unselecting any selected videos (by clicking on them) and pressing spacebar.
 </p>
 <p>
 Now you can begin a comparative analysis of each of the videos.

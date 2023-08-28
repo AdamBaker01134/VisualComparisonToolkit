@@ -138,7 +138,12 @@ function startPlayInterval(scrollbar, frameRate = 10) {
             case STATE.READY:
             case STATE.COMPARE_SLIDING:
             case STATE.USING_MAGIC:
-                model.setIndex(scrollbar, scrollbar.index + 1);
+                if (scrollbar.index + 1 === scrollbar.getSize()) {
+                    clearInterval(playingTimers[scrollbar.id]);
+                    delete playingTimers[scrollbar.id];
+                } else {
+                    model.setIndex(scrollbar, scrollbar.index + 1);
+                }
                 break;
         }
     }, Math.floor(1000 / frameRate));
@@ -293,7 +298,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     } else {
                         currentState = STATE.FOCUSED;
                         model.setIndexFromMouse(imodel.focused, mx);
-                        pinoLog("trace", "Time-shifting video");
+                        pinoLog("trace", "Scrubbing video");
                     }
                 }
             } else if (hit = model.checkImageHit(mx, my)) {
@@ -478,15 +483,21 @@ function keyPressed(event) {
             } else if (keyCode === 32) {
                 /* Handle spacebar key pressed events */
                 let scrollbar = model.globalScrollbar;
-                if (imodel.selection !== null && !event.ctrlKey) {
+                let playingIds = Object.keys(playingTimers);
+                if (imodel.selection !== null && !event.ctrlKey && !playingIds.includes(model.globalScrollbar.id)) {
                     scrollbar = imodel.selection.getMainScrollbar();
+                } else if (!playingIds.includes(scrollbar.id)) {
+                    /* Ensure no other timers are running when the global scrollbar starts playing */
+                    playingIds.forEach(id => clearInterval(playingTimers[id]));
+                    playingTimers = {};
                 }
-                if (Object.keys(playingTimers).includes(scrollbar.id)) {
+                if (playingIds.includes(scrollbar.id)) {
                     clearInterval(playingTimers[scrollbar.id]);
                     delete playingTimers[scrollbar.id];
                     pinoLog("trace", `Stopped auto-playing scrollbar with id: ${scrollbar.id}`);
-                } else {                    
-                    startPlayInterval(scrollbar, scrollbar.size / 10);
+                } else {
+                    if (scrollbar.index === scrollbar.getSize() - 1) model.setIndex(scrollbar, 0);
+                    startPlayInterval(scrollbar, scrollbar.getSize() / 10);
                     pinoLog("trace", `Began new auto-playing interval on scrollbar with id: ${scrollbar.id}`)
                 }
                 return false;

@@ -16,7 +16,7 @@ Toggle the “Timestamp/Label” checkbox in the middle of the webpage header to
 </p>
 <img src="./tutorials/img/tutorial-task-2-2.png" />
 <p>
-Now you can begin playing through all the videos. Time-shift the global timeline to play all the videos simultaneously.
+Now you can begin playing through all the videos. Scrub the global timeline to play all the videos simultaneously.
 Once you see that a crop is beginning to flower, pause.
 This is a significant point in the video that we should probably mark in the timeline.
 To do this, select the video and click “Save Annotation” in the right side of the webpage header.
@@ -51,7 +51,7 @@ We can also remove the excess video to only include the flowering cycles. To do 
 </p>
 <img src="./tutorials/img/tutorial-task-2-6.png" />
 <p>
-Once you’ve subset each video, try time-shifting them all again. You will notice that even though the lengths of each video are different, each video plays start to finish in the same amount of time. This is a technique called normalization. Now you can play through each flowering cycle without worrying about excess video. If you want to play through each video without normalization, simply toggle the normalize checkbox in the middle of the webpage header.
+Once you’ve subset each video, try scubbing them all again. You will notice that even though the lengths of each video are different, each video plays start to finish in the same amount of time. This is a technique called normalization. Now you can play through each flowering cycle without worrying about excess video. If you want to play through each video without normalization, simply toggle the normalize checkbox in the middle of the webpage header.
 </p>
 <img src="./tutorials/img/tutorial-task-2-7.png" />
 <p>
