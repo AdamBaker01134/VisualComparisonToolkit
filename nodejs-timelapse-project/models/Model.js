@@ -934,9 +934,10 @@ Model.prototype.findAllScrollbars = function () {
 
 /**
  * Load in pre-processed dataset configurations.
+ * @returns {Promise}
  */
 Model.prototype.loadDatasets = function () {
-    this.loader.loadDatasets().then(datasets => {
+    return this.loader.loadDatasets().then(datasets => {
         this.datasets = datasets;
         this.notifySubscribers();
     });
@@ -944,9 +945,10 @@ Model.prototype.loadDatasets = function () {
 
 /**
  * Load in saved snapshots.
+ * @returns {Promise}
  */
 Model.prototype.loadSnapshots = function () {
-    this.loader.loadSnapshots().then(snapshots => {
+    return this.loader.loadSnapshots().then(snapshots => {
         this.snapshots = snapshots;
         this.notifySubscribers();
     });

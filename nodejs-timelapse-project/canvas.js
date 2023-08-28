@@ -17,7 +17,7 @@ function preload() {
     model = new Model();
     imodel = new iModel();
     model.loadDatasets();
-    model.loadSnapshots();
+    model.loadSnapshots().then(() =>  _setupTutorials());
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
@@ -39,8 +39,6 @@ function setup() {
     _attachHeaderListeners();
     _attachUserEventListeners();
 
-    _setupTutorials();
-
     noLoop();
 }
 
@@ -53,6 +51,8 @@ function _setupTutorials() {
     const urlParams = new URLSearchParams(queryString);
     const tutorial = urlParams.get("tutorial");
     const tutorialContent = document.getElementById("tutorialContent");
+    const snapshot = model.snapshots.find(snapshot => snapshot.name === `tutorial-${tutorial}`);
+    if (snapshot) model.loadSnapshot(snapshot);
     switch (tutorial) {
         case "1":
             tutorialContent.innerHTML = tutorial1;
