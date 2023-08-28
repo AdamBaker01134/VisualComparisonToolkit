@@ -38,9 +38,7 @@ app.get("/", (req, res) => {
     if (!userId) {
         userId = uuidv4();
         res.cookie("userId", userId);
-        logger.trace({ user_id: userId }, "Generated new user id");
     }
-    logger.info({ user_id: userId }, "Home page opened");
 	res.sendFile("video-comparison.html", { root: __dirname });
 });
 
@@ -133,6 +131,6 @@ app.post("/log", (req, res) => {
 // });
 
 app.listen(PORT, () => {
-    console.log("Express server is running...");
+    console.log("Express server is running. Please ensure that all fetch endpoints are correct...");
     logger.info("Successfully started express node js server.");
 });

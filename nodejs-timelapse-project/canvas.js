@@ -57,21 +57,26 @@ function _setupTutorials() {
         case "1":
             tutorialContent.innerHTML = tutorial1;
             model.toggleTutorials();
+            pinoLog("info", "Beginning tutorial 1");
             break;
         case "2":
             tutorialContent.innerHTML = tutorial2;
             model.toggleTutorials();
+            pinoLog("info", "Beginning tutorial 2");
             break;
         case "3":
             tutorialContent.innerHTML = tutorial3;
             model.toggleTutorials();
+            pinoLog("info", "Beginning tutorial 3");
             break;
         case "4":
             tutorialContent.innerHTML = tutorial4;
             model.toggleTutorials();
+            pinoLog("info", "Beginning tutorial 4");
             break;
         default:
             tutorialContent.innerHTML = tutorial0;
+            pinoLog("info", "Opened home page with no tutorial set");
             break;
     }
 }
@@ -108,6 +113,7 @@ function startTimedMoveInterval() {
         let hit = null;
         if (!!imodel.ghost && (hit = model.checkGridCellHit(mouseX, mouseY)) >= 0 && hit !== imodel.ghost) {
             model.moveDisplay(imodel.ghost, hit);
+            pinoLog("trace", "Two second timer fired, moving display");
         }
     }, 2000);
 }
@@ -139,7 +145,6 @@ function startPlayInterval(scrollbar, frameRate = 10) {
 }
 
 function mouseMoved(event, mx = mouseX, my = mouseY) {
-    // console.log(`Mouse moved at ${mx}, ${my}`)
     let hit = null;
     switch (currentState) {
         case STATE.READY:
@@ -167,7 +172,6 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
 }
 
 function mouseDragged(event, mx = mouseX, my = mouseY) {
-    // console.log(`Mouse dragged at ${mx}, ${my}`)
     let hit = null;
     switch (currentState) {
         case STATE.FOCUSED:
@@ -253,7 +257,6 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
 }
 
 function mousePressed(event, mx = mouseX, my = mouseY) {
-    // console.log(`Mouse pressed at ${mx}, ${my}`);
     let hit = null;
     switch (currentState) {
         case STATE.READY:
@@ -267,8 +270,10 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                         model.setStart(imodel.focused, imodel.focused.index);
                         imodel.setFocused(null);
                         currentState = STATE.NO_RIGHT_CLICK;
+                        pinoLog("trace", "Snapped start position to video position");
                     } else {
                         model.setStartFromMouse(imodel.focused, mx);
+                        pinoLog("trace", "Adjusting start position");
                     }
                 } else if (endFocused) {
                     currentState = STATE.END_FOCUSED;
@@ -276,8 +281,10 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                         model.setEnd(imodel.focused, imodel.focused.index);
                         imodel.setFocused(null);
                         currentState = STATE.NO_RIGHT_CLICK;
+                        pinoLog("trace", "Snapped end position to video position");
                     } else {
                         model.setEndFromMouse(imodel.focused, mx);
+                        pinoLog("trace", "Adjusting end position");
                     }
                 } else {
                     if (event.which === 3) {
@@ -286,6 +293,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     } else {
                         currentState = STATE.FOCUSED;
                         model.setIndexFromMouse(imodel.focused, mx);
+                        pinoLog("trace", "Time-shifting video");
                     }
                 }
             } else if (hit = model.checkImageHit(mx, my)) {
@@ -293,9 +301,11 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     if (model.checkComparisonSliderHit(mx, my)) {
                         currentState = STATE.COMPARE_SLIDING;
                         if (imodel.selection !== hit) imodel.select(hit);
+                        pinoLog("trace", "Adjusting comparison slider location");
                     } else if (model.checkMagicLensHit(mx, my)) {
                         currentState = STATE.USING_MAGIC;
                         if (imodel.selection !== hit) imodel.select(hit);
+                        pinoLog("trace", "Adjusting magic lens location");
                     } else {
                         currentState = STATE.PREPARE_SELECT;
                     }
@@ -305,6 +315,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     previousY = mouseY;
                     currentState = STATE.PANNING;
                     if (imodel.selection !== hit) imodel.select(hit);
+                    pinoLog("trace", "Panning display viewport");
                 }
             } else if (hit = model.checkCornerHit(mx, my)) {
                 previousX = mouseX;
@@ -312,6 +323,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 currentState = STATE.RESIZING;
                 model.setGridActive(true);
                 if (imodel.selection !== hit) imodel.select(hit);
+                pinoLog("trace", "Scaling display size");
             }
             break;
         case STATE.SHADOW_MARKER:
@@ -320,11 +332,13 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     widthRatio: (mx - (hit.x + hit.padding)) / hit.width,
                     heightRatio: (my - (hit.y + hit.padding)) / hit.height,
                 });
+                pinoLog("trace", `Set shadow marker at (${mx},${my})`);
             }
             break;
         case STATE.COINCIDENT_POINTING:
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.addCoincidentPoint(hit, mx, my);
+                pinoLog("trace", `Added coincident point at (${mx},${my})`);
             }
             break;
     }
@@ -332,7 +346,6 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
 }
 
 function mouseReleased(event, mx = mouseX, my = mouseY) {
-    // console.log(`Mouse released at ${mx}, ${my}`);
     let hit = null;
     switch (currentState) {
         case STATE.FOCUSED:
@@ -340,8 +353,10 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.END_FOCUSED:
             if (hit = model.checkScrollbarHit(mx, my)) {
                 if (imodel.highlightedSnapshot) {
+                    pinoLog("trace", `Loading snapshot: ${imodel.highlightSnapshot.name}`);
                     model.loadSnapshot(imodel.highlightedSnapshot);
                 } else if (imodel.highlightedAnnotation) {
+                    pinoLog("trace", `Loading annotation: ${imodel.highlightedAnnotation.name}`);
                     imodel.loadAnnotation(hit, imodel.highlightedAnnotation.name);
                 }
             }
@@ -351,6 +366,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.PREPARE_SELECT:
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.select(hit);
+                pinoLog("trace", `Selected display: ${hit.id}`);
             }
             currentState = STATE.READY;
             break;
@@ -359,7 +375,9 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                 if (hit !== imodel.ghost) {
                     if (hit instanceof Overlay) {
                         model.addLayer(hit, imodel.ghost);
+                        pinoLog("trace", "Added new layer to overlay");
                     } else {
+                        pinoLog("trace", "Generating new overlay video");
                         model.addOverlay(hit.id, imodel.ghost.id, hit.getLayerFilter(), imodel.ghost.getLayerFilter())
                             .then(overlay => imodel.select(overlay));
                     }
@@ -371,6 +389,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.GHOSTING:
             if (!!imodel.ghost && (hit = model.checkGridCellHit(mx, my)) >= 0) {
                 model.moveDisplay(imodel.ghost, hit);
+                pinoLog("trace", "Moved display to empty cell");
             }
             clearInterval(moveTimer);
             imodel.setGhost(null);
@@ -399,6 +418,7 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
                 event.preventDefault();
                 event.stopPropagation();
                 imodel.zoom(hit, event.delta);
+                pinoLog("trace", `Zoomed display with delta ${event.delta}`);
             }
             break;
     }
@@ -406,6 +426,7 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
 
 function windowResized(event) {
     model.updateCanvas();
+    pinoLog("trace", `Window resized, new dimensions: ${windowWidth, windowHeight}`);
 }
 
 function keyPressed(event) {
@@ -418,11 +439,14 @@ function keyPressed(event) {
                     if (Object.keys(cyclingTimers).includes(overlay.id)) {
                         clearInterval(cyclingTimers[overlay.id]);
                         delete cyclingTimers[overlay.id];
+                        pinoLog("trace", "Stopped an auto-cycling interval");
                     } else {
                         if (event.shiftKey) {
                             startAutoCycleInterval(overlay);
+                            pinoLog("trace", "Began new auto-cycling interval");
                         } else {
                             model.cycleLayers(overlay);
+                            pinoLog("trace", "Cycled overlay layers");
                         }
                     }
                     return false;
@@ -432,6 +456,7 @@ function keyPressed(event) {
                 if (imodel.selection instanceof Overlay) {
                     const mode = imodel.selection.mode === "horizontal" ? "overlay" : "horizontal";
                     imodel.setMode(mode);
+                    pinoLog("trace", `Switched overlay display to ${mode} mode`);
                     return false;
                 }
             } else if (keyCode === 220) {
@@ -439,6 +464,7 @@ function keyPressed(event) {
                 if (imodel.selection instanceof Overlay) {
                     const mode = imodel.selection.mode === "vertical" ? "overlay" : "vertical";
                     imodel.setMode(mode);
+                    pinoLog("trace", `Switched overlay display to ${mode} mode`);
                     return false;
                 }
             } else if (keyCode === 48) {
@@ -446,6 +472,7 @@ function keyPressed(event) {
                 if (imodel.selection instanceof Overlay) {
                     const mode = imodel.selection.mode === "magic_lens" ? "overlay" : "magic_lens";
                     imodel.setMode(mode);
+                    pinoLog("trace", `Switched overlay display to ${mode} mode`);
                     return false;
                 }
             } else if (keyCode === 32) {
@@ -457,15 +484,17 @@ function keyPressed(event) {
                 if (Object.keys(playingTimers).includes(scrollbar.id)) {
                     clearInterval(playingTimers[scrollbar.id]);
                     delete playingTimers[scrollbar.id];
-                } else {
+                    pinoLog("trace", `Stopped auto-playing scrollbar with id: ${scrollbar.id}`);
+                } else {                    
                     startPlayInterval(scrollbar, scrollbar.size / 10);
+                    pinoLog("trace", `Began new auto-playing interval on scrollbar with id: ${scrollbar.id}`)
                 }
                 return false;
             } else if (keyCode === DELETE) {
                 /* Handle delete key pressed events */
                 if (imodel.selection !== null) {
-                    console.log(`Removing ${imodel.selection.id}...`);
                     model.removeDisplay(imodel.selection);
+                    pinoLog("trace", `Removed display with id ${imodel.selection.id}`);
                     imodel.select(imodel.selection); /* Need to unselect display */
                     return false;
                 }
@@ -473,11 +502,13 @@ function keyPressed(event) {
                 /* Handle period key pressed events */
                 imodel.setCursor("crosshair");
                 currentState = STATE.SHADOW_MARKER;
+                pinoLog("trace", "Entered shadow marker mode");
                 return false;
             } else if (keyCode === 188) {
                 /* Handle comma key pressed events */
                 imodel.setCursor("pointer");
                 currentState = STATE.COINCIDENT_POINTING;
+                pinoLog("trace", "Entered coincident pointing mode");
                 return false;
             }
             break;
@@ -486,15 +517,18 @@ function keyPressed(event) {
                 /* Handle shadow marker period key pressed events */
                 imodel.setCursor("default");
                 currentState = STATE.READY;
+                pinoLog("trace", "Exited shadow marker mode");
                 return false;
             } else if (keyCode === 188) {
                 /* Handle shadow marker comma key pressed events */
                 imodel.setCursor("pointer");
                 currentState = STATE.COINCIDENT_POINTING;
+                pinoLog("trace", "Entered coincident pointing mode via shadow marker mode");
                 return false;
             } else if (keyCode === DELETE) {
                 /* Handle shadow marker delete key pressed events */
                 imodel.setShadowMarker(null);
+                pinoLog("trace", "Cleared shadow marker");
                 return false;
             }
             break;
@@ -504,15 +538,18 @@ function keyPressed(event) {
                 imodel.setCursor("default");
                 imodel.clearCoincidentPoints();
                 currentState = STATE.READY;
+                pinoLog("trace", "Exited coincident pointing mode");
                 return false;
             } else if (keyCode === 190) {
                 /* Handle coincident points period key pressed events */
                 imodel.setCursor("crosshair");
                 currentState = STATE.SHADOW_MARKER;
+                pinoLog("trace", "Exited shadow marker mode");
                 return false;
             } else if (keyCode === DELETE) {
                 /* Handle coincident points delete key pressed events */
                 imodel.clearCoincidentPoints();
+                pinoLog("trace", "Cleared coincident points");
                 return false;
             }
     }
@@ -532,9 +569,11 @@ function _attachHeaderListeners() {
     /* Global header functions */
     document.getElementById("dynamicLayoutCheckbox")?.addEventListener("click", e => {
         model.setLayoutType("dynamic");
+        pinoLog("trace", "Switched to dynamic layout mode");
     });
     document.getElementById("staticLayoutCheckbox")?.addEventListener("click", e => {
         model.setLayoutType("static");
+        pinoLog("trace", "Switched to static layout mode");
     });
     document.getElementById("loadSnapshotButton")?.addEventListener("click", e => {
         let snapshotName = document.getElementById("snapshotSelect")?.value;
@@ -548,15 +587,18 @@ function _attachHeaderListeners() {
     });
     document.getElementById("normalizeCheckbox")?.addEventListener("change", e => {
         model.setNormalized(e.target.checked);
+        pinoLog("trace", `Toggled normalization ${model.normalized ? "on" : "off"}`)
     });
 
     /* Individual display header functions */
     document.getElementById("stampCheckbox").addEventListener("change", e => {
         model.toggleTimestamps();
+        pinoLog("trace", `Toggled timestamps ${model.showTimestamps ? "on" : "off"}`)
     })
     document.getElementById("lockCheckbox").addEventListener("change", e => {
         let checked = e.target.checked;
         imodel.setLocked(checked);
+        if (imodel.selection !== null) pinoLog("trace", `Locked display: ${imodel.selection.id}`);
     });
     document.getElementById("filterSelect").addEventListener("change", e => {
         let value = e.target.value;
@@ -566,12 +608,13 @@ function _attachHeaderListeners() {
                 filterName = "";
             }
             model.filterImages(imodel.selection, filterName);
+            pinoLog("trace", `Filtered video display: ${imodel.selection.id} with filter: ${value}`);
         }
     });
     document.getElementById("removeButton")?.addEventListener("click", e => {
         if (imodel.selection !== null) {
-            console.log(`Removing ${imodel.selection.id}...`);
             model.removeDisplay(imodel.selection);
+            pinoLog("trace", `Removed display with id ${imodel.selection.id}`);
             imodel.select(imodel.selection); /* Need to unselect display */
         }
     });
@@ -580,10 +623,14 @@ function _attachHeaderListeners() {
             imodel.setOpacity(e.target.value);
         }
     });
+    document.getElementById("opacityInput")?.addEventListener("mouseup", e => {
+        pinoLog("trace", "Adjusted opacity input");
+    });
     document.getElementById("loadAnnotationButton")?.addEventListener("click", e => {
         let name = document.getElementById("annotationSelect").value;
         if (imodel.selection !== null) {
             imodel.loadAnnotation(imodel.selection.getMainScrollbar(), name);
+            pinoLog("trace", `Loaded annotation: ${name}`);
         }
     });
     document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {
@@ -591,6 +638,7 @@ function _attachHeaderListeners() {
     });
     document.getElementById("tutorialSidebar")?.addEventListener("click", e => {
         model.toggleTutorials();
+        pinoLog("trace", `${model.tutorialsOpen ? "Opened" : "Closed"} tutorials tab`);
     });
     document.getElementById("defaultCanvas0")?.addEventListener("contextmenu", e => {
         switch (currentState) {

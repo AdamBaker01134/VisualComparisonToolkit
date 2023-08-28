@@ -190,7 +190,7 @@ Loader.prototype._loadImages = function (loadObj) {
             addImage(i);
         }
         timer = setTimeout(() => {
-            console.log("Load timeout. Looping back to catch the stragglers.")
+            pinoLog("trace", "Loading timeout, retrying");
             let missing = [];
             loadObj.images.forEach((image, index) => { if (image === null) missing.push(index) });
             missing.forEach(index => addImage(index));

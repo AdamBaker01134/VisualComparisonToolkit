@@ -48,6 +48,7 @@
         }
     </style>
     <script>
+        pinoLog("info", "Beginning tutorial 5");
         let paused = false;
 
         let data1 = [];
@@ -113,11 +114,9 @@
                         data1 = data2;
                         data2 = saved;
                     }
-                    console.log("Loaded in data1");
-                    // console.log(data1);
-                    console.log("Loaded in data2");
-                    // console.log(data2);
-                });
+                    pinoLog("trace", "Loaded in observed & predicted blob data points");
+                })
+                .catch(err => pinoLog("error", "Error loading in observed & predicted blob data points"));
             createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
             toggleTutorials();
@@ -261,9 +260,18 @@
         }
 
         function keyPressed(event) {
-            if (event.keyCode === 32) paused = !paused;
-            if (event.keyCode === LEFT_ARROW) drawIndex -= 20;
-            if (event.keyCode === RIGHT_ARROW) drawIndex += 20;
+            if (event.keyCode === 32) {
+                paused = !paused;
+                pinoLog("trace", `Toggled pause ${paused ? "on" : "off"}`);
+            }
+            if (event.keyCode === LEFT_ARROW) {
+                drawIndex -= 20;
+                pinoLog("trace", "Rewinding videos")
+            }
+            if (event.keyCode === RIGHT_ARROW) {
+                drawIndex += 20;
+                pinoLog("trace", "Fast-forwarding videos");
+            }
             if (drawIndex < 0) drawIndex = 0;
             if (drawIndex > 309) drawIndex = 309;
         }
@@ -278,91 +286,113 @@
             if (tutorialContent?.classList.contains("hidden") === false) {
                 tutorialContent.classList.add("hidden");
                 tutorialSidebar.innerHTML = "<";
+                pinoLog("trace", "Closed tutorials tab");
             } else if (tutorialContent?.classList.contains("hidden")) {
                 tutorialContent.classList.remove("hidden");
                 tutorialSidebar.innerHTML = ">";
+                pinoLog("trace", "Opened tutorials tab");
             }
+        }
+
+        function pinoLog(type, message) {
+            // fetch("http://localhost:3019/log", {
+            fetch("http://hci-sandbox.usask.ca:3019/log", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: type, msg: message }),
+            }).then(response => {
+                if (response.status !== 200) console.error("Logging error: ", response.text());
+            }).catch(err => console.error(err));
         }
     </script>
 </head>
 
 <body>
     <main></main>
-    <div>
-
-    </div>
-    <div id="tutorialSidebar" class="sidebar">&#60;</div>
-    <div id="tutorialContent" class="sidebarContent hidden">
-        <h1>Tutorial 5 - Explicit Encoding</h1>
-        <p>
-            For the final task, imagine that you are an environmental protection researcher working for Environment
-            Canada who has developed a method to predict the scope of on-land oil spillages. Now, you need to test the
-            accuracy of your prediction model using collected data from past oil spills.
-        </p>
-        <p>
-            To the left you will see nine juxtaposed displays that you can use to compare the predicted model with the
-            observed data. The displays have been laid out in small multiples for convenience. Each
-            display is labeled with what is being represented. Here is a brief description of each representation:
-        </p>
-        <img src="../tutorials/img/tutorial-task-5-1.png" />
-        <ol>
-            <li>
-                Display 1 is a video of the observed data from the oil spill, represented as a yellow blob and
-                superimposed over the original satellite image of the area of effect.
-            </li>
-            <li>
-                Display 2 is a video of the predicted model data of the oil spill. This is represented as a blue blob,
-                also superimposed over the original image.
-            </li>
-            <li>
-                Display 3 combines the observed and predicted data into a single overlayed video.
-            </li>
-            <li>
-                Display 4 takes the outlines of the perimeters of both the observed and predicted data blobs and
-                superimposes them into one video. The orange outline is the observed data, while the green outline is
-                the predicted data.
-            </li>
-            <li>
-                Display 5 is a static image of the original area of effect.
-            </li>
-            <li>
-                Display 6 combines the original blobs for the observed and predicted data with the outlined points in
-                one overlayed video.
-            </li>
-            <li>
-                Display 7 uses a technique called difference lines (DL). Difference lines is a representation of the
-                relationship between the observed and predicted blobs. You will notice that the colours of lines change
-                as the video plays. This means that the relationship has changed. If the observed data is farther from
-                the center than the predicted data, then the lines will be coloured red. If the predicted data is
-                farther from the center, then the lines will be coloured blue.
-            </li>
-            <li>
-                Display 8 combines difference lines and the perimeter outlines of the data into one video.
-            </li>
-            <li>
-                Display 9 combines every technique (i.e., observed & predicted data, perimeter outlines, and difference
-                lines) into one overlay.
-            </li>
-        </ol>
-        <p>
-            Each display is running in a constant loop. A video progress bar is drawn under each display to indicate the
-            position in the video. Press spacebar to pause and use the left and right arrow keys to rewind/fast-forward.
-            You can now test your model against the observed data.
-        </p>
-        <ul>
-            <li>
-                Does your model do a good job of predicting the scope of an oil spill?
-            </li>
-            <li>
-                Does your model over-predict/under-predict the scope of the spill?
-            </li>
-            <li>
-                If so, when, and where does this occur?
-            </li>
-        </ul>
-        <p>
-            Once you are satisfied with your analysis, you can leave this page.
-        </p>
+    <div style="display: flex;">
+        <div id="tutorialSidebar" class="sidebar">&#60;</div>
+        <div id="tutorialContent" class="sidebarContent hidden">
+            <h1>Tutorial 5 - Explicit Encoding</h1>
+            <p>
+                For the final task, imagine that you are an environmental protection researcher working for Environment
+                Canada who has developed a method to predict the scope of on-land oil spillages. Now, you need to test
+                the
+                accuracy of your prediction model using collected data from past oil spills.
+            </p>
+            <p>
+                To the left you will see nine juxtaposed displays that you can use to compare the predicted model with
+                the
+                observed data. The displays have been laid out in small multiples for convenience. Each
+                display is labeled with what is being represented. Here is a brief description of each representation:
+            </p>
+            <img src="../tutorials/img/tutorial-task-5-1.png" />
+            <ol>
+                <li>
+                    Display 1 is a video of the observed data from the oil spill, represented as a yellow blob and
+                    superimposed over the original satellite image of the area of effect.
+                </li>
+                <li>
+                    Display 2 is a video of the predicted model data of the oil spill. This is represented as a blue
+                    blob,
+                    also superimposed over the original image.
+                </li>
+                <li>
+                    Display 3 combines the observed and predicted data into a single overlayed video.
+                </li>
+                <li>
+                    Display 4 takes the outlines of the perimeters of both the observed and predicted data blobs and
+                    superimposes them into one video. The orange outline is the observed data, while the green outline
+                    is
+                    the predicted data.
+                </li>
+                <li>
+                    Display 5 is a static image of the original area of effect.
+                </li>
+                <li>
+                    Display 6 combines the original blobs for the observed and predicted data with the outlined points
+                    in
+                    one overlayed video.
+                </li>
+                <li>
+                    Display 7 uses a technique called difference lines (DL). Difference lines is a representation of the
+                    relationship between the observed and predicted blobs. You will notice that the colours of lines
+                    change
+                    as the video plays. This means that the relationship has changed. If the observed data is farther
+                    from
+                    the center than the predicted data, then the lines will be coloured red. If the predicted data is
+                    farther from the center, then the lines will be coloured blue.
+                </li>
+                <li>
+                    Display 8 combines difference lines and the perimeter outlines of the data into one video.
+                </li>
+                <li>
+                    Display 9 combines every technique (i.e., observed & predicted data, perimeter outlines, and
+                    difference
+                    lines) into one overlay.
+                </li>
+            </ol>
+            <p>
+                Each display is running in a constant loop. A video progress bar is drawn under each display to indicate
+                the
+                position in the video. Press spacebar to pause and use the left and right arrow keys to
+                rewind/fast-forward.
+                You can now test your model against the observed data.
+            </p>
+            <ul>
+                <li>
+                    Does your model do a good job of predicting the scope of an oil spill?
+                </li>
+                <li>
+                    Does your model over-predict/under-predict the scope of the spill?
+                </li>
+                <li>
+                    If so, when, and where does this occur?
+                </li>
+            </ul>
+            <p>
+                Once you are satisfied with your analysis, you can leave this page.
+            </p>
+        </div>
     </div>
 </body>
 

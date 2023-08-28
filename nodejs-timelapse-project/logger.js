@@ -2,6 +2,7 @@ const pino = require("pino");
 
 module.exports = pino(
     {
+        level: "trace",
         formatters: {
             level: (label) => {
                 return { level: label.toUpperCase() };

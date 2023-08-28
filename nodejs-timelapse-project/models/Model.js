@@ -464,7 +464,10 @@ Model.prototype.findSnapshotIndex = function (id, snapshot) {
  * @returns {Promise}
  */
 Model.prototype.addDisplay = async function (dataset, filter) {
-    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached")
+    if (this.displays.length >= this.rows * this.columns) {
+        pinoLog("error", "Maximum displays reached");
+        return;
+    }
     return this.loadDisplay(dataset, filter).then(display => {
         const openCell = this.displays.findIndex(display => display === null);
         if (openCell >= 0) {
@@ -475,6 +478,8 @@ Model.prototype.addDisplay = async function (dataset, filter) {
         this.globalScrollbar.addChild(display.getMainScrollbar());
 
         if (this.layoutType === "dynamic") this.updateCanvas();
+
+        pinoLog("trace", `Added new display: ${display.id}`);
 
         this.notifySubscribers();
 
@@ -544,7 +549,10 @@ Model.prototype.loadDisplay = async function (dataset, filter) {
  * @returns {Promise}
  */
 Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
-    if (this.displays.length >= this.rows * this.columns) throw new Error("Error: maximum displays reached");
+    if (this.displays.length >= this.rows * this.columns) {
+        pinoLog("error", "Maximum displays reached");
+        return;
+    }
     return this.loadOverlay(id1, id2, filter1, filter2).then(overlay => {
         const targetIndex = this.displays.findIndex(display => display !== null && display.id === id1);
         if (targetIndex >= 0) {
@@ -557,6 +565,8 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
         this.globalScrollbar.addChild(overlay.getMainScrollbar());
 
         if (this.layoutType === "dynamic") this.updateCanvas();
+
+        pinoLog("trace", `Added new display: ${overlay.id}`);
 
         this.notifySubscribers();
 
@@ -746,8 +756,10 @@ Model.prototype.addSnapshot = function () {
         if (name === null) {
             return;
         } else if (name.trim() === "") {
+            pinoLog("error", "invalid snapshot name: name must not be empty")
             alert("Error: Snapshot name must not be empty");
         } else if (this.snapshots.some(snapshot => snapshot.name === name)) {
+            pinoLog("error", "invalid snapshot name: name cannot already exist");
             alert("Error: Snapshot name already exists");
         } else {
             validName = true;
@@ -775,8 +787,10 @@ Model.prototype.addSnapshot = function () {
         body: JSON.stringify({ snapshot: snapshot }),
     }).then(response => {
         if (response.status !== 200) {
+            pinoLog("error", "Did not write to snapshots JSON")
             alert("Error: Did not write to snapshots JSON.");
         } else {
+            pinoLog("trace", "Successfully wrote to snapshots JSON")
             this.loadSnapshots();
         }
     }).catch(err => console.error(err));
@@ -824,7 +838,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                 this.insertDisplay(display, json.position);
             }
         } else {
-            console.error(`Failed to create display with id "${json.id}`);
+            pinoLog("error", `Failed to create display with id "${json.id}`);
         }
     }
     /* Load in all overlays from JSON */
@@ -860,7 +874,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
                 this.insertDisplay(overlay, json.position);
             }
         } else {
-            console.error(`Failed to create overlay with id "${json.id}"`);
+            pinoLog("error", `Failed to create overlay with id "${json.id}"`);
         }
     }
     /* Link up all global scrollbar links and children */
@@ -901,7 +915,7 @@ Model.prototype.loadSnapshot = async function (snapshot) {
     });
     window.scrollTo(snapshot.scrollPos[0], snapshot.scrollPos[1]);
     this.updateCanvas();
-    console.log(`Successfully loaded snapshot "${snapshot.name}"`);
+    pinoLog("trace", `Successfully loaded snapshot "${snapshot.name}"`);
     this.notifySubscribers();
 }
 
@@ -948,18 +962,13 @@ Model.prototype.loadDataset = function (options = {}) {
     if (!!options.dataset) {
         this.incrementLoading();
         const start = performance.now();
-        console.log(`Beginning load of ${options.dataset.dir} from /${options.filter}...`);
+        pinoLog("trace", `Beginning load of ${options.dataset.dir} from /${options.filter}...`)
         this.loader.initDatasetLoad(
             options.dataset,
             options.filter,
             loadObj => {
                 this.decrementLoading();
-                console.log(
-                    `Finished loading ${loadObj.dir}/${loadObj.filter} in ${Math.floor(performance.now() - start)}ms. \
-                    \nLoaded ${loadObj.frames.length} frames. \
-                    \nLoaded ${loadObj.timestamps.length} timestamps. \
-                    \nLoaded ${loadObj.images.length} images.`
-                );
+                pinoLog("trace", `Finished loading ${loadObj.dir}/${loadObj.filter} in ${Math.floor(performance.now() - start)}ms. Loaded ${loadObj.frames.length} frames. Loaded ${loadObj.timestamps.length} timestamps. Loaded ${loadObj.images.length} images.`);
                 callback(loadObj);
             },
             err => {
@@ -969,6 +978,7 @@ Model.prototype.loadDataset = function (options = {}) {
             }
         );
     } else {
+        pinoLog("error", "Dataset does not exist in model");
         errCallback("Error: dataset does not exist in model");
     }
 }
