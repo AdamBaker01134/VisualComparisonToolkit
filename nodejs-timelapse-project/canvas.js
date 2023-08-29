@@ -149,6 +149,12 @@ function startPlayInterval(scrollbar, frameRate = 10) {
     }, Math.floor(1000 / frameRate));
 }
 
+/* Clear all playing interval timers and empty the timer object */
+function clearAllPlayingIntervals() {
+    Object.keys(playingTimers).forEach(id => clearInterval(playingTimers[id]));
+    playingTimers = {};
+}
+
 function mouseMoved(event, mx = mouseX, my = mouseY) {
     let hit = null;
     switch (currentState) {
@@ -267,6 +273,8 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
         case STATE.READY:
             if (hit = model.checkScrollbarHit(mx, my)) {
                 imodel.setFocused(hit);
+                /* Clear playing timers when scrubbing */
+                clearAllPlayingIntervals();
                 let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
                 if (startFocused) {
@@ -488,8 +496,7 @@ function keyPressed(event) {
                     scrollbar = imodel.selection.getMainScrollbar();
                 } else if (!playingIds.includes(scrollbar.id)) {
                     /* Ensure no other timers are running when the global scrollbar starts playing */
-                    playingIds.forEach(id => clearInterval(playingTimers[id]));
-                    playingTimers = {};
+                    clearAllPlayingIntervals();
                 }
                 if (playingIds.includes(scrollbar.id)) {
                     clearInterval(playingTimers[scrollbar.id]);
@@ -521,6 +528,11 @@ function keyPressed(event) {
                 currentState = STATE.COINCIDENT_POINTING;
                 pinoLog("trace", "Entered coincident pointing mode");
                 return false;
+            } else if (keyCode === 82) {
+                /* Handle 'r' key pressed events */
+                clearAllPlayingIntervals();
+                model.setIndex(model.globalScrollbar, 0);
+                model.displays.forEach(display => model.setIndex(display.getMainScrollbar(), 0));
             }
             break;
         case STATE.SHADOW_MARKER:
