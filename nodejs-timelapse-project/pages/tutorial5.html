@@ -41,6 +41,7 @@
             overflow-y: scroll;
             display: flex;
             flex-direction: column;
+            font-size: 20px;
         }
 
         .sidebarContent img {
@@ -134,17 +135,17 @@
 
             clear();
 
-            drawDisplay("Observed", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 0 + 20 * 1, true, false, false, false);
-            drawDisplay("Predicted", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 0 + 20 * 1, false, true, false, false);
-            drawDisplay("Observed + Predicted", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 0 + 20 * 1, true, true, false, false);
+            drawDisplay("Predicted", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 0 + 20 * 1, true, false, false, false);
+            drawDisplay("Observed", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 0 + 20 * 1, false, true, false, false);
+            drawDisplay("Predicted + Observed", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 0 + 20 * 1, true, true, false, false);
 
             drawDisplay("Outlines", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 1 + 20 * 2, false, false, true, false);
             drawDisplay("Original Image", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 1 + 20 * 2, false, false, false, false);
-            drawDisplay("Outlines + Observed + Predicted", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 1 + 20 * 2, true, true, true, false);
+            drawDisplay("Outlines + Predicted + Observed", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 1 + 20 * 2, true, true, true, false);
 
             drawDisplay("Difference Lines (DL)", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 2 + 20 * 3, false, false, false, true);
             drawDisplay("DL + Outlines", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 2 + 20 * 3, false, false, true, true);
-            drawDisplay("DL + Outlines + Observed + Predicted", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 2 + 20 * 3, true, true, true, true);
+            drawDisplay("DL + Outlines + Predicted + Observed", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 2 + 20 * 3, true, true, true, true);
         }
 
         function findMiddle(index1, index2) {
@@ -178,7 +179,7 @@
         /**
          * Draw a display for the explicit encoding blob example.
          */
-        function drawDisplay(label, left, top, observed, predicted, outlines, lines) {
+        function drawDisplay(label, left, top, predicted, observed, outlines, lines) {
             colorMode(RGB, 255);
             noStroke();
             fill(190, 190, 190);
@@ -314,82 +315,79 @@
         <div id="tutorialContent" class="sidebarContent hidden">
             <h1>Tutorial 5 - Explicit Encoding</h1>
             <p>
-                For the final task, imagine that you are an environmental protection researcher working for Environment
-                Canada who has developed a method to predict the scope of on-land oil spillages. Now, you need to test
-                the
-                accuracy of your prediction model using collected data from past oil spills.
+                For the final task, imagine that you are a microbiologist working for Environment Canada. You have been
+                researching the effectiveness of hydrocarbon-eating bacteria in cleaning up oil spills, and now that
+                you’ve tested these bacteria, you need to see how well they did against the predicted models.
             </p>
             <p>
-                To the left you will see nine side-by-side displays that you can use to compare the predicted model with
-                the
-                observed data. The displays have been laid out in a grid. Each
-                display is labeled with what is being represented. Here is a brief description of each representation:
+                To the left you will see nine side-by-side displays that you can use to compare the effectiveness of the
+                bacteria. Each display is running on a constant loop. A video progress bar is drawn under each display
+                to indicate the position in the video. Press spacebar to pause/play. Use the left and right arrow keys
+                to rewind/fast-forward.
             </p>
             <img src="../tutorials/img/tutorial-task-5-1.png" />
-            <ol>
-                <li>
-                    Display 1 is a video of the observed data from the oil spill, represented as a yellow blob and
-                    stacked over the original satellite image of the area of effect.
-                </li>
-                <li>
-                    Display 2 is a video of the predicted model data of the oil spill. This is represented as a blue
-                    blob,
-                    also stacked over the original image.
-                </li>
-                <li>
-                    Display 3 combines the observed and predicted data into a single overlayed video.
-                </li>
-                <li>
-                    Display 4 takes the outlines of the perimeters of both the observed and predicted data blobs and
-                    stacks them into one video. The orange outline is the observed data, while the green outline
-                    is the predicted data.
-                </li>
-                <li>
-                    Display 5 is a static image of the original area of effect.
-                </li>
-                <li>
-                    Display 6 combines the original blobs for the observed and predicted data with the outlined points
-                    in one overlayed video.
-                </li>
-                <li>
-                    Display 7 uses a technique called difference lines (DL). Difference lines is a representation of the
-                    relationship between the observed and predicted blobs. You will notice that the colours of lines
-                    change
-                    as the video plays. This means that the relationship has changed. If the observed data is farther
-                    from
-                    the center than the predicted data, then the lines will be coloured red. If the predicted data is
-                    farther from the center, then the lines will be coloured blue.
-                </li>
-                <li>
-                    Display 8 combines difference lines and the perimeter outlines of the data into one video.
-                </li>
-                <li>
-                    Display 9 combines every technique (i.e., observed & predicted data, perimeter outlines, and
-                    difference
-                    lines) into one overlay.
-                </li>
-            </ol>
+            <strong>
+                Displays are labeled. But for convenience, they will be described as displays 1 through 9 as in the
+                figure above. The middle image (display 5) is the original area of effect.
+            </strong>
             <p>
-                Each display is running in a constant loop. A video progress bar is drawn under each display to indicate
-                the
-                position in the video. Press spacebar to pause and use the left and right arrow keys to
-                rewind/fast-forward.
-                You can now test your model against the observed data.
+                Display 1 represents the predicted simulation of the effectiveness of the hydrocarbon-eating bacteria.
+                The blue blob represents the predicted scope of the oil spill over time. Display 2 represents the
+                observational data collected during an actual oil spill. The yellow
+                blob represents the true scope of the spill being reduced over time by the bacteria.
+            </p>
+            <img src="../tutorials/img/tutorial-task-5-2.png" />
+            <p>
+                Using these two videos to compare:
             </p>
             <ul>
-                <li>
-                    Does your model do a good job of predicting the scope of an oil spill?
-                </li>
-                <li>
-                    Does your model over-predict/under-predict the scope of the spill?
-                </li>
-                <li>
-                    If so, when, and where does this occur?
-                </li>
+                <li>Are the bacteria working as effectively as the simulation predicted?</li>
+                <li>Do the bacteria under/over-perform? If so, when, and where does this occur?</li>
             </ul>
             <p>
-                Once you are satisfied with your analysis, you can leave this page.
+                Display 3 combines both the predicted and the observed oil spill data into a single video.
             </p>
+            <img src="../tutorials/img/tutorial-task-5-3.png" />
+            <p>
+                Using this video to compare:
+            </p>
+            <ul>
+                <li>Are the bacteria working as effectively as the simulation predicted? Has your answer changed?</li>
+                <li>Do you prefer this combined video over the separate videos? Why or why not?</li>
+            </ul>
+            <p>
+                Display 4 introduces another representation of the oil spill over time. Dotted outlines are placed
+                around the perimeter of the predicted and observed data to replace the blobs. Display 6 combines the
+                outline representation with the spill blobs.
+            </p>
+            <img src="../tutorials/img/tutorial-task-5-4.png" />
+            <p>
+                Using these two videos to compare:
+            </p>
+            <ul>
+                <li>Are the bacteria working as effectively as the simulation predicted? Has your answer changed?</li>
+                <li>Which display do you prefer and why?</li>
+                <li>Does the outline technique make it easier to compare than the blobs? Why or why not?</li>
+            </ul>
+            <p>
+                Finally, display 7 introduces a representation of the difference between the predicted and observed oil
+                spill data called difference lines (DL). You will notice that the line colours change as the video
+                plays. The lines are coloured blue where the predicted blob is larger, and they are coloured red where
+                the observed blob is larger.
+            </p>
+            <p>
+                Display 8 combines this technique with perimeter outlines, and display 9 combines all techniques (i.e.,
+                observed & predicted blobs, perimeter outlines, and difference lines) into one video.
+            </p>
+            <img src="../tutorials/img/tutorial-task-5-5.png" />
+            <p>
+                Using these three videos to compare:
+            </p>
+            <ul>
+                <li>Are the bacteria working as effectively as the simulation predicted? Has your answer changed?</li>
+                <li>Which display do you prefer and why?</li>
+                <li>Do the difference lines make it easier to compare than the other techniques? Why or why not?</li>
+            </ul>
         </div>
     </div>
 </body>
