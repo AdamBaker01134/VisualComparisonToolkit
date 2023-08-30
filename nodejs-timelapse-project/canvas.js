@@ -16,8 +16,7 @@ let loader;
 function preload() {
     model = new Model();
     imodel = new iModel();
-    model.loadDatasets();
-    model.loadSnapshots().then(() =>  _setupTutorials());
+    model.loadDatasets().then(() => model.loadSnapshots()).then(() => _setupTutorials());
 }
 
 /* p5.js function that is called when the application starts up (after preload) */
