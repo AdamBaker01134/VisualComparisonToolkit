@@ -146,6 +146,8 @@
             drawDisplay("Difference Lines (DL)", (backgroundWidth + 20) * 0 + 20 * 1, (backgroundHeight + 20) * 2 + 20 * 3, false, false, false, true);
             drawDisplay("DL + Outlines", (backgroundWidth + 20) * 1 + 20 * 2, (backgroundHeight + 20) * 2 + 20 * 3, false, false, true, true);
             drawDisplay("DL + Outlines + Predicted + Observed", (backgroundWidth + 20) * 2 + 20 * 3, (backgroundHeight + 20) * 2 + 20 * 3, true, true, true, true);
+
+            drawColourKey();
         }
 
         function findMiddle(index1, index2) {
@@ -258,6 +260,57 @@
             fill(255, 255, 255);
             textSize(18);
             text(label, left + 10, top + 18);
+        }
+
+        function drawColourKey () {
+            colorMode(RGB, 255);
+            noStroke();
+            let left = 10;
+            fill(0, 0, 0)
+            text("Colour Key: ", left, CANVAS_HEIGHT - 15);
+            left += textWidth("Colour Key: ") + 10;
+            /* Predicted */
+            const predicted = "Predicted";
+            fill(0, 0, 204);
+            circle(left, CANVAS_HEIGHT - 20, 10);
+            left += 10;
+            text(predicted, left, CANVAS_HEIGHT - 15);
+            left += textWidth(predicted) + 10;
+            /* Observed */
+            fill(253, 218, 13);
+            const observed = "Observed";
+            circle(left, CANVAS_HEIGHT - 20, 10);
+            left += 10;
+            text(observed, left, CANVAS_HEIGHT - 15);
+            left += textWidth(observed) + 10;
+            /* Predicted outline */
+            fill(0, 255, 0);
+            const predictedOutline = "Predicted Outline";
+            circle(left, CANVAS_HEIGHT - 20, 10);
+            left += 10;
+            text(predictedOutline, left, CANVAS_HEIGHT - 15);
+            left += textWidth(predictedOutline) + 10;
+            /* Observed outline */
+            fill(255, 165, 0);
+            const observedOutline = "Observed Outline";
+            circle(left, CANVAS_HEIGHT - 20, 10);
+            left += 10;
+            text(observedOutline, left, CANVAS_HEIGHT - 15);
+            left += textWidth(observedOutline) + 10;
+            /* Predicted difference lines*/
+            fill(48, 213, 200);
+            const predictedDL = "Predicted Difference Lines";
+            circle(left, CANVAS_HEIGHT - 20, 10);
+            left += 10;
+            text(predictedDL, left, CANVAS_HEIGHT - 15);
+            left += textWidth(predictedDL) + 10;
+            /* Observed difference lines */
+            fill(255, 0, 0);
+            const observedDL = "Observed Difference Lines";
+            circle(left, CANVAS_HEIGHT - 20, 10);
+            left += 10;
+            text(observedDL, left, CANVAS_HEIGHT - 15);
+            left += textWidth(observedDL) + 10;
         }
 
         function keyPressed(event) {

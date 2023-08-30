@@ -28,32 +28,30 @@ Once a video has ended, press spacebar again to replay it.
 <p>
 Videos can be played individually or all at once using the global timeline at the bottom of the screen.
 Scrubbing works the same for the global timeline, or you can play it automatically by pressing control + spacebar. 
+Press 'r' to reset all the videos.
 </p>
 <p>
 Now you can begin a comparative analysis of each of the videos.
 Play through the videos at your leisure and note the similarities/differences you notice as your eye moves from video to video. 
 <ul>
-<li>When are they the same?</li>
-<li>How long are they the same?</li>
-<li>When do they begin to look different?</li>
-<li>How are they different?</li>
-<li>Are there events that occur in some videos that don’t occur in others?</li>
+<li>What similarities do you see between the 12 plants?</li>
+<li>What differences do you see?</li>
 </ul>
 </p>
 <p>
-If you find it helpful, there is also a feature that allows you to move displays around.
+There is also a feature that allows you to move displays around.
+This allows you to place the videos in whatever order you prefer. 
 Click and drag a video you want to move and hover it over the target position for 2 seconds until the two displays switch positions.
 If you release early, an overlay will be created.
 This will be covered in tutorial 3.
 </p>
 <img src="./tutorials/img/tutorial-task-1-4.jpg" />
 <p>
-You can zoom by scrolling while hovering over the video, and you can pan by clicking and dragging a video using the middle mouse button.
-These utility techniques are in place to aid in your comparison.
+You can zoom by holding control and scrolling while hovering over the video, and you can pan by clicking and dragging a video using the middle mouse button.
 </p>
 <ul>
-<li>What are the most significant details you saw while comparing these plant videos?</li>
+<li>Tell me about some significant details you noticed while comparing these plant videos.</li>
 <li>Which plant seemed to grow the best? Which one grew the worst?</li>
-<li>Which techniques helped you the most in picking out these details?</li>
+<li>Did you prefer scrubbing through individual videos, or all the videos at once?</li>
 </ul>
 `;

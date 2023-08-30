@@ -72,22 +72,16 @@ Once you are happy with how they look, play through each overlay independently a
 </p>
 <ul>
 <li>
-Do you see pitch tunneling occurring and/or break in the ball?
-</li>
-<li>
 Who has a more consistent flight path?
 </li>
 <li>
 Who has a larger break in their pitch?
 </li>
 <li>
-Were the overlay techniques helpful in your comparison? What could make them feel better?
+Was the coincident point alignment helpful in in your comparison?
 </li>
 <li>
-Which technique did you find most useful?
+Was the overlay helpful in your comparison?
 </li>
 </ul>
-<p>
-Once you are satisfied with your analysis, you can leave this page.
-</p>
 `;

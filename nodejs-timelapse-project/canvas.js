@@ -427,11 +427,12 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
     switch (currentState) {
         case STATE.READY:
             let hit;
-            if (hit = model.checkImageHit(mx, my)) {
+            if (event.ctrlKey && (hit = model.checkImageHit(mx, my))) {
                 event.preventDefault();
                 event.stopPropagation();
                 imodel.zoom(hit, event.delta);
                 pinoLog("trace", `Zoomed display with delta ${event.delta}`);
+                return false;
             }
             break;
     }
