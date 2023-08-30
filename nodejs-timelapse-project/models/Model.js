@@ -533,9 +533,11 @@ Model.prototype.loadDisplay = async function (dataset, filter) {
                 loadObj.filters,
             );
         } else {
+            pinoLog("error", "Could not load dataset");
             throw new Error("Error: could not load dataset");
         }
     } else {
+        pinoLog("error", "Specified dataset does not exist or is not visible in this instance");
         throw new Error("Error: specified dataset does not exist or is not visible in this instance");
     }
 }
@@ -630,6 +632,7 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
             display2,
         );
     } else {
+        pinoLog("error", "could not load displays for overlay");
         throw new Error("Error: could not load displays for overlay");
     }
 }
