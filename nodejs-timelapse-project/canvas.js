@@ -309,7 +309,14 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     }
                 }
             } else if (hit = model.checkImageHit(mx, my)) {
-                if (event.which === 1) {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                    previousX = mouseX;
+                    previousY = mouseY;
+                    currentState = STATE.PANNING;
+                    if (imodel.selection !== hit) imodel.select(hit);
+                    pinoLog("trace", "Panning display viewport");
+                } else {
                     if (model.checkComparisonSliderHit(mx, my)) {
                         currentState = STATE.COMPARE_SLIDING;
                         if (imodel.selection !== hit) imodel.select(hit);
@@ -321,13 +328,6 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     } else {
                         currentState = STATE.PREPARE_SELECT;
                     }
-                } else if (event.which === 2) {
-                    event.preventDefault();
-                    previousX = mouseX;
-                    previousY = mouseY;
-                    currentState = STATE.PANNING;
-                    if (imodel.selection !== hit) imodel.select(hit);
-                    pinoLog("trace", "Panning display viewport");
                 }
             } else if (hit = model.checkCornerHit(mx, my)) {
                 previousX = mouseX;
