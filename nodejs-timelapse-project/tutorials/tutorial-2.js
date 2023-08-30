@@ -3,11 +3,11 @@ const tutorial2 = `
 <p>
 Once again, image you’re a plant scientist.
 This time, you’re investigating the flowering cycles of canola crops.
-You’ve collected images of three separate crops flowering over the course of a month.
-Your task is to find when each of the three canola crops begins to flower, when each crop stops flowering, and note any discrepancies.
+You’ve collected images of two separate crops flowering over the course of a month.
+Your task is to find when each of the two canola crops begins to flower, when each crop stops flowering, and note any discrepancies.
 </p>
 <p>
-The three videos have been pre-loaded and resized to fill the screen.
+The two videos have been pre-loaded and resized.
 If they are too small, or too larger, feel free to resize them as shown in tutorial 1.
 </p>
 <img src="./tutorials/img/tutorial-task-2-1.png" />
