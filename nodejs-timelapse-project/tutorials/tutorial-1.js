@@ -17,7 +17,7 @@ Or to save time, hold control while you drag to resize all displays.
 Once you’ve found a preferable size, we can continue.
 </p>
 <img src="./tutorials/img/tutorial-task-1-2.jpg" />
-<strong style="text-align: center; font-size: small;">Note: Does not have to look like the above image.
+<strong class="small-centered">Note: Does not have to look like the above image.
 The resize technique is meant to allow you customize your layout to whatever you prefer.</strong> 
 <p>
 You can play through a video by selecting it (click it) and pressing spacebar, or by scrubbing through it.
@@ -33,11 +33,12 @@ Press 'r' to reset all the videos.
 <p>
 Now you can begin a comparative analysis of each of the videos.
 Play through the videos at your leisure and note the similarities/differences you notice as your eye moves from video to video. 
+</p>
+<strong class="small-centered">Stop here and inform the experimenter.</strong>
 <ul>
 <li>What similarities do you see between the 12 plants?</li>
 <li>What differences do you see?</li>
 </ul>
-</p>
 <p>
 There is also a feature that allows you to move displays around.
 This allows you to place the videos in whatever order you prefer. 
@@ -47,8 +48,11 @@ This will be covered in tutorial 3.
 </p>
 <img src="./tutorials/img/tutorial-task-1-4.jpg" />
 <p>
-You can zoom by holding control and scrolling while hovering over the video, and you can pan by clicking and dragging a video using the middle mouse button.
+You can adjust the zoom of each video by holding control and scrolling up and down on the video.
+If the displays aren't lined up the way you'd like, hold control and click and drag the video.
+This will trigger the panning technique to adjust the position of the video in the display.
 </p>
+<strong class="small-centered">Stop here.</strong>
 <ul>
 <li>Tell me about some significant details you noticed while comparing these plant videos.</li>
 <li>Which plant seemed to grow the best? Which one grew the worst?</li>

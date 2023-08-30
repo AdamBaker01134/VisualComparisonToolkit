@@ -101,9 +101,8 @@ const tutorial0 = `
 </p>
 <h3>Panning/Zooming</h3>
 <p>
-    You can pan the viewport of an image window by clicking and dragging the image using the
-    middle mouse button. You can also zoom this image window by scrolling on the image
-    window.
+    You can pan the viewport of an image window by holding control and clicking and dragging the
+    image You can also zoom this image window by scrolling on the image window.
 </p>
 <h3>Creating Overlays</h3>
 <p>

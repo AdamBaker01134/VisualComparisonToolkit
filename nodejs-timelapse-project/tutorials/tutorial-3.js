@@ -70,18 +70,11 @@ This can be used for further align the two videos.
 <p>
 Once you are happy with how they look, play through each overlay independently and compare.
 </p>
+<strong class="small-centered">Stop Here.</strong>
 <ul>
-<li>
-Who has a more consistent flight path?
-</li>
-<li>
-Who has a larger break in their pitch?
-</li>
-<li>
-Was the coincident point alignment helpful in in your comparison?
-</li>
-<li>
-Was the overlay helpful in your comparison?
-</li>
+<li>Who has a more consistent flight path?</li>
+<li>Who has a larger break in their pitch?</li>
+<li>Was the coincident point alignment helpful in in your comparison?</li>
+<li>Was the overlay helpful in your comparison?</li>
 </ul>
 `;

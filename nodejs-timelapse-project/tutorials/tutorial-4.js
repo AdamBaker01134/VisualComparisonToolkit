@@ -23,6 +23,7 @@ Also, the consistent backgrounds in these videos improve the technique by reduci
 <p>
 Play through the videos multiple times and see if you can spot any trends occurring.
 </p>
+<strong class="small-centered">Stop Here.</strong>
 <ul>
 <li>Does the size of the sea ice change over the years?</li>
 <li>Does the density (colour) of the ice change?</li>
@@ -45,6 +46,7 @@ Press the period key again to exit shadow marking mode.
 Play through each video again.
 The shadow marker acts as a focal point to draw your eye to your desired area of focus as you move from video to video. 
 </p>
+<strong class="small-centered">Stop Here.</strong>
 <ul>
 <li>Did the shadow marker help focus your attention on specific points within the video?</li>
 <li>Do you think it would be easier to compare all these images if they were larger? Why or why not?</li>

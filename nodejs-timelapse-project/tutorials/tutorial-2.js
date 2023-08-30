@@ -42,6 +42,7 @@ You have now trimmed the original video to only include the flowering cycle.
 Scrub through all the videos and compare the full flowering cycles.
 Pay attention to the timestamps.
 </p>
+<strong class="small-centered">Stop Here.</strong>
 <ul>
 <li>Which crop flowered first?</li>
 <li>Which crop peaked first?</li>
@@ -52,6 +53,7 @@ This is a technique called normalization.
 If you want to play through each video without normalization, simply toggle the normalize checkbox in the middle of the webpage header.
 </p>
 <img src="./tutorials/img/tutorial-task-2-5.png" />
+<strong class="small-centered">Stop Here.</strong>
 <ul>
 <li>Discuss your experience comparing the flowering cycle as a subset versus a full video.</li>
 <li>Did setting the start/end markers aid you in comparing the flowering cycles? Why or why not? </li>

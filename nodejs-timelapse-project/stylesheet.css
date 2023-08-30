@@ -84,6 +84,12 @@ header {
     margin: 20px;
 }
 
+strong.small-centered {
+    text-align: center;
+    text-align: center;
+    font-size: small;
+}
+
 /* Loader css take from https://www.codingthesmartway.com/how-to-implement-a-css-loader/ */
 .loading {
     border: 8px solid #f3f3f3;
