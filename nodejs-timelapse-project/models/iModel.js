@@ -296,6 +296,19 @@ iModel.prototype.loadAnnotation = function (scrollbar, name) {
 }
 
 /**
+ * Remove an annotation from a scrollbar
+ * @param {Scrollbar} scrollbar scrollbar that contains the annotation
+ * @param {string} name name of the annotation
+ */
+iModel.prototype.removeAnnotation = function (scrollbar, name) {
+    const id = scrollbar.annotations.find(annotation => annotation.name === name)?.id;
+    if (id) {
+        scrollbar.removeAnnotation(id);
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Set the locked state of the selected display
  * @param {boolean} lock true if we want to lock, false if we want to unlock
  */

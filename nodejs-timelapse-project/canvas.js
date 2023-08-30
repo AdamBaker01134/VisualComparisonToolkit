@@ -442,7 +442,8 @@ function windowResized(event) {
     pinoLog("trace", `Window resized, new dimensions: ${windowWidth, windowHeight}`);
 }
 
-function keyPressed(event) {
+function keyPressed(event, mx = mouseX, my = mouseY) {
+    let hit = null;
     switch (currentState) {
         case STATE.READY:
             if (keyCode === TAB) {
@@ -510,7 +511,11 @@ function keyPressed(event) {
                 return false;
             } else if (keyCode === DELETE) {
                 /* Handle delete key pressed events */
-                if (imodel.selection !== null) {
+                if (imodel.highlightedAnnotation && (hit = model.checkScrollbarHit(mx, my))) {
+                    imodel.removeAnnotation(hit, imodel.highlightedAnnotation.name);
+                    pinoLog("trace", `Removed an annotation from scrollbar with id: ${hit.id}`);
+                    return false;
+                } else if (imodel.selection !== null) {
                     model.removeDisplay(imodel.selection);
                     pinoLog("trace", `Removed display with id ${imodel.selection.id}`);
                     imodel.select(imodel.selection); /* Need to unselect display */

@@ -292,6 +292,20 @@ Scrollbar.prototype.loadAnnotation = function (id) {
 }
 
 /**
+ * Remove an annotation from the scrollbar
+ * @param {string} id id of the annotation to remove
+ */
+Scrollbar.prototype.removeAnnotation = function (id) {
+    if (this.locked) return;
+
+    const index = this.annotations.findIndex(annotation => annotation.id === id);
+    if (index >= 0) {
+        this.annotations.splice(index, 1);
+        this.children.forEach(child => child.removeAnnotation(id));
+    }
+}
+
+/**
  * Search annotations and child scrollbar annotations for annotations that have the same name
  * @param {string} name name of annotation to search for
  * @returns {boolean}
