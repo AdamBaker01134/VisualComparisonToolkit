@@ -222,7 +222,8 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             if (imodel.selection !== null) {
                 let dx = mouseX - previousX;
                 let dy = mouseY - previousY;
-                imodel.pan(dx, dy);
+                if (event.ctrlKey) model.panAll(dx, dy);
+                else imodel.pan(dx, dy);
             }
             previousX = mouseX;
             previousY = mouseY;
@@ -308,8 +309,8 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                         pinoLog("trace", "Scrubbing video");
                     }
                 }
-            } else if (hit = model.checkImageHit(mx, my)) {
-                if (event.ctrlKey) {
+            } else if (event.which === 1 && (hit = model.checkImageHit(mx, my))) {
+                if (event.altKey) {
                     event.preventDefault();
                     previousX = mouseX;
                     previousY = mouseY;
@@ -426,11 +427,13 @@ function mouseWheel(event, mx = mouseX, my = mouseY) {
     switch (currentState) {
         case STATE.READY:
             let hit;
-            if (event.ctrlKey && (hit = model.checkImageHit(mx, my))) {
+            if (event.altKey && (hit = model.checkImageHit(mx, my))) {
                 event.preventDefault();
                 event.stopPropagation();
-                imodel.zoom(hit, event.delta);
-                pinoLog("trace", `Zoomed display with delta ${event.delta}`);
+                if (event.ctrlKey) model.zoomAll(event.delta);
+                else imodel.zoom(hit, event.delta);
+                if (event.ctrlKey) pinoLog("trace", `Zoomed all displays with delta ${event.delta}`);
+                else pinoLog("trace", `Zoomed display with delta ${event.delta}`);
                 return false;
             }
             break;

@@ -259,6 +259,26 @@ Model.prototype.getIndexFromMouse = function (focusedObject, mx) {
 }
 
 /**
+ * Pan every display viewport location.
+ * @param {number} dx change in the x direction of the mouse
+ * @param {number} dy change in the y direction of the mouse
+ */
+Model.prototype.panAll = function (dx, dy) {
+    this.displays.forEach(display => { if (display !== null) display.pan(dx, dy); });
+    this.notifySubscribers();
+}
+
+/**
+ * Zoom all displays by 'delta'
+ * @param {Display} display display to zoom
+ * @param {number} delta zoom size
+ */
+Model.prototype.zoomAll = function (delta) {
+    this.displays.forEach(display => { if (display !== null) display.zoom(delta); });
+    this.notifySubscribers();
+}
+
+/**
  * Resize all displays within the model.
  * @param {number} dx change in the x direction of the mouse
  * @param {number} dy change in the y direction of the mouse

@@ -21,13 +21,14 @@ Once you’ve found a preferable size, we can continue.
 The resize technique is meant to allow you customize your layout to whatever you prefer.</strong> 
 <p>
 You can play through a video by selecting it (click it) and pressing spacebar, or by scrubbing through it.
-Scrubbing refers to manually clicking and dragging places within the green timeline below the video to maneuver the video itself.
+Scrubbing refers to manually clicking and dragging places within the green timeline below the video.
 Once a video has ended, press spacebar again to replay it.
 </p>
 <img src="./tutorials/img/tutorial-task-1-3.png" />
 <p>
-Videos can be played individually or all at once using the global timeline at the bottom of the screen.
-Scrubbing works the same for the global timeline, or you can play it automatically by pressing control + spacebar. 
+Videos can be played all at once using the global timeline at the bottom of the screen.
+Scrubbing works the same for the global timeline.
+Play all the videos automatically by holding control and pressing spacebar.
 Press 'r' to reset all the videos.
 </p>
 <p>
@@ -48,9 +49,13 @@ This will be covered in tutorial 3.
 </p>
 <img src="./tutorials/img/tutorial-task-1-4.jpg" />
 <p>
-You can adjust the zoom of each video by holding control and scrolling up and down on the video.
-If the displays aren't lined up the way you'd like, hold control and click and drag the video.
+You can adjust the zoom of each video by holding the alt key and scrolling up and down on the video.
+If the displays aren't lined up the way you'd like, hold the alt key and click and drag the video.
 This will trigger the panning technique to adjust the position of the video in the display.
+</p>
+<p>
+Zooming and panning can be done globally as well.
+Hold control while you zoom/pan to affect all displays.
 </p>
 <strong class="small-centered">Stop here.</strong>
 <ul>
