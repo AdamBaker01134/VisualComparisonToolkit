@@ -91,7 +91,7 @@ const STATE = {
     PREPARE_SELECT: "prepareSelect",
     PREPARE_OVERLAY: "prepareOverlay",
     PANNING: "panning",
-    RESIZING: "resizing",
+    SCALING: "scaling",
     COMPARE_SLIDING: "compareSliding",
     USING_MAGIC: "usingMagic",
     SHADOW_MARKER: "shadowMarker",
@@ -228,24 +228,17 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             previousX = mouseX;
             previousY = mouseY;
             break;
-        case STATE.RESIZING:
+        case STATE.SCALING:
             if (imodel.selection !== null) {
-                const aspectRatio = imodel.selection.height / imodel.selection.width;
-                let dx = mouseX - previousX;
-                if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) {
-                    if (model.layoutType === "static") {
-                        dx = 0;
-                    }
+                let scaleFactor = (imodel.selection.width + (mouseX - previousX)) / imodel.selection.width;
+                if (model.layoutType === "static") {
+                    if ((imodel.selection.width + imodel.selection.padding * 2) * scaleFactor > model.cellWidth ||
+                        (imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length) * scaleFactor > model.cellHeight) {
+                            scaleFactor = 1;
+                        }
                 }
-                let dy = aspectRatio * (imodel.selection.width + dx) - imodel.selection.height;
-                if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) {
-                    if (model.layoutType === "static") {
-                        dx = 0;
-                        dy = 0;
-                    }
-                }
-                if (event.ctrlKey) model.resizeAll(dx, dy);
-                else imodel.resize(dx, dy);
+                if (event.ctrlKey) model.scaleAll(scaleFactor);
+                else imodel.scale(scaleFactor);
                 model.updateCanvas();
             }
             previousX = mouseX;
@@ -333,7 +326,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
             } else if (hit = model.checkCornerHit(mx, my)) {
                 previousX = mouseX;
                 previousY = mouseY;
-                currentState = STATE.RESIZING;
+                currentState = STATE.SCALING;
                 model.setGridActive(true);
                 if (imodel.selection !== hit) imodel.select(hit);
                 pinoLog("trace", "Scaling display size");
@@ -409,7 +402,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             model.setGridActive(false);
             currentState = STATE.READY;
             break;
-        case STATE.RESIZING:
+        case STATE.SCALING:
             currentState = STATE.READY;
             model.setGridActive(false);
             break;

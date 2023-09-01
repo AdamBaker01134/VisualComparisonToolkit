@@ -20,7 +20,7 @@ Your task is to compare two separate pitchers and determine who is better at pit
 Two pairs of videos have been pre-loaded into the toolkit.
 The first two videos are Daniel Hudson’s pitches.
 The last two videos are Lance Lynn’s pitches.
-Resize the videos as you see fit.
+SCale the videos as you see fit.
 </p>
 <img src="./tutorials/img/tutorial-task-3-1.png" />
 <p>
@@ -52,7 +52,7 @@ Exit coincident pointing mode by pressing the comma key again.
 Drag one of the Daniel Hudson videos on top of the other to create an overlay.
 Repeat this process with the two Lance Lynn videos.
 Your layout will look messy now, so you can delete the original videos by selecting them and pressing Delete.
-Then, resize and position the two overlays side-by-side like this:
+Then, scale and position the two overlays side-by-side like this:
 </p>
 <img src="./tutorials/img/tutorial-task-3-3.png" />
 <p>

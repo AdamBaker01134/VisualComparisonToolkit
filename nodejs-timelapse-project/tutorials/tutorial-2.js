@@ -7,8 +7,8 @@ You’ve collected images of two separate crops flowering over the course of a m
 Your task is to find when each of the two canola crops begins to flower, when each crop stops flowering, and note any discrepancies.
 </p>
 <p>
-The two videos have been pre-loaded and resized.
-If they are too small, or too larger, feel free to resize them as shown in tutorial 1.
+The two videos have been pre-loaded and scaled.
+If they are too small, or too larger, feel free to scale them as shown in tutorial 1.
 </p>
 <img src="./tutorials/img/tutorial-task-2-1.png" />
 <p>

@@ -104,13 +104,12 @@ iModel.prototype.zoom = function (display, delta) {
 }
 
 /**
- * Resize the selection
- * @param {number} dx change in the x direction of the mouse
- * @param {number} dy change in the y direction of the mouse
+ * Scale the selection
+ * @param {number} scaleFactor scale ratio
  */
-iModel.prototype.resize = function (dx, dy) {
+iModel.prototype.scale = function (scaleFactor) {
     if (this.selection != null) {
-        this.selection.resize(dx, dy);
+        this.selection.scale(scaleFactor);
         this.notifySubscribers();
     }
 }

@@ -8,17 +8,17 @@ You’ve recorded time-lapsed video of 12 separate plants throughout their growt
 The 12 videos have been pre-loaded into the system.
 By default, the videos are placed in a grid with static dimensions.
 If your screen is too small, this may mean that not all the videos are in full display.
-To fix this, or if you want to resize the videos anyway, toggle the “Dynamic” option under Workspace Layout in the middle of the webpage header.
+To fix this, or if you want to scale the videos anyway, toggle the “Dynamic” option under Workspace Layout in the middle of the webpage header.
 </p>
 <img src="./tutorials/img/tutorial-task-1-1.png" />
 <p>
-Now, hover over the bottom right corner of a video and click & drag to resize a single video.
-Or to save time, hold control while you drag to resize all displays.
+Now, hover over the bottom right corner of a video and click & drag to scale a single video.
+Or to save time, hold control while you drag to scale all displays.
 Once you’ve found a preferable size, we can continue.
 </p>
 <img src="./tutorials/img/tutorial-task-1-2.jpg" />
 <strong class="small-centered">Note: Does not have to look like the above image.
-The resize technique is meant to allow you customize your layout to whatever you prefer.</strong> 
+The scale technique is meant to allow you customize your layout to whatever you prefer.</strong> 
 <p>
 You can play through a video by selecting it (click it) and pressing spacebar, or by scrubbing through it.
 Scrubbing refers to manually clicking and dragging places within the green timeline below the video.

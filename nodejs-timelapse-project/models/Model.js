@@ -75,16 +75,12 @@ Model.prototype.updateCanvas = function () {
         if (display === null) return;
         display.setLocation(generateDisplayX(this, index), generateDisplayY(this, index));
         if (display.width + display.padding * 2 > this.cellWidth) {
-            const aspectRatio = display.height / display.width;
-            let dx = this.cellWidth - (display.width + display.padding * 2);
-            let dy = aspectRatio * (display.width + dx) - display.height;
-            display.resize(dx, dy);
+            const scaleFactor = this.cellWidth / (display.width + display.padding * 2);
+            display.scale(scaleFactor);
         }
         if (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length > this.cellHeight) {
-            const aspectRatio = display.width / display.height;
-            let dy = this.cellHeight - (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length);
-            let dx = aspectRatio * (display.height + dy) - display.width;
-            display.resize(dx, dy);
+            const scaleFactor = this.cellHeight / (display.height + display.padding * 2 + display.scrollbarHeight * display.scrollbars.length);
+            display.scale(scaleFactor);
         }
     });
     resizeCanvas(this.canvasWidth, this.canvasHeight);
@@ -279,12 +275,11 @@ Model.prototype.zoomAll = function (delta) {
 }
 
 /**
- * Resize all displays within the model.
- * @param {number} dx change in the x direction of the mouse
- * @param {number} dy change in the y direction of the mouse
+ * Scale all displays within the model.
+ * @param {number} scaleFactor scale ratio
  */
-Model.prototype.resizeAll = function (dx, dy) {
-    this.displays.forEach(display => { if (display !== null) display.resize(dx, dy); });
+Model.prototype.scaleAll = function (scaleFactor) {
+    this.displays.forEach(display => { if (display !== null) display.scale(scaleFactor); });
     this.notifySubscribers();
 }
 

@@ -96,7 +96,7 @@ const tutorial0 = `
 </p>
 <h3>Resizing Displays</h3>
 <p>
-    You can resize a display by clicking and dragging the bottom right corner of the
+    You can scale a display by clicking and dragging the bottom right corner of the
     display. This is limited to the size of the grid cell.
 </p>
 <h3>Panning/Zooming</h3>
@@ -139,7 +139,7 @@ const tutorial0 = `
     The last overlay mode is the magic lens mode. To active the magic lens, select the
     overlay and press "0". A blue rectangle will appear in the center of the overlay, which
     acts as a lens to peer through the top layer and into the bottom layer. You can move the
-    magic lens by clicking and dragging it. It will also resize with the overlay. The
+    magic lens by clicking and dragging it. It will also scale with the overlay. The
     opacity of the layers outside of the magic lens remain the same, however, opacity does
     not affect the magic lens window.
 </p>
