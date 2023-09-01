@@ -234,24 +234,25 @@ Display.prototype.zoom = function (delta) {
 }
 
 /**
- * Scale the image display.
- * @param {number} scaleFactor
+ * Resize the image display.
+ * @param {number} dx change to the width of the display
+ * @param {number} dy change to the height of the display
  */
-Display.prototype.scale = function (scaleFactor) {
+Display.prototype.resize = function (dx, dy) {
     if (this.locked) return;
 
     const minWidth = 50;
     const minHeight = 50;
     const maxWidth = windowWidth;
     const maxHeight = windowHeight;
-    if (this.width * scaleFactor < minWidth || this.width * scaleFactor > maxWidth) return;
-    if (this.height * scaleFactor < minHeight || this.height * scaleFactor > maxHeight) return;
-    this.width *= scaleFactor;
-    this.height *= scaleFactor;
+    if (this.width + dx < minWidth || this.width + dx > maxWidth) return;
+    if (this.height + dy < minHeight || this.height + dy > maxHeight) return;
+    this.width += dx;
+    this.height += dy;
     for (let i = 0; i < this.layers.length; i++) {
         const viewport = this.getLayerViewport(i);
-        viewport.width *= scaleFactor;
-        viewport.height *= scaleFactor;
+        viewport.width += dx;
+        viewport.height += dy;
     }
     this.scrollbars.forEach((scrollbar, index) => {
         scrollbar.setDimensions(this.width, this.scrollbarHeight);
