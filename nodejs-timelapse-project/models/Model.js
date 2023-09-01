@@ -492,7 +492,7 @@ Model.prototype.addDisplay = async function (dataset, filter) {
         }
         this.globalScrollbar.addChild(display.getMainScrollbar());
 
-        if (this.layoutType === "dynamic") this.updateCanvas();
+        this.updateCanvas();
 
         pinoLog("trace", `Added new display: ${display.id}`);
 
@@ -581,7 +581,7 @@ Model.prototype.addOverlay = async function (id1, id2, filter1, filter2) {
 
         this.globalScrollbar.addChild(overlay.getMainScrollbar());
 
-        if (this.layoutType === "dynamic") this.updateCanvas();
+        this.updateCanvas();
 
         pinoLog("trace", `Added new display: ${overlay.id}`);
 
@@ -619,18 +619,6 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
         }
     })
     if (display1 && display2) {
-        let width = display2.getLayerImages()[0].width;
-        let height = display2.getLayerImages()[0].height;
-        const widthRatio = (this.cellWidth - this.displayPadding * 2) / width;
-        if (widthRatio < 1) {
-            width *= widthRatio;
-            height *= widthRatio;
-        }
-        const heightRatio = (this.cellHeight - (this.displayPadding * 2 + this.displayScrollbarHeight * 3)) / height;
-        if (heightRatio < 1) {
-            width *= heightRatio;
-            height *= heightRatio;
-        }
         let position = this.displays.findIndex(display => display === null);
         if (position < 0) {
             position = this.displays.length;
@@ -639,8 +627,8 @@ Model.prototype.loadOverlay = async function (id1, id2, filter1, filter2) {
             generateOverlayId(this, id1, id2),
             generateDisplayX(this, position),
             generateDisplayY(this, position),
-            width,
-            height,
+            display1.width,
+            display1.height,
             this.displayPadding,
             this.displayScrollbarHeight,
             display1,
