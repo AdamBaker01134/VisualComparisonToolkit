@@ -230,22 +230,13 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.RESIZING:
             if (imodel.selection !== null) {
-                const aspectRatio = imodel.selection.height / imodel.selection.width;
-                let dx = mouseX - previousX;
-                if (dx + imodel.selection.width + imodel.selection.padding * 2 > model.cellWidth) {
-                    if (model.layoutType === "static") {
-                        dx = 0;
-                    }
-                }
-                let dy = aspectRatio * (imodel.selection.width + dx) - imodel.selection.height;
-                if (dy + imodel.selection.height + imodel.selection.padding * 2 + imodel.selection.scrollbarHeight * imodel.selection.scrollbars.length > model.cellHeight) {
-                    if (model.layoutType === "static") {
-                        dx = 0;
-                        dy = 0;
-                    }
-                }
-                if (event.ctrlKey) model.resizeAll(dx, dy);
-                else imodel.resize(dx, dy);
+                const dx = mouseX - previousX;
+                const dy = mouseY - previousY;
+                let scaleFactor = 1;
+                if (dx > dy) scaleFactor = (imodel.selection.width + dx) / imodel.selection.width;
+                else scaleFactor = (imodel.selection.height + dy) / imodel.selection.height;
+                if (event.ctrlKey) model.scaleAll(scaleFactor);
+                else imodel.scale(scaleFactor);
                 model.updateCanvas();
             }
             previousX = mouseX;

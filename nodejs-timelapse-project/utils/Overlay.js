@@ -140,8 +140,8 @@ Overlay.prototype.addLayer = function (display) {
     mainScrollbar.addChild(scrollbar);
     mainScrollbar.setLocation(mainScrollbar.x, mainScrollbar.y + this.scrollbarHeight);
 
-    /* Need to resize the image display to ensure that everything fits inside the grid cell */
-    this.resize(-this.scrollbarHeight, -this.scrollbarHeight);
+    /* Need to scale the image display to ensure that everything fits inside the grid cell */
+    this.scale((this.height - this.scrollbarHeight) / this.height);
 }
 
 /**
@@ -223,11 +223,10 @@ Overlay.prototype.setMagicLensLocation = function (newX, newY) {
 
 /**
  * Resize the image display, and also updates the magic lens.
- * @param {number} dx change to the width of the display
- * @param {number} dy change to the height of the display
+ * @param {number} scaleFactor scale ratio from which to scale the selection
  */
-Overlay.prototype.resize = function (dx, dy) {
-    Display.prototype.resize.call(this, dx, dy);
+Overlay.prototype.scale = function (scaleFactor) {
+    Display.prototype.scale.call(this, scaleFactor);
     this.magicLens.width = this.width / 2;
     this.magicLens.height = this.height / 2;
     this.setMagicLensLocation(this.magicLens.x + dx, this.magicLens.y + dy);
