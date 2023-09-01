@@ -40,8 +40,8 @@ View.prototype.draw = function () {
                 tint(255, parseInt(layer2.opacity));
                 renderImage(img2, sliderPosition, right, top, bottom, layer2.viewport);
                 noTint();
-                fill("rgba(70, 130, 180, 0.5)");
-                stroke("rgba(70, 130, 180, 0.5)");
+                fill("rgba(70, 130, 180, 0.8)");
+                stroke("rgb(70, 130, 180)");
                 line(sliderPosition, top, sliderPosition, bottom);
                 circle(sliderPosition, top + display.height / 2, display.width / 10);
             } else if (display.mode === "horizontal") {
@@ -51,8 +51,8 @@ View.prototype.draw = function () {
                 tint(255, parseInt(layer2.opacity));
                 renderImage(img2, left, right, sliderPosition, bottom, layer2.viewport);
                 noTint();
-                fill("rgba(70, 130, 180, 0.5)");
-                stroke("rgba(70, 130, 180, 0.5)");
+                fill("rgba(70, 130, 180, 0.8)");
+                stroke("rgb(70, 130, 180)");
                 line(left, sliderPosition, right, sliderPosition);
                 circle(left + display.width / 2, sliderPosition, display.width / 10);
             } else {
@@ -76,7 +76,7 @@ View.prototype.draw = function () {
                     magicLens.y + magicLens.height / 2,
                     layer1.viewport);
                 noFill();
-                stroke("rgba(70, 130, 180, 0.5)");
+                stroke("rgb(70, 130, 180)");
                 strokeWeight(3);
                 rect(magicLens.x - magicLens.width / 2,
                     magicLens.y - magicLens.height / 2,
