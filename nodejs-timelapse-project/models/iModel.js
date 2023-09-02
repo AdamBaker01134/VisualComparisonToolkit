@@ -202,7 +202,6 @@ iModel.prototype.setOpacity = function (opacity) {
  */
 iModel.prototype.coincidentTransform = function () {
     if (this.coincidentPoints.length !== 4 ||
-        this.coincidentPoints[0].display === this.coincidentPoints[2].display ||
         this.coincidentPoints[0].display !== this.coincidentPoints[1].display ||
         this.coincidentPoints[2].display !== this.coincidentPoints[3].display) {
         alert("Error: Invalid coincident points. Ensure that you set the points in order 1 and 2 in the first video, then 3 and 4 in the second video.");
@@ -216,7 +215,7 @@ iModel.prototype.coincidentTransform = function () {
 
     const display1 = this.coincidentPoints[0].display;
     const display2 = this.coincidentPoints[2].display;
-    const viewport1 = display1.getLayerViewport();
+    const viewport1 = display1.getLayerViewport(display1.layers.length - 1);
     const x1 = this.coincidentPoints[0].x * scaleFactor + viewport1.x * (1 - scaleFactor) - display1.x - display1.padding;
     const x2 = this.coincidentPoints[2].x - display2.x - display2.padding;
     const dx = x2 - x1;
@@ -225,7 +224,7 @@ iModel.prototype.coincidentTransform = function () {
     const dy = y2 - y1;
 
     display1.pan(dx, dy);
-    display1.scaleViewport(scaleFactor);
+    display1.scaleViewport(scaleFactor, display1.layers.length - 1);
     this.coincidentPoints = [];
     this.notifySubscribers();
 }
