@@ -35,6 +35,7 @@ function Model() {
 
     this.gridActive = false;
     this.showTimestamps = false;
+    this.unpadded = false;
 
     this.tutorialsOpen = false;
 
@@ -989,6 +990,15 @@ Model.prototype.loadDataset = function (options = {}) {
         pinoLog("error", "Dataset does not exist in model");
         errCallback("Error: dataset does not exist in model");
     }
+}
+
+/**
+ * Toggle the padding state of displays in the model.
+ */
+Model.prototype.togglePadding = function () {
+    this.unpadded = !this.unpadded;
+    this.updateCanvas();
+    this.notifySubscribers();
 }
 
 /**

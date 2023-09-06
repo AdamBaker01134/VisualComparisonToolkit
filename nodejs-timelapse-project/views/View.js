@@ -16,14 +16,29 @@ View.prototype.draw = function () {
     clear();
     strokeWeight(1);
 
-    this.model.displays.forEach(display => {
+    let unpaddedX = 0;
+    let unpaddedY = 0;
+
+    this.model.displays.forEach((display, position) => {
         if (display === null) return;
-        renderDisplaySkeleton(display, this.imodel.selection === display);
         
-        const left = display.x + display.padding;
-        const right = display.x + display.padding + display.width;
-        const top = display.y + display.padding;
-        const bottom = display.y + display.padding + display.height;
+        let left = display.x + display.padding;
+        let right = display.x + display.padding + display.width;
+        let top = display.y + display.padding;
+        let bottom = display.y + display.padding + display.height;
+
+        if (this.model.unpadded) {
+            left = unpaddedX;
+            right = unpaddedX + display.width;
+            top = unpaddedY;
+            bottom = unpaddedY + display.height;
+            /* Draw black image background */
+            noStroke();
+            fill("rgb(0, 0, 0)");
+            rect(left, top, right - left, bottom - top);
+        } else {
+            renderDisplaySkeleton(display, this.imodel.selection === display);
+        }
 
         let index = 0;
         if (display instanceof Overlay && (display.mode === "vertical" || display.mode === "horizontal" || display.mode === "magic_lens")) {
@@ -33,12 +48,25 @@ View.prototype.draw = function () {
             /* Floor indices in case they have been affected by ratio */
             const img1 = layer1.images[Math.floor(display.getIndex(layer1.scrollbarIndex))];
             const img2 = layer2.images[Math.floor(display.getIndex(layer2.scrollbarIndex))];
+            /* Convert viewports if unpadded */
+            const viewport1 = !this.model.unpadded ? layer1.viewport : {
+                x: left - (display.x + display.padding - layer1.viewport.x),
+                y: top - (display.y + display.padding - layer1.viewport.y),
+                width: layer1.viewport.width,
+                height: layer1.viewport.height,
+            };
+            const viewport2 = !this.model.unpadded ? layer2.viewport : {
+                x: left - (display.x + display.padding - layer2.viewport.x),
+                y: top - (display.y + display.padding - layer2.viewport.y),
+                width: layer2.viewport.width,
+                height: layer2.viewport.height,
+            };
             if (display.mode === "vertical") {
                 const sliderPosition = left + display.width * display.comparisonSliderValue;
                 tint(255, parseInt(layer1.opacity));
-                renderImage(img1, left, right, top, bottom, layer1.viewport);
+                renderImage(img1, left, right, top, bottom, viewport1);
                 tint(255, parseInt(layer2.opacity));
-                renderImage(img2, sliderPosition, right, top, bottom, layer2.viewport);
+                renderImage(img2, sliderPosition, right, top, bottom, viewport2);
                 noTint();
                 fill("rgba(70, 130, 180, 0.8)");
                 stroke("rgb(70, 130, 180)");
@@ -47,20 +75,25 @@ View.prototype.draw = function () {
             } else if (display.mode === "horizontal") {
                 const sliderPosition = top + display.height * display.comparisonSliderValue;
                 tint(255, parseInt(layer1.opacity));
-                renderImage(img1, left, right, top, bottom, layer1.viewport);
+                renderImage(img1, left, right, top, bottom, viewport1);
                 tint(255, parseInt(layer2.opacity));
-                renderImage(img2, left, right, sliderPosition, bottom, layer2.viewport);
+                renderImage(img2, left, right, sliderPosition, bottom, viewport2);
                 noTint();
                 fill("rgba(70, 130, 180, 0.8)");
                 stroke("rgb(70, 130, 180)");
                 line(left, sliderPosition, right, sliderPosition);
                 circle(left + display.width / 2, sliderPosition, display.width / 10);
             } else {
-                const magicLens = display.magicLens;
+                const magicLens = !model.unpadded ? display.magicLens : {
+                    x: left - (display.x + display.padding - display.magicLens.x),
+                    y: top - (display.y + display.padding - display.magicLens.y),
+                    width: display.magicLens.width,
+                    height: display.magicLens.height,
+                };
                 tint(255, parseInt(layer1.opacity));
-                renderImage(img1, left, right, top, bottom, layer1.viewport);
+                renderImage(img1, left, right, top, bottom, viewport1);
                 tint(255, parseInt(layer2.opacity));
-                renderImage(img2, left, right, top, bottom, layer2.viewport);
+                renderImage(img2, left, right, top, bottom, viewport2);
                 noTint();
                 /* Draw magic lens window */
                 fill("rgb(0 ,0 ,0)");
@@ -74,7 +107,7 @@ View.prototype.draw = function () {
                     magicLens.x + magicLens.width / 2,
                     magicLens.y - magicLens.height / 2,
                     magicLens.y + magicLens.height / 2,
-                    layer1.viewport);
+                    viewport1);
                 noFill();
                 stroke("rgb(70, 130, 180)");
                 strokeWeight(3);
@@ -87,9 +120,15 @@ View.prototype.draw = function () {
         } else {
             for (let i = 0; i < display.layers.length; i++) {
                 const layer = display.layers[i];
+                const viewport = !this.model.unpadded ? layer.viewport : {
+                    x: left - (display.x + display.padding - layer.viewport.x),
+                    y: top - (display.y + display.padding - layer.viewport.y),
+                    width: layer.viewport.width,
+                    height: layer.viewport.height,
+                };
                 tint(255, parseInt(layer.opacity));
                 index = Math.floor(display.getIndex(layer.scrollbarIndex)); /* Floor index in case index has been affected by ratio */
-                renderImage(layer.images[index], left, right, top, bottom, layer.viewport);
+                renderImage(layer.images[index], left, right, top, bottom, viewport);
             }
         }
 
@@ -108,7 +147,7 @@ View.prototype.draw = function () {
                 txtSize = minWidth;
             }
             textSize(txtSize);
-            text(txt, display.x + display.padding + 5, display.y + display.padding + txtSize);
+            text(txt, left + 5, top + txtSize);
         }
 
         /* Shadow marker */
@@ -116,13 +155,22 @@ View.prototype.draw = function () {
             noStroke();
             fill("rgb(255, 255, 255)");
             stroke("rgb(0, 0, 0)");
-            const cursorX = display.x + display.padding + display.width * this.imodel.shadowMarker.widthRatio;
-            const cursorY = display.y + display.padding + display.height * this.imodel.shadowMarker.heightRatio;
-            const cursorLength = Math.max(display.width, display.height) / 12;
+            const cursorX = left + display.width * this.imodel.shadowMarker.widthRatio;
+            const cursorY = top + display.height * this.imodel.shadowMarker.heightRatio;
+            const cursorLength = Math.min(display.width, display.height) / 12;
             rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
             rect(cursorX - cursorLength / 2, cursorY - 1.5, cursorLength, 3);
             noFill();
             rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
+        }
+
+        if (this.model.unpadded) {
+            unpaddedX += display.width;
+            if ((position + 1) % this.model.columns === 0) {
+                unpaddedX = 0;
+                unpaddedY += display.height;
+            }
+            return;
         }
 
         /* Coincident points */
@@ -240,6 +288,8 @@ View.prototype.draw = function () {
             );
         });
     });
+
+    if (this.model.unpadded) return;
 
     /* Display grid lines */
     if (this.model.gridActive) {

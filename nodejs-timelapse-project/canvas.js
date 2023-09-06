@@ -96,6 +96,7 @@ const STATE = {
     USING_MAGIC: "usingMagic",
     SHADOW_MARKER: "shadowMarker",
     COINCIDENT_POINTING: "coincidentPointing",
+    UNPADDED: "unpadded",
     NO_RIGHT_CLICK: "noRightClick",
 }
 let currentState = STATE.READY;
@@ -123,6 +124,7 @@ function startAutoCycleInterval(overlay) {
     cyclingTimers[overlay.id] = setInterval(() => {
         switch (currentState) {
             case STATE.READY:
+            case STATE.UNPADDED:
                 model.cycleLayers(overlay);
                 break;
         }
@@ -137,6 +139,7 @@ function startPlayInterval(scrollbar, frameRate = 10) {
             case STATE.READY:
             case STATE.COMPARE_SLIDING:
             case STATE.USING_MAGIC:
+            case STATE.UNPADDED:
                 if (scrollbar.index + 1 === scrollbar.getSize()) {
                     clearInterval(playingTimers[scrollbar.id]);
                     delete playingTimers[scrollbar.id];
@@ -176,7 +179,13 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
             }
             break;
         case STATE.OUT_OF_BOUNDS:
-            if (my > scrollY) currentState = STATE.READY;
+            if (my > scrollY) {
+                if (model.unpadded) {
+                    currentState = STATE.UNPADDED;
+                } else {
+                    currentState = STATE.READY;
+                }
+            }
             break;
     }
 }
@@ -409,6 +418,7 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
         case STATE.NO_RIGHT_CLICK:
         case STATE.SHADOW_MARKER:
         case STATE.COINCIDENT_POINTING:
+        case STATE.UNPADDED:
             break;
         default:
             currentState = STATE.READY;
@@ -556,6 +566,45 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                         pinoLog("error", `Error: could not create annotation in selected video`)
                     }
                 }
+                return false;
+            } else if (keyCode === 69) {
+                /* Handle 'e' key pressed events */
+                model.togglePadding();
+                currentState = STATE.UNPADDED;
+                pinoLog("trace", `Toggled display padding ${model.unpadded ? "off" : "on"}`);
+                return false;
+            }
+            break;
+        case STATE.UNPADDED:
+            if (keyCode === 32) {
+                /* Handle unpadded spacebar key pressed events */
+                let scrollbar = model.globalScrollbar;
+                const playingIds = Object.keys(playingTimers);
+                if (!playingIds.includes(scrollbar.id)) {
+                    /* Ensure no other timers are running when the global scrollbar starts playing */
+                    clearAllPlayingIntervals();
+                }
+                if (playingIds.includes(scrollbar.id)) {
+                    clearInterval(playingTimers[scrollbar.id]);
+                    delete playingTimers[scrollbar.id];
+                    pinoLog("trace", `Stopped auto-playing scrollbar with id: ${scrollbar.id}`);
+                } else {
+                    if (scrollbar.index === scrollbar.getSize() - 1) model.setIndex(scrollbar, 0);
+                    startPlayInterval(scrollbar, scrollbar.getSize() / 10);
+                    pinoLog("trace", `Began new auto-playing interval on scrollbar with id: ${scrollbar.id}`)
+                }
+                return false;
+            } else if (keyCode === 82) {
+                /* Handle unpadded 'r' key pressed events */
+                clearAllPlayingIntervals();
+                model.setIndex(model.globalScrollbar, 0);
+                model.displays.forEach(display => model.setIndex(display.getMainScrollbar(), 0));
+            } else if (keyCode === 69) {
+                /* Handle unpadded 'e' key pressed events */
+                model.togglePadding();
+                currentState = STATE.READY;
+                pinoLog("trace", `Toggled display padding ${model.unpadded ? "off" : "on"}`);
+                return false;
             }
             break;
         case STATE.SHADOW_MARKER:
