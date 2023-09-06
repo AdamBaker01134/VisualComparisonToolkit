@@ -362,8 +362,8 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                     pinoLog("trace", `Loading snapshot: ${imodel.highlightSnapshot.name}`);
                     model.loadSnapshot(imodel.highlightedSnapshot);
                 } else if (imodel.highlightedAnnotation) {
-                    pinoLog("trace", `Loading annotation: ${imodel.highlightedAnnotation.name}`);
-                    imodel.loadAnnotation(hit, imodel.highlightedAnnotation.name);
+                    pinoLog("trace", `Loading annotation at index ${imodel.highlightedAnnotation.index} from scrollbar: ${hit.id}`);
+                    imodel.loadAnnotation(hit, imodel.highlightedAnnotation);
                 }
             }
             imodel.setFocused(null);
@@ -508,8 +508,8 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
             } else if (keyCode === DELETE) {
                 /* Handle delete key pressed events */
                 if (imodel.highlightedAnnotation && (hit = model.checkScrollbarHit(mx, my))) {
-                    imodel.removeAnnotation(hit, imodel.highlightedAnnotation.name);
-                    pinoLog("trace", `Removed an annotation from scrollbar with id: ${hit.id}`);
+                    imodel.removeAnnotation(hit, imodel.highlightedAnnotation);
+                    pinoLog("trace", `Removed annotation at index ${imodel.highlightedAnnotation.index} from scrollbar: ${hit.id}`);
                     return false;
                 } else if (imodel.selection !== null) {
                     model.removeDisplay(imodel.selection);
@@ -534,6 +534,28 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 clearAllPlayingIntervals();
                 model.setIndex(model.globalScrollbar, 0);
                 model.displays.forEach(display => model.setIndex(display.getMainScrollbar(), 0));
+            } else if (keyCode >= 49 && keyCode <= 56) {
+                /* Handle 1-8 key pressed events */
+                const colour = getAnnotationColour(keyCode);
+                if (hit = model.checkScrollbarHit(mx, my)) {
+                    if (imodel.highlightedAnnotation) {
+                        imodel.updateAnnotation(hit, imodel.highlightedAnnotation, colour);
+                        pinoLog("trace", `Updated annotation at index ${imodel.highlightedAnnotation.index} in scrollbar: ${hit.id}`);
+                    } else {
+                        const index = model.getIndexFromMouse(hit, mx);
+                        if (imodel.addAnnotation(hit, colour, index)) {
+                            pinoLog("trace", `Created annotation at index ${index} in scrollbar: ${hit.id}`);
+                        } else {
+                            pinoLog("error", `Error: could not create annotation at index ${index} in scrollbar: ${hit.id}`)
+                        }
+                    }
+                } else if (imodel.selection !== null) {
+                    if (imodel.addAnnotation(imodel.selection.getMainScrollbar(), colour)) {
+                        pinoLog("trace", `Created annotation in selected video`);
+                    } else {
+                        pinoLog("error", `Error: could not create annotation in selected video`)
+                    }
+                }
             }
             break;
         case STATE.SHADOW_MARKER:
@@ -649,16 +671,6 @@ function _attachHeaderListeners() {
     });
     document.getElementById("opacityInput")?.addEventListener("mouseup", e => {
         pinoLog("trace", "Adjusted opacity input");
-    });
-    document.getElementById("loadAnnotationButton")?.addEventListener("click", e => {
-        let name = document.getElementById("annotationSelect").value;
-        if (imodel.selection !== null) {
-            imodel.loadAnnotation(imodel.selection.getMainScrollbar(), name);
-            pinoLog("trace", `Loaded annotation: ${name}`);
-        }
-    });
-    document.getElementById("saveAnnotationButton")?.addEventListener("click", e => {
-        imodel.saveAnnotation();
     });
     document.getElementById("tutorialSidebar")?.addEventListener("click", e => {
         model.toggleTutorials();

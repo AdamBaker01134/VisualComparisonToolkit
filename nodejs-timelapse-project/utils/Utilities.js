@@ -151,18 +151,37 @@ function generateDisplayY(model, position) {
 
 /**
  * Generate a personal id for an annotation
- * @param {string} name name of the annotation
  * @returns {string}
  */
-function generateAnnotationId(name) {
-    return `${name}-${Math.floor(Math.random() * 1000000)}`;
+function generateAnnotationId() {
+    return `${Math.floor(Math.random() * 1000000)}`;
 }
 
 /**
- * Generate an hsl colour value for an annotation
+ * Get hsl colour value for an annotation based on keycode number
+ * @param {number} num keycode number
  * @returns {Array<number>}
  */
-function generateAnnotationColour() {
+function getAnnotationColour(num) {
+    switch (num) {
+        case 49:
+            return [230, 25, 75]; // Red
+        case 50:
+            return [245, 130, 48]; // Orange
+        case 51:
+            return [255, 255, 25]; // Yellow
+        case 52:
+            return [170, 255, 195]; // Mint
+        case 53:
+            return [70, 240, 240]; // Cyan
+        case 54:
+            return [0, 0, 128]; // Navy
+        case 55:
+            return [145, 30, 180]; // Purple
+        case 56:
+        default:
+            return [240, 50, 230]; // Magenta
+    }
     let hue = Math.random() * 360;
     let saturation = 100;
     let lightness = 50;

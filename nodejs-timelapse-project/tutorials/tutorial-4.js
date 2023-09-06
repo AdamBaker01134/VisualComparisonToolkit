@@ -7,7 +7,7 @@ Daily satellite images of the north pole have been taken biannually to aid you i
 </p>
 <p>
 These images have been compiled into time-lapsed videos that have been pre-loaded within the comparison toolkit.
-On the right of each video is an ice colour density key.
+Ice is coloured based on density.
 White is the most dense and blue is the least dense.
 </p>
 <img src="./tutorials/img/tutorial-task-4-1.png" />

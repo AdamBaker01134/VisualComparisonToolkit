@@ -20,7 +20,7 @@ Your task is to compare two separate pitchers and determine who is better at pit
 Two pairs of videos have been pre-loaded into the toolkit.
 The first two videos are Daniel Hudson’s pitches.
 The last two videos are Lance Lynn’s pitches.
-SCale the videos as you see fit.
+Scale the videos as you see fit.
 </p>
 <img src="./tutorials/img/tutorial-task-3-1.png" />
 <p>

@@ -4,7 +4,6 @@ function Headerview() {
     /* Snapshot arrays to avoid redrawing select elements and improve performance */
     this.datasetSnapshot = [];
     this.snapshotSnapshot = [];
-    this.annotationSnapshot = [];
     this.filterSnapshot = [];
 }
 
@@ -43,9 +42,6 @@ Headerview.prototype.draw = function () {
     }
     if (this.snapshotSnapshotSnapshot !== this.model.snapshots) {
         this.updateSnapshotSelect();
-    }
-    if (!!this.imodel.selection && this.annotationSnapshot !== this.imodel.selection.getMainScrollbar().annotations) {
-        this.updateAnnotationSelect();
     }
     if (!!this.imodel.selection && this.filterSnapshot !== this.imodel.selection.getLayerFilters()) {
         this.updateFilterSelect();
@@ -236,26 +232,6 @@ Headerview.prototype.updateSnapshotSelect = function () {
         snapshotSelect.add(option);
     });
     this.snapshotSnapshot = [...this.model.snapshots];
-}
-
-/**
- * Update the annotation select element with annotations from the selected display in the imodel.
- */
-Headerview.prototype.updateAnnotationSelect = function () {
-    if (this.imodel.selection !== null) {
-        let annotationSelect = document.getElementById("annotationSelect");
-        annotationSelect.innerHTML = "";
-        let defaultOption = document.createElement("option");
-        defaultOption.text = "Select annotation";
-        annotationSelect.add(defaultOption);
-        let scrollbar = this.imodel.selection.getMainScrollbar();
-        scrollbar.annotations.forEach(annotation => {
-            let option = document.createElement("option");
-            option.text = annotation.name;
-            annotationSelect.add(option);
-        });
-        this.annotationSnapshot = [...scrollbar.annotations];
-    }
 }
 
 /**

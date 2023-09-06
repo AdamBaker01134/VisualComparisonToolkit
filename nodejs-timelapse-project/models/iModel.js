@@ -252,58 +252,46 @@ iModel.prototype.clearCoincidentPoints = function () {
 }
 
 /**
- * Add an annotation with a custom name to the selected display.
+ * Add an annotation with a custom name to a scrollbar.
+ * @param {Scrollbar} scrollbar scrollbar to save the annotation
+ * @param {Array<number>} colour array of numbers representing rgb colour
+ * @param {number} opt_index optionally set index for the annotation
  */
-iModel.prototype.saveAnnotation = function () {
-    if (this.selection !== null) {
-        let name = null;
-        let validName = false;
-        const defaultName = `annotation-${this.selection.getMainScrollbar().getAnnotations().length}`;
-        while (!validName) {
-            name = prompt("Enter a name for this annotation:", defaultName);
-            if (name === null) {
-                return;
-            } else if (name.trim() === "") {
-                alert("Error: Annotation name must not be empty");
-            } else if (this.selection.getMainScrollbar().hasAnnotation(name)) {
-                alert("Error: Annotation name already exists in selected display");
-            } else {
-                validName = true;
-            }
-        }
-        if (this.selection.addAnnotation(this.selection.mainScrollbarIndex, name)) {
-            alert(`Successfully created annotation with the name "${name}"`);
-            this.notifySubscribers();
-        } else {
-            alert("Error: failed to add annotation to display")
-        }
-    }
+iModel.prototype.addAnnotation = function (scrollbar, colour, opt_index) {
+    const result = scrollbar.addAnnotation(generateAnnotationId(), colour, opt_index);
+    this.notifySubscribers();
+    return result;
+}
+
+/**
+ * Update an annotation with a new colour.
+ * @param {Scrollbar} scrollbar scrollbar containing annotation
+ * @param {Object} annotation annotation to update
+ * @param {Array<number>} colour array of numbers representing rgb colour
+ */
+iModel.prototype.updateAnnotation = function (scrollbar, annotation, colour) {
+    scrollbar.updateAnnotation(annotation.id, annotation.index, colour);
+    this.notifySubscribers();
 }
 
 /**
  * Load an annotation in a scrollbar
  * @param {Scrollbar} scrollbar scrollbar that contains the annotation
- * @param {string} name name of the annotation
+ * @param {Object} annotation annotation to load
  */
-iModel.prototype.loadAnnotation = function (scrollbar, name) {
-    const id = scrollbar.annotations.find(annotation => annotation.name === name)?.id;
-    if (id) {
-        scrollbar.loadAnnotation(id);
-        this.notifySubscribers();
-    }
+iModel.prototype.loadAnnotation = function (scrollbar, annotation) {
+    scrollbar.loadAnnotation(annotation.id);
+    this.notifySubscribers();
 }
 
 /**
  * Remove an annotation from a scrollbar
  * @param {Scrollbar} scrollbar scrollbar that contains the annotation
- * @param {string} name name of the annotation
+ * @param {Object} annotation annotation to remove
  */
-iModel.prototype.removeAnnotation = function (scrollbar, name) {
-    const id = scrollbar.annotations.find(annotation => annotation.name === name)?.id;
-    if (id) {
-        scrollbar.removeAnnotation(id);
-        this.notifySubscribers();
-    }
+iModel.prototype.removeAnnotation = function (scrollbar, annotation) {
+    scrollbar.removeAnnotation(scrollbar.id);
+    this.notifySubscribers();
 }
 
 /**

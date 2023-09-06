@@ -243,26 +243,54 @@ Scrollbar.prototype.removeChild = function (child) {
 /**
  * Add an annotation to this scrollbar
  * @param {string} id id of the annotation
- * @param {string} name customized annotation name
  * @param {Array<number>} colour array of numbers representing an hsl colour value
  * @param {number?} opt_index optionally set index for the annotation (otherwise current index is used)
  */
-Scrollbar.prototype.addAnnotation = function (id, name, colour, opt_index) {
-    let index = opt_index || this.index;
-    if (index >= 0 && index <= this.getSize() && !this.hasAnnotation(name)) {
+Scrollbar.prototype.addAnnotation = function (id, colour, opt_index) {
+    const index = opt_index || this.index;
+    const preExisting = this.annotations.find(annotation => annotation.index === index);
+    if (preExisting) {
+        this.updateAnnotation(preExisting.id, preExisting.index, colour);
+        return true;
+    } else if (index >= 0 && index < this.getSize()) {
         this.annotations.push({
             id: id,
-            name: name,
             index: index,
             colour: colour,
         });
-        /* Linked scrollbars receive identical annotation names/colours/index but are disconnected */
-        this.links.forEach(link => link.addAnnotation(generateAnnotationId(name), name, colour, index));
+        /* Linked scrollbars receive identical annotation colours/index but are disconnected */
+        this.links.forEach(link => link.addAnnotation(generateAnnotationId(), colour, index));
         /* Child scrollbars receive identical annotations, but not necessarily same index */
-        this.children.forEach(child => child.addAnnotation(id, name, colour));
+        this.children.forEach(child => {
+            if (opt_index) {
+                child.addAnnotation(id, colour, Math.floor(opt_index / this.getSize() * child.getSize()));
+            } else {
+                child.addAnnotation(id, colour);
+            }
+        });
         return true;
-    } else {
-        return false;
+    }
+    return false;
+}
+
+/**
+ * Update an annotation colour and its linked/child annotations
+ * @param {string} id id of the annotation
+ * @param {number} index index of the annotation
+ * @param {Array<number>} colour new colour for the annotation
+ */
+Scrollbar.prototype.updateAnnotation = function (id, index, colour) {
+    let annotation = null;
+    if (annotation = this.annotations.find(anno => anno.id === id)) {
+        /* Found annotation with identical id within the scrollbar, change its colour */
+        annotation.colour = colour;
+        this.links.forEach(link => link.updateAnnotation(id, index, colour));
+        this.children.forEach(child => child.updateAnnotation(id, index, colour));
+    } else if (annotation = this.annotations.find(anno => anno.index === index)) {
+        /* Found annotation with identical index within the scrollbar, change its colour */
+        annotation.colour = colour;
+        this.links.forEach(link => link.updateAnnotation(id, index, colour));
+        this.children.forEach(child => child.updateAnnotation(id, index, colour));
     }
 }
 
@@ -294,47 +322,21 @@ Scrollbar.prototype.loadAnnotation = function (id) {
 /**
  * Remove an annotation from the scrollbar
  * @param {string} id id of the annotation to remove
+ * @param {string} annotationIndex index of the annotation to remove
  */
-Scrollbar.prototype.removeAnnotation = function (id) {
+Scrollbar.prototype.removeAnnotation = function (id, annotationIndex) {
     if (this.locked) return;
 
-    const index = this.annotations.findIndex(annotation => annotation.id === id);
-    if (index >= 0) {
+    let index = -1;
+    if ((index = this.annotations.findIndex(annotation => annotation.id === id)) >= 0) {
         this.annotations.splice(index, 1);
-        this.children.forEach(child => child.removeAnnotation(id));
+        this.links.forEach(link => link.removeAnnotation(id, annotationIndex))
+        this.children.forEach(child => child.removeAnnotation(id, annotationIndex));
+    } else if ((index = this.annotations.findIndex(annotation => annotation.index === annotationIndex)) >= 0) {
+        this.annotations.splice(index, 1);
+        this.links.forEach(link => link.removeAnnotation(id, annotationIndex))
+        this.children.forEach(child => child.removeAnnotation(id, annotationIndex));
     }
-}
-
-/**
- * Search annotations and child scrollbar annotations for annotations that have the same name
- * @param {string} name name of annotation to search for
- * @returns {boolean}
- */
-Scrollbar.prototype.hasAnnotation = function (name) {
-    /* Check if any of this scrollbars annotations contain the annotation name */
-    for (let i = 0; i < this.annotations.length; i++) {
-        let annotation = this.annotations[i];
-        if (annotation.name === name) return true;
-    }
-    /* Check if any of this scrollbars children contain the annotation name */
-    for (let j = 0; j < this.children.length; j++) {
-        if (this.children[j].hasAnnotation(name)) return true;
-    }
-    return false;
-}
-
-/**
- * Retrieve all the annotations (no duplicates) from this scrollbar and its child scrollbars.
- * @returns {Array<string>}
- */
-Scrollbar.prototype.getAnnotations = function () {
-    let result = [...this.annotations];
-    let childAnnotations = [];
-    this.children.forEach(child => childAnnotations.push(...child.getAnnotations()));
-    childAnnotations.forEach(annotation => {
-        if (!result.includes(annotation)) result.push(annotation);
-    });
-    return result;
 }
 
 /* Convert scrollbar to JSON */

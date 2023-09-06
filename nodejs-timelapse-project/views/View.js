@@ -177,17 +177,21 @@ View.prototype.draw = function () {
             }
 
             /* Scrollbar Annotations */
-            colorMode(HSL, 360, 100, 100);
             scrollbar.annotations.forEach(annotation => {
+                noFill();
                 stroke(annotation.colour);
                 if (this.imodel.highlightedAnnotation?.id === annotation.id) {
                     strokeWeight(3);
                 }
                 let pos = scrollbar.getPositionOfIndex(annotation.index);
                 line(pos, scrollbar.y, pos, scrollbar.y + scrollbar.height);
+                /* Video outlines from annotation events */
+                if (scrollbar.index - 2 < annotation.index && scrollbar.index + 2 > annotation.index) {
+                    strokeWeight(3);
+                    rect(left - 1, top - 1, right - left + 1, bottom - top + 1);
+                }
                 strokeWeight(1);
             });
-            colorMode(RGB, 255);
 
             /* Display Snapshot Benchmarks */
             this.model.snapshots.forEach((snapshot, index) => {

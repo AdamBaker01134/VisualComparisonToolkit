@@ -326,21 +326,6 @@ Display.prototype.checkEndHit = function (mx) {
 }
 
 /**
- * Add an annotation to a scrollbar.
- * @param {number} scrollbarPos index of the desired scrollbar
- * @param {string} name customized annotation name
- */
-Display.prototype.addAnnotation = function (scrollbarPos, name) {
-    if (scrollbarPos >= 0 && scrollbarPos < this.scrollbars.length) {
-        return this.scrollbars[scrollbarPos].addAnnotation(
-            generateAnnotationId(name),
-            name,
-            generateAnnotationColour(),
-        );
-    }
-}
-
-/**
  * Convert display to JSON
  * @returns {Object}
  */

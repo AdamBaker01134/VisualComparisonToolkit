@@ -27,14 +27,14 @@ Scrub through the videos again.
 Once you see that a crop is beginning to flower, pause.
 Trim the start of the video by right clicking the white marker on the left-side of the green timeline.
 This will snap the marker to your current position.
-Repeat this trick with the other two videos.
+Repeat this trick with the other video.
 </p>
 <img src="./tutorials/img/tutorial-task-2-3.png" />
 <p>
 Now find the point where a crop seems to stop growing.
 We will call this the “peak” of the flowering cycle.
 Once you’ve found the peak, trim the end of the video to this position by right clicking the white marker on the right-side of the green timeline.
-Repeat with the other two videos.
+Repeat with the other video.
 </p>
 <img src="./tutorials/img/tutorial-task-2-4.png" />
 <p>
