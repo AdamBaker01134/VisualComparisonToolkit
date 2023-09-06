@@ -106,6 +106,8 @@ let playingTimers = {};
 let previousX;
 let previousY;
 
+let savedSelection = null;
+
 /* Start an interval timer that continually checks if displays should be moved */
 function startTimedMoveInterval() {
     clearInterval(moveTimer);
@@ -571,6 +573,10 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 /* Handle 'e' key pressed events */
                 model.togglePadding();
                 currentState = STATE.UNPADDED;
+                if (imodel.selection !== null) {
+                    savedSelection = imodel.selection;
+                    imodel.select(imodel.selection);
+                }
                 pinoLog("trace", `Toggled display padding ${model.unpadded ? "off" : "on"}`);
                 return false;
             }
@@ -603,6 +609,10 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 /* Handle unpadded 'e' key pressed events */
                 model.togglePadding();
                 currentState = STATE.READY;
+                if (savedSelection !== null) {
+                    imodel.select(savedSelection);
+                    savedSelection = null;
+                }
                 pinoLog("trace", `Toggled display padding ${model.unpadded ? "off" : "on"}`);
                 return false;
             }
