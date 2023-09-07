@@ -72,7 +72,7 @@
         let drawIndex = 0;
 
         const CANVAS_WIDTH = 1200;
-        const CANVAS_HEIGHT = 900;
+        const CANVAS_HEIGHT = 915;
         function preload() {
             backgroundImg = loadImage(`./blob-images/site.png`);
             for (let i = 0; i <= 310; i++) {
@@ -273,47 +273,47 @@
             noStroke();
             let left = 10;
             fill(0, 0, 0)
-            text("Colour Key: ", left, CANVAS_HEIGHT - 15);
+            text("Colour Key: ", left, CANVAS_HEIGHT - 35);
             left += textWidth("Colour Key: ") + 10;
             /* Predicted */
             const predicted = "Predicted";
             fill(0, 0, 204);
-            circle(left, CANVAS_HEIGHT - 20, 10);
+            circle(left, CANVAS_HEIGHT - 42, 10);
             left += 10;
-            text(predicted, left, CANVAS_HEIGHT - 15);
+            text(predicted, left, CANVAS_HEIGHT - 35);
             left += textWidth(predicted) + 10;
             /* Observed */
             fill(253, 218, 13);
             const observed = "Observed";
-            circle(left, CANVAS_HEIGHT - 20, 10);
+            circle(left, CANVAS_HEIGHT - 42, 10);
             left += 10;
-            text(observed, left, CANVAS_HEIGHT - 15);
+            text(observed, left, CANVAS_HEIGHT - 35);
             left += textWidth(observed) + 10;
             /* Predicted outline */
             fill(0, 255, 0);
             const predictedOutline = "Predicted Outline";
-            circle(left, CANVAS_HEIGHT - 20, 10);
+            circle(left, CANVAS_HEIGHT - 42, 10);
             left += 10;
-            text(predictedOutline, left, CANVAS_HEIGHT - 15);
+            text(predictedOutline, left, CANVAS_HEIGHT - 35);
             left += textWidth(predictedOutline) + 10;
             /* Observed outline */
             fill(255, 165, 0);
             const observedOutline = "Observed Outline";
-            circle(left, CANVAS_HEIGHT - 20, 10);
+            circle(left, CANVAS_HEIGHT - 42, 10);
             left += 10;
-            text(observedOutline, left, CANVAS_HEIGHT - 15);
-            left += textWidth(observedOutline) + 10;
+            text(observedOutline, left, CANVAS_HEIGHT - 35);
+            left = 10 + textWidth("Colour Key: ") + 10;
             /* Predicted difference lines*/
             fill(48, 213, 200);
-            const predictedDL = "Predicted Difference Lines";
-            circle(left, CANVAS_HEIGHT - 20, 10);
+            const predictedDL = "Difference Lines Type 1 (Bacteria Performing Better)";
+            circle(left, CANVAS_HEIGHT - 22, 10);
             left += 10;
             text(predictedDL, left, CANVAS_HEIGHT - 15);
             left += textWidth(predictedDL) + 10;
             /* Observed difference lines */
             fill(255, 0, 0);
-            const observedDL = "Observed Difference Lines";
-            circle(left, CANVAS_HEIGHT - 20, 10);
+            const observedDL = "Difference Lines Type 2 (Bacteria Performing Worse)";
+            circle(left, CANVAS_HEIGHT - 22, 10);
             left += 10;
             text(observedDL, left, CANVAS_HEIGHT - 15);
             left += textWidth(observedDL) + 10;
@@ -396,25 +396,20 @@
                 blob represents the true scope of the spill being reduced over time by the bacteria.
             </p>
             <img src="../tutorials/img/tutorial-task-5-2.png" />
-            <p>
-                Using these two videos to compare:
-            </p>
             <strong class="small-centered">Stop Here.</strong>
+            <p>Using display 1 and 2:</p>
             <ul>
-                <li>Are the bacteria working as effectively as the simulation predicted?</li>
-                <li>Do the bacteria under/over-perform? If so, when, and where does this occur?</li>
+                <li>Is the observed bacteria working better or worse than predicted?</li>
             </ul>
             <p>
                 Display 3 combines both the predicted and the observed oil spill data into a single video.
             </p>
             <img src="../tutorials/img/tutorial-task-5-3.png" />
-            <p>
-                Using this video to compare:
-            </p>
             <strong class="small-centered">Stop Here.</strong>
+            <p>Using display 3:</p>
             <ul>
-                <li>Are the bacteria working as effectively as the simulation predicted? Has your answer changed?</li>
-                <li>Do you prefer this combined video over the separate videos? Why or why not?</li>
+                <li>Does this display make you rethink your original answer?</li>
+                <li>Do you prefer this combined video over the separated videos? Why or why not?</li>
             </ul>
             <p>
                 Display 4 introduces another representation of the oil spill over time. Dotted outlines are placed
@@ -422,14 +417,12 @@
                 outline representation with the spill blobs.
             </p>
             <img src="../tutorials/img/tutorial-task-5-4.png" />
-            <p>
-                Using these two videos to compare:
-            </p>
             <strong class="small-centered">Stop Here.</strong>
+            <p>Using display 4 and 6:</p>
             <ul>
-                <li>Are the bacteria working as effectively as the simulation predicted? Has your answer changed?</li>
-                <li>Which display do you prefer and why?</li>
-                <li>Does the outline technique make it easier to compare than the blobs? Why or why not?</li>
+                <li>Once again, does this display make you rethink your original answer?</li>
+                <li>Of the five displays we've looked at so far, which do you prefer and why?</li>
+                <li>Does the outline technique make it more easy or more difficult to compare the data? Why?</li>
             </ul>
             <p>
                 Finally, display 7 introduces a representation of the difference between the predicted and observed oil
@@ -442,14 +435,12 @@
                 observed & predicted blobs, perimeter outlines, and difference lines) into one video.
             </p>
             <img src="../tutorials/img/tutorial-task-5-5.png" />
-            <p>
-                Using these three videos to compare:
-            </p>
             <strong class="small-centered">Stop Here.</strong>
+            <p>Using display 7, 8, and 9:</p>
             <ul>
-                <li>Are the bacteria working as effectively as the simulation predicted? Has your answer changed?</li>
-                <li>Which display do you prefer and why?</li>
-                <li>Do the difference lines make it easier to compare than the other techniques? Why or why not?</li>
+                <li>For the final time, does this display make you rethink your original answer?</li>
+                <li>Of the all the displays seen on this page, which do you prefer and why?</li>
+                <li>Do the difference lines make it more easy or more difficult to compare the data? Why or why not?</li>
             </ul>
         </div>
     </div>
