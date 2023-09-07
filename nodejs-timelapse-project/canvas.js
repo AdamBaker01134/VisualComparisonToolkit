@@ -345,11 +345,11 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.SHADOW_MARKER:
             if (hit = model.checkImageHit(mx, my)) {
-                imodel.setShadowMarker({
+                imodel.addShadowMarker({
                     widthRatio: (mx - (hit.x + hit.padding)) / hit.width,
                     heightRatio: (my - (hit.y + hit.padding)) / hit.height,
                 });
-                pinoLog("trace", `Set shadow marker at (${mx},${my})`);
+                pinoLog("trace", `Added a shadow marker at width ratio: ${widthRatio} and height ratio: ${heightRatio}`);
             }
             break;
         case STATE.COINCIDENT_POINTING:
@@ -632,8 +632,8 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 return false;
             } else if (keyCode === DELETE) {
                 /* Handle shadow marker delete key pressed events */
-                imodel.setShadowMarker(null);
-                pinoLog("trace", "Cleared shadow marker");
+                imodel.clearShadowMarkers();
+                pinoLog("trace", "Cleared shadow markers");
                 return false;
             }
             break;

@@ -150,19 +150,21 @@ View.prototype.draw = function () {
             text(txt, left + 5, top + txtSize);
         }
 
-        /* Shadow marker */
-        if (this.imodel.shadowMarker !== null) {
+        /* Shadow markers */
+        this.imodel.shadowMarkers.forEach(shadowMarker => {
             noStroke();
             fill("rgb(255, 255, 255)");
             stroke("rgb(0, 0, 0)");
-            const cursorX = left + display.width * this.imodel.shadowMarker.widthRatio;
-            const cursorY = top + display.height * this.imodel.shadowMarker.heightRatio;
-            const cursorLength = Math.min(display.width, display.height) / 12;
+            const cursorX = left + display.width * shadowMarker.widthRatio;
+            const cursorY = top + display.height * shadowMarker.heightRatio;
+            const maxCursorLength = 24;
+            let cursorLength = Math.min(display.width, display.height) / 12;
+            if (cursorLength > maxCursorLength) cursorLength = maxCursorLength;
             rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
             rect(cursorX - cursorLength / 2, cursorY - 1.5, cursorLength, 3);
             noFill();
             rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
-        }
+        });
 
         if (this.model.unpadded) {
             unpaddedX += display.width;
