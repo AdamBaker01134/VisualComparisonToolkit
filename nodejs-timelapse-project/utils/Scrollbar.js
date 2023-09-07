@@ -248,7 +248,7 @@ Scrollbar.prototype.removeChild = function (child) {
  */
 Scrollbar.prototype.addAnnotation = function (id, colour, opt_index) {
     const index = opt_index || this.index;
-    const preExisting = this.annotations.find(annotation => annotation.index === index);
+    const preExisting = this.annotations.find(annotation => Math.floor(annotation.index) === Math.floor(index));
     if (preExisting) {
         this.updateAnnotation(preExisting.id, preExisting.index, colour);
         return true;
@@ -263,7 +263,7 @@ Scrollbar.prototype.addAnnotation = function (id, colour, opt_index) {
         /* Child scrollbars receive identical annotations, but not necessarily same index */
         this.children.forEach(child => {
             if (opt_index) {
-                child.addAnnotation(id, colour, Math.floor(opt_index / this.getSize() * child.getSize()));
+                child.addAnnotation(id, colour, opt_index / this.getSize() * child.getSize());
             } else {
                 child.addAnnotation(id, colour);
             }

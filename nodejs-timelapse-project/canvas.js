@@ -553,6 +553,12 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                     if (imodel.highlightedAnnotation) {
                         imodel.updateAnnotation(hit, imodel.highlightedAnnotation, colour);
                         pinoLog("trace", `Updated annotation at index ${imodel.highlightedAnnotation.index} in scrollbar: ${hit.id}`);
+                    } else if (hit.checkMainPositionHit(mx)) {
+                        if (imodel.addAnnotation(hit, colour)) {
+                            pinoLog("trace", `Created annotation at current position in scrollbar: ${hit.id}`);
+                        } else {
+                            pinoLog("error", `Error: could not create annotation at current position in scrollbar: ${hit.id}`)
+                        }
                     } else {
                         const index = model.getIndexFromMouse(hit, mx);
                         if (imodel.addAnnotation(hit, colour, index)) {
@@ -560,12 +566,6 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                         } else {
                             pinoLog("error", `Error: could not create annotation at index ${index} in scrollbar: ${hit.id}`)
                         }
-                    }
-                } else if (imodel.selection !== null) {
-                    if (imodel.addAnnotation(imodel.selection.getMainScrollbar(), colour)) {
-                        pinoLog("trace", `Created annotation in selected video`);
-                    } else {
-                        pinoLog("error", `Error: could not create annotation in selected video`)
                     }
                 }
                 return false;

@@ -329,6 +329,18 @@ View.prototype.draw = function () {
         );
         noStroke();
 
+        /* Scrollbar Annotations */
+        scrollbar.annotations.forEach(annotation => {
+            noFill();
+            stroke(annotation.colour);
+            if (this.imodel.highlightedAnnotation?.id === annotation.id) {
+                strokeWeight(3);
+            }
+            let pos = scrollbar.getPositionOfIndex(annotation.index);
+            line(pos, scrollbar.y, pos, scrollbar.y + scrollbar.height);
+            strokeWeight(1);
+        });
+
         /* Global Scrollbar Segments */
         fill(0);
         stroke("rgb(25, 25, 25)");

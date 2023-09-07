@@ -290,7 +290,7 @@ iModel.prototype.loadAnnotation = function (scrollbar, annotation) {
  * @param {Object} annotation annotation to remove
  */
 iModel.prototype.removeAnnotation = function (scrollbar, annotation) {
-    scrollbar.removeAnnotation(scrollbar.id);
+    scrollbar.removeAnnotation(annotation.id);
     this.notifySubscribers();
 }
 
