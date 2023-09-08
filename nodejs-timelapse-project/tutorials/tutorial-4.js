@@ -25,8 +25,7 @@ Play through the videos multiple times and see if you can spot any trends occurr
 </p>
 <strong class="small-centered">Stop Here.</strong>
 <ul>
-<li>Does the size of the sea ice change over the years?</li>
-<li>Does the density (colour) of the ice change?</li>
+<li>Do you notice any trends occurring over the years (i.e. ice size/density (colour) variation, etc.)?</li>
 <li>Can you find somewhere on the map that changed the most in 40 years?</li>
 </ul>
 <p>
@@ -39,9 +38,13 @@ Press the period key.
 This will turn on shadow marking mode, highlighting your canvas in yellow and changing your cursor.
 Now, find an area in one of the earlier videos that you’d like to track.
 Click on that location, and a marker will show up in the video and all other videos, too.
-Press the period key again to exit shadow marking mode.
+You can add multiple shadow markers if you wish.
+To clear all your markers, press Delete.
 </p>
 <img src="./tutorials/img/tutorial-task-4-2.png" />
+<p>
+Once you are happy with your markers, press the period key again to exit shadow marking mode.
+</p>
 <p>
 Play through each video again.
 The shadow marker acts as a focal point to draw your eye to your desired area of focus as you move from video to video. 
