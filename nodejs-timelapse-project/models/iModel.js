@@ -224,36 +224,47 @@ iModel.prototype.setOpacity = function (opacity) {
 }
 
 /**
- * Apply a coincident point transformation on two displays.
- * If you don't have enough points, or if the 1st/2nd or 3rd/4th points don't have matching displays, an error message will display and coincident points will be reset.
+ * Apply a coincident point transformation.
+ * @returns {boolean}
+ */
+iModel.prototype._coincidentTransform = function (p1, p2, p3, p4) {
+    if (p1.display !== p2.display || p3.display !== p4.display) return false;
+    const d1 = dist(p1.x, p1.y, p2.x, p2.y);
+    const d2 = dist(p3.x, p3.y, p4.x, p4.y);
+    const scaleFactor = d1/d2;
+
+    const display1 = p1.display;
+    const display2 = p3.display;
+
+    const viewport = display2.getLayerViewport(display2.layers.length - 1);
+    const x1 = p1.x - display1.x - display1.padding;
+    const x2 = p3.x * scaleFactor + viewport.x * (1 - scaleFactor) - display2.x - display2.padding;
+    const dx = x1 - x2;
+    const y1 = p1.y - display1.y - display1.padding;
+    const y2 = p3.y * scaleFactor + viewport.y * (1 - scaleFactor) - display2.y - display2.padding;
+    const dy = y1 - y2;
+
+    display2.pan(dx, dy);
+    display2.scaleViewport(scaleFactor, display2.layers.length - 1);
+    return true;
+}
+
+/**
+ * Confirm that the user wants to perform a coincident transform on the locked points
  */
 iModel.prototype.coincidentTransform = function () {
-    if (this.coincidentPoints.length !== 4 ||
-        this.coincidentPoints[0].display !== this.coincidentPoints[1].display ||
-        this.coincidentPoints[2].display !== this.coincidentPoints[3].display) {
-        alert("Error: Invalid coincident points. Ensure that you set the points in order 1 and 2 in the first video, then 3 and 4 in the second video.");
+    const ok = confirm("Are you sure you want to perform this transformation?");
+    if (ok) {
+        for (let i = 0; i + 1 < this.coincidentPoints.length; i += 2) {
+            const result = this._coincidentTransform(this.coincidentPoints[0], this.coincidentPoints[1], this.coincidentPoints[i], this.coincidentPoints[i + 1]);
+            if (!result) {
+                alert("Error: Invalid coincident points. Ensure that each pair of point are within the same video.");
+                break;
+            }
+        }
         this.coincidentPoints = [];
         this.notifySubscribers();
-        return;
     }
-    const d1 = dist(this.coincidentPoints[0].x, this.coincidentPoints[0].y, this.coincidentPoints[1].x, this.coincidentPoints[1].y);
-    const d2 = dist(this.coincidentPoints[2].x, this.coincidentPoints[2].y, this.coincidentPoints[3].x, this.coincidentPoints[3].y);
-    const scaleFactor = d2/d1;
-
-    const display1 = this.coincidentPoints[0].display;
-    const display2 = this.coincidentPoints[2].display;
-    const viewport1 = display1.getLayerViewport(display1.layers.length - 1);
-    const x1 = this.coincidentPoints[0].x * scaleFactor + viewport1.x * (1 - scaleFactor) - display1.x - display1.padding;
-    const x2 = this.coincidentPoints[2].x - display2.x - display2.padding;
-    const dx = x2 - x1;
-    const y1 = this.coincidentPoints[0].y * scaleFactor + viewport1.y * (1 - scaleFactor) - display1.y - display1.padding;
-    const y2 = this.coincidentPoints[2].y - display2.y - display2.padding;
-    const dy = y2 - y1;
-
-    display1.pan(dx, dy);
-    display1.scaleViewport(scaleFactor, display1.layers.length - 1);
-    this.coincidentPoints = [];
-    this.notifySubscribers();
 }
 
 /**
@@ -264,9 +275,6 @@ iModel.prototype.coincidentTransform = function () {
  */
 iModel.prototype.addCoincidentPoint = function (display, x, y) {
     this.coincidentPoints.push({ display: display, x: x, y: y, });
-    if (this.coincidentPoints.length === 4) {
-        this.coincidentTransform();
-    }
     this.notifySubscribers();
 }
 

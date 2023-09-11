@@ -658,6 +658,7 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
             } else if (keyCode === 190) {
                 /* Handle coincident points period key pressed events */
                 imodel.setCursor("crosshair");
+                imodel.clearCoincidentPoints();
                 currentState = STATE.SHADOW_MARKER;
                 pinoLog("trace", "Exited shadow marker mode");
                 return false;
@@ -666,6 +667,10 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 imodel.clearCoincidentPoints();
                 pinoLog("trace", "Cleared coincident points");
                 return false;
+            } else if (keyCode === ENTER) {
+                /* Handle coincident points enter key pressed events */
+                imodel.coincidentTransform();
+                pinoLog("trace", "Performed coincident transformation on coincident points.");
             }
     }
 }

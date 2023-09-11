@@ -176,10 +176,13 @@ View.prototype.draw = function () {
         }
 
         /* Coincident points */
-        this.imodel.coincidentPoints.forEach(point => {
-            stroke("rgb(0, 0, 0)");
+        this.imodel.coincidentPoints.forEach((point, pointIndex) => {
+            if (pointIndex % 2 === 0 && pointIndex === this.imodel.coincidentPoints.length - 1) stroke("rgb(255, 0, 0)");
+            else stroke("rgb(0, 0, 255)");
             fill("rgb(255, 255, 255)");
             ellipse(point.x, point.y, 10, 10);
+            textSize(8);
+            text(Math.floor(pointIndex / 2), point.x - 2, point.y + 3);
         });
 
         /* Scrollbars */

@@ -21,19 +21,22 @@ Video alignment can be done automatically using a technique called coincident po
 Press the comma key to enter coincident pointing mode. The border of the canvas should be blue.
 </li>
 <li>
-In the first video (top left), click on Daniel Hudson’s glove to place your first point.
+In the second video (top right), click on Daniel Hudson’s glove to place your first point.
 </li>
 <li>
 In the same video, click on the back of his shoe to place your second point.
+This will create a pair and turn the points blue.
 </li>
 <li>
-Go to the second video and place two more points on his glove and shoe in the same order.
+Go to the other video (top left) and place two more points on his glove and shoe in the same order.
+Press Delete if you want to restart.
 </li>
 <li>
-Once the fourth point is placed, the first video will snap to align with the second video.
+Once you are happy with your points, press Enter and click Ok on the prompt.
+This will align the points labeled '1' to the points labeled '0'.
 </li>
 <li>
-Press the comma key again. The blue border should disappear.
+Press the comma key again to exit the mode. The blue border should disappear.
 </li>
 </ol>
 <img src="./tutorials/img/tutorial-task-3-2.png" />
