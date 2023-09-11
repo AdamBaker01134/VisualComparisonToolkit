@@ -187,7 +187,8 @@ View.prototype.draw = function () {
             let trianglePos = scrollbar.getMainPosition();
             let startPos = scrollbar.getStartPosition();
             let endPos = scrollbar.getEndPosition();
-            stroke("rgb(0, 0, 0)");
+            if (this.imodel.highlightedScrollbars.includes(scrollbar)) stroke("rgb(255, 204, 0)");
+            else stroke("rgb(0, 0, 0)");
             if (display.locked) {
                 fill("rgb(128, 128, 128)");
             } else if (this.imodel.focused === scrollbar) {
@@ -322,7 +323,8 @@ View.prototype.draw = function () {
         } else {
             fill("rgb(34, 154, 34)");
         }
-        stroke("rgb(0, 0, 0)");
+        if (this.imodel.highlightedScrollbars.includes(scrollbar)) stroke("rgb(255, 204, 0)");
+        else stroke("rgb(0, 0, 0)");
         rect(
             scrollbar.x,
             scrollbar.y,

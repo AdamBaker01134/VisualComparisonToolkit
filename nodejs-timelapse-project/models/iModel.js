@@ -6,6 +6,7 @@ function iModel() {
     this.coincidentPoints = [];
     this.focused = null;
     this.selection = null;
+    this.highlightedScrollbars = [];
     this.highlightedAnnotation = null;
     this.highlightedSnapshot = null;
     this.ghost = null;
@@ -47,6 +48,24 @@ iModel.prototype.clearShadowMarkers = function () {
 iModel.prototype.setFocused = function (focusedObject) {
     if (this.focused !== focusedObject) {
         this.focused = focusedObject;
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Highlight a scrollbar (and its linked scrollbars).
+ * @param {Scrollbar|null} scrollbar scrollbar to highlight
+ * @param {boolean} linked whether or not the scrollbars were
+ */
+iModel.prototype.highlightScrollbar = function (scrollbar, linked=false) {
+    if (scrollbar === null) {
+        if (this.highlightedScrollbars.length > 0) {
+            this.highlightedScrollbars = [];
+            this.notifySubscribers();
+        }
+    } else if (!this.highlightedScrollbars.includes(scrollbar)) {
+        if (!linked) this.highlightedScrollbars = [];
+        this.highlightedScrollbars.push(scrollbar);
         this.notifySubscribers();
     }
 }

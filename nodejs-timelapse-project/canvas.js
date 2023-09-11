@@ -176,6 +176,13 @@ function mouseMoved(event, mx = mouseX, my = mouseY) {
                 } else {
                     imodel.setCursor("default");
                 }
+                hit = model.checkScrollbarHit(mx, my);
+                imodel.highlightScrollbar(hit);
+                if (hit !== null) {
+                    model.findAllScrollbars().forEach(scrollbar => {
+                        if (scrollbar.links.includes(hit)) imodel.highlightScrollbar(scrollbar, true);
+                    });
+                }
                 hit = model.checkBenchmarkHit(mx, my);
                 imodel.highlightSnapshot(hit);
                 /* Only want to highlight annotation if no benchmarks are highlighted */
