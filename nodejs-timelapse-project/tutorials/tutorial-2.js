@@ -32,15 +32,16 @@ Pay attention to the timestamps.
 <ul>
 <li>Which crop flowered first?</li>
 <li>Which crop stopped flowering first?</li>
+<li>Did trimming the videos help you to compare the flowering cycles? Why or why not?</li>
 </ul>
 <p>
-You may notice that even though the lengths of each video are different, each video plays start to finish in the same amount of time.
-This is a technique called normalization.
-If you want to play through each video without normalization, simply toggle the normalize checkbox in the middle of the webpage header.
+Try clicking on the normalization checkbox at the top of the page to disable normalization.
+Now, try to play through the videos again.
 </p>
 <strong class="small-centered">Answer the following questions:</strong>
 <ul>
-<li>Did trimming the videos help you to compare the flowering cycles? Why or why not?</li>
-<li>Do you know what normalization refers to? Can you see this happening within the system?</li>
+<li>Did you notice a difference in how the videos were being played after you unchecked the checkbox?</li>
+<li>Do you know what normalization is?</li>
+<li>Is normalization helpful in this example? Why or why not?</li>
 </ul>
 `;

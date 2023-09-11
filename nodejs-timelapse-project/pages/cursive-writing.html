@@ -160,9 +160,10 @@
         }
 
         function keyPressed(event) {
-            if (event.keyCode === 32) paused = !paused;
-            if (event.keyCode === LEFT_ARROW) drawIndex -= 1000;
-            if (event.keyCode === RIGHT_ARROW) drawIndex += 1000;
+            if (keyCode === 32) paused = !paused;
+            if (keyCode === LEFT_ARROW) drawIndex -= 1000;
+            if (keyCode === RIGHT_ARROW) drawIndex += 1000;
+            if (keyCode === 82) drawIndex = 0;
             if (drawIndex < 0) drawIndex = 0;
             if (drawIndex > 10000) drawIndex = 0;
         }

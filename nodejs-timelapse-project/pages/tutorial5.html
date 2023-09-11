@@ -320,17 +320,21 @@
         }
 
         function keyPressed(event) {
-            if (event.keyCode === 32) {
+            if (keyCode === 32) {
                 paused = !paused;
                 pinoLog("trace", `Toggled pause ${paused ? "on" : "off"}`);
             }
-            if (event.keyCode === LEFT_ARROW) {
+            if (keyCode === LEFT_ARROW) {
                 drawIndex -= 20;
                 pinoLog("trace", "Rewinding videos")
             }
-            if (event.keyCode === RIGHT_ARROW) {
+            if (keyCode === RIGHT_ARROW) {
                 drawIndex += 20;
                 pinoLog("trace", "Fast-forwarding videos");
+            }
+            if (keyCode === 82) {
+                drawIndex = 0;
+                pinoLog("trace", "Restarted videos");
             }
             if (drawIndex < 0) drawIndex = 0;
             if (drawIndex > 309) drawIndex = 309;
@@ -380,9 +384,8 @@
             </p>
             <p>
                 To the left you will see nine side-by-side displays that you can use to compare the effectiveness of the
-                bacteria. Each display is running on a constant loop. A video progress bar is drawn under each display
-                to indicate the position in the video. Press spacebar to pause/play. Use the left and right arrow keys
-                to rewind/fast-forward.
+                bacteria. Each display is running on a constant loop. Press spacebar to pause/play. Use the left and right
+                arrow keys to rewind/fast-forward. Press 'r' to restart.
             </p>
             <img src="../tutorials/img/tutorial-task-5-1.png" />
             <strong class="small-centered">
