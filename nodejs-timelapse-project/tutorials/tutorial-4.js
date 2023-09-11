@@ -1,42 +1,31 @@
 const tutorial4 = `
 <h1>Tutorial 4</h1>
 <p>
-Now you can picture yourself as a climate change researcher.
-For this task, you will be looking for trends in arctic sea ice formations over the last 40 years.
-Daily satellite images of the north pole have been taken biannually to aid you in your research.
+Now picture yourself as a climate change researcher.
+Your task will be to look for trends in arctic sea ice over the last 40 years.
 </p>
 <p>
+Daily satellite images of the north pole have been taken biannually.
 These images have been compiled into time-lapsed videos that have been pre-loaded within the comparison toolkit.
-Ice is coloured based on density.
-White is the most dense and blue is the least dense.
 </p>
 <img src="./tutorials/img/tutorial-task-4-1.png" />
 <p>
-The videos have been placed in a grid layout with small dimensions to allow you to view everything at once.
-This is meant to aid in comparison by reducing the strain on the user’s memory.
+The videos have been scaled down to allow you to view everything at once.
+This is meant to reduce the strain on your memory as you look around the screen.
 Play through all videos at the same time, and as they play, move your eyes from video to video.
 </p>
-<p>
-Notice that it is easier to find differences now that the space between videos has been reduced.
-Also, the consistent backgrounds in these videos improve the technique by reducing the details that need to be tracked by the observer’s eye.
-</p>
-<p>
-Play through the videos multiple times and see if you can spot any trends occurring.
-</p>
-<strong class="small-centered">Stop Here.</strong>
+<strong class="small-centered">Answer the following questions:</strong>
 <ul>
 <li>Do you notice any trends occurring over the years (i.e. ice size/density (colour) variation, etc.)?</li>
-<li>Can you find somewhere on the map that changed the most in 40 years?</li>
+<li>Can you find somewhere on the map that changed the most in 30 years?</li>
 </ul>
 <p>
-The last question is more specific and may be harder to answer because your eye must travel from the first display to the last display, keeping track of a single position in the map.
-Another technique can now be utilized to help with this.
-This technique is called shadow markers, and it allows you to place a mark in a video that will appear in all other videos, too.
+Another technique can now be used to answer the last question.
+This technique is called shadow markers, and it allows you to place marks in a video that will appear in all other videos, too.
 </p>
 <p>
-Press the period key.
-This will turn on shadow marking mode, highlighting your canvas in yellow and changing your cursor.
-Now, find an area in one of the earlier videos that you’d like to track.
+Press the period key to turn on shadow marking mode.
+Find an area in one of the earlier videos that you’d like to track.
 Click on that location, and a marker will show up in the video and all other videos, too.
 You can add multiple shadow markers if you wish.
 To clear all your markers, press Delete.
@@ -49,9 +38,9 @@ Once you are happy with your markers, press the period key again to exit shadow 
 Play through each video again.
 The shadow marker acts as a focal point to draw your eye to your desired area of focus as you move from video to video. 
 </p>
-<strong class="small-centered">Stop Here.</strong>
+<strong class="small-centered">Answer the following questions:</strong>
 <ul>
-<li>Did the shadow marker help focus your attention on specific points within the video?</li>
-<li>Do you think it would be easier to compare all these images if they were larger? Why or why not?</li>
+<li>Did shadow markers help focus your attention on specific points within the video?</li>
+<li>Would you prefer to compare these videos at a larger scale?</li>
 </ul>
 `;

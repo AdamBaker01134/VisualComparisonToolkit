@@ -31,6 +31,7 @@ Headerview.prototype.draw = function () {
     this.updateLoadingSpinner();
     this.updateLayoutType();
     this.updateNormalized();
+    this.updatePlaySpeed();
     this.updateLocked();
     this.updateTimestamped();
     this.updateOpacityElements();
@@ -91,6 +92,39 @@ Headerview.prototype.updateNormalized = function () {
     let normalized = this.model.normalized;
     let checkbox = document.getElementById("normalizeCheckbox");
     if (checkbox?.checked !== normalized) checkbox.checked = normalized;
+}
+
+/**
+ * Update the state of the play speed radio inputs if they should change.
+ */
+Headerview.prototype.updatePlaySpeed = function () {
+    const playSpeed = this.model.playSpeed;
+    const speedInputs = document.getElementsByClassName("speedInput");
+    if (speedInputs.length < 4) return;
+    let targetInput = null;
+    switch (playSpeed) {
+        case 0.5:
+            targetInput = speedInputs[0];
+            break;
+        case 1.0:
+            targetInput = speedInputs[1];
+            break;
+        case 1.5:
+            targetInput = speedInputs[2];
+            break;
+        case 2.0:
+            targetInput = speedInputs[3];
+            break;
+        default:
+            return;
+    }
+    speedInputs.forEach(speedInput => {
+        if (speedInput === targetInput) {
+            if (!speedInput.checked) speedInput.checked = true;
+        } else if (speedInput.checked) {
+            speedInput.checked = false;
+        }
+    });
 }
 
 /**

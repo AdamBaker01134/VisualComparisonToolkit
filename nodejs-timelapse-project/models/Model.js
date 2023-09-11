@@ -14,6 +14,7 @@ function Model() {
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
     this.normalized = true;
+    this.playSpeed = 1.0;
     this.loading = 0;
     this.displays = [];
     this.snapshots = [];
@@ -24,7 +25,7 @@ function Model() {
         windowHeight + scrollY - this.headerHeight - this.globalScrollbarHeight,
         this.canvasWidth,
         this.globalScrollbarHeight,
-        this.maxImages,
+        500,
     );
     this.defaultCellWidth = 350;
     this.defaultCellHeight = 350;
@@ -134,6 +135,15 @@ Model.prototype.setGlobalScrollbarLocation = function (newX, newY) {
  */
 Model.prototype.setNormalized = function (normalized) {
     this.normalized = normalized;
+    this.notifySubscribers();
+}
+
+/**
+ * Set the play speed in the model.
+ * @param {number} speed play speed of auto-player
+ */
+Model.prototype.setPlaySpeed = function (speed) {
+    this.playSpeed = speed;
     this.notifySubscribers();
 }
 
@@ -783,6 +793,7 @@ Model.prototype.addSnapshot = function () {
         globalScrollbar: this.globalScrollbar.toJSON(),
         scrollPos: [scrollX, scrollY],
         normalized: this.normalized,
+        playSpeed: this.playSpeed,
         timestamped: this.showTimestamps,
         layoutType: this.layoutType,
     };
@@ -810,6 +821,7 @@ Model.prototype.addSnapshot = function () {
  */
 Model.prototype.loadSnapshot = async function (snapshot) {
     this.setNormalized(snapshot.normalized);
+    this.setPlaySpeed(snapshot.playSpeed);
     if (snapshot.timestamped !== this.showTimestamps) this.toggleTimestamps();
     this.setLayoutType(snapshot.layoutType);
     /* Load global scrollbar from JSON */

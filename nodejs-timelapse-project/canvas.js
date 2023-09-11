@@ -133,15 +133,18 @@ function startAutoCycleInterval(overlay) {
     }, 1000);
 }
 
-/* Start an interval timer that "plays" the selected video at a given frame rate. */
-function startPlayInterval(scrollbar, frameRate = 10) {
+/* Start an interval timer that "plays" the selected. */
+function startPlayInterval(scrollbar) {
     clearInterval(playingTimers[scrollbar.id]);
+    const frameRate = 30;
+    const msFrameRate = 1000 / frameRate;
     playingTimers[scrollbar.id] = setInterval(() => {
         switch (currentState) {
             case STATE.READY:
             case STATE.COMPARE_SLIDING:
             case STATE.USING_MAGIC:
             case STATE.UNPADDED:
+            case STATE.OUT_OF_BOUNDS:
                 if (scrollbar.index + 1 === scrollbar.getSize()) {
                     clearInterval(playingTimers[scrollbar.id]);
                     delete playingTimers[scrollbar.id];
@@ -150,7 +153,7 @@ function startPlayInterval(scrollbar, frameRate = 10) {
                 }
                 break;
         }
-    }, Math.floor(1000 / frameRate));
+    }, Math.floor(msFrameRate / model.playSpeed));
 }
 
 /* Clear all playing interval timers and empty the timer object */
@@ -513,7 +516,7 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                     pinoLog("trace", `Stopped auto-playing scrollbar with id: ${scrollbar.id}`);
                 } else {
                     if (scrollbar.index === scrollbar.getSize() - 1) model.setIndex(scrollbar, 0);
-                    startPlayInterval(scrollbar, scrollbar.getSize() / 10);
+                    startPlayInterval(scrollbar);
                     pinoLog("trace", `Began new auto-playing interval on scrollbar with id: ${scrollbar.id}`)
                 }
                 return false;
@@ -596,7 +599,7 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                     pinoLog("trace", `Stopped auto-playing scrollbar with id: ${scrollbar.id}`);
                 } else {
                     if (scrollbar.index === scrollbar.getSize() - 1) model.setIndex(scrollbar, 0);
-                    startPlayInterval(scrollbar, scrollbar.getSize() / 10);
+                    startPlayInterval(scrollbar);
                     pinoLog("trace", `Began new auto-playing interval on scrollbar with id: ${scrollbar.id}`)
                 }
                 return false;
@@ -694,6 +697,30 @@ function _attachHeaderListeners() {
         model.setNormalized(e.target.checked);
         pinoLog("trace", `Toggled normalization ${model.normalized ? "on" : "off"}`)
     });
+    document.getElementsByClassName("speedInput")?.forEach(speedInput => speedInput.addEventListener("click", e => {
+        let playSpeed = 1.0;
+        switch (e.target.id) {
+            case "speedInput1":
+                playSpeed = 0.5;
+                break;
+            case "speedInput2":
+                playSpeed = 1.0;
+                break;
+            case "speedInput3":
+                playSpeed = 1.5;
+                break;
+            case "speedInput4":
+                playSpeed = 2.0;
+                break;
+            default:
+                break;
+        }
+        model.setPlaySpeed(playSpeed);
+        model.findAllScrollbars().forEach(scrollbar => {
+            if (Object.keys(playingTimers).includes(scrollbar.id)) startPlayInterval(scrollbar);
+        });
+        pinoLog("trace", `Set play speed to ${playSpeed}`);
+    }));
 
     /* Individual display header functions */
     document.getElementById("stampCheckbox").addEventListener("change", e => {
