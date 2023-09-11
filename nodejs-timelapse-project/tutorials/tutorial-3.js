@@ -1,9 +1,9 @@
 const tutorial3 = `
-<h1>Tutorial 3 - Pitch Tunneling & Break</h1>
+<h1>Tutorial 3 - Pitch Consistency & Curve</h1>
 <p>
 You are an MLB analyst that has been recruited to analyze baseball pitchers.
 Data has been collected for pitchers Daniel Hudson and Lance Lynn.
-Your task is to identify who has a more consistent pitch and who's pitch breaks the hardest.
+Your task is to identify who has a more consistent pitch and who's pitch curves the most.
 </p>
 <p>
 Two pairs of videos have been pre-loaded into the toolkit.
@@ -55,8 +55,7 @@ Once you are happy with how they look, play through each overlay independently a
 <strong class="small-centered">Answer the following questions:</strong>
 <ul>
 <li>Who has a more consistent pitch?</li>
-<li>Who has a larger break in their pitch?</li>
-<li>Was the coincident point alignment helpful in in your comparison?</li>
+<li>Who's pitch curved the most?</li>
 <li>Do you think the coincident points made alignment easier? Why or why not?</li>
 <li>What did you like or dislike about comparing with overlays?</li>
 </ul>
