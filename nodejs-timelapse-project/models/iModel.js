@@ -5,6 +5,7 @@ function iModel() {
     this.shadowMarkers = [];
     this.coincidentPoints = [];
     this.focused = null;
+    this.measuredTime = null;
     this.selection = null;
     this.highlightedScrollbars = [];
     this.highlightedAnnotation = null;
@@ -48,6 +49,26 @@ iModel.prototype.clearShadowMarkers = function () {
 iModel.prototype.setFocused = function (focusedObject) {
     if (this.focused !== focusedObject) {
         this.focused = focusedObject;
+        this.notifySubscribers();
+    }
+}
+
+/**
+ * Set the measured start/end time from an interaction within a timeline.
+ * @param {number|null} time start, end, or null
+ */
+iModel.prototype.setMeasuredTime = function (time) {
+    if (time === null && this.measuredTime !== null) {
+        this.measuredTime = time;
+        this.notifySubscribers();
+    } else if (this.measuredTime === null) {
+        this.measuredTime = {
+            start: time,
+            end: time,
+        };
+        this.notifySubscribers();
+    } else {
+        this.measuredTime.end = time;
         this.notifySubscribers();
     }
 }

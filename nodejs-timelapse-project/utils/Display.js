@@ -115,6 +115,18 @@ Display.prototype.getMainScrollbar = function () {
 }
 
 /**
+ * Find layer connected to a scrollbar.
+ * @param {number} scrollbarIndex scrollbar index within the display layers
+ * @returns {number}
+ */
+Display.prototype.getScrollbarLayerIndex = function (scrollbarIndex) {
+    for (let i = 0; i < this.layers.length; i++) {
+        if (this.layers[i].scrollbarIndex === scrollbarIndex) return i;
+    }
+    return -1;
+}
+
+/**
  * Set the lock state of the display.
  * @param {boolean} locked lock value
  */

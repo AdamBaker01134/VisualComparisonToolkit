@@ -186,7 +186,7 @@ View.prototype.draw = function () {
         });
 
         /* Scrollbars */
-        display.scrollbars.forEach(scrollbar => {
+        display.scrollbars.forEach((scrollbar, scrollbarPosition) => {
             let trianglePos = scrollbar.getMainPosition();
             let startPos = scrollbar.getStartPosition();
             let endPos = scrollbar.getEndPosition();
@@ -194,7 +194,7 @@ View.prototype.draw = function () {
             else stroke("rgb(0, 0, 0)");
             if (display.locked) {
                 fill("rgb(128, 128, 128)");
-            } else if (this.imodel.focused === scrollbar) {
+            } else if (this.imodel.focused === scrollbar && this.imodel.measuredTime === null) {
                 fill("rgb(34, 200, 34)");
             } else {
                 fill("rgb(34, 154, 34)");
@@ -220,6 +220,44 @@ View.prototype.draw = function () {
                     scrollbar.x + scrollbar.width - endPos,
                     scrollbar.height
                 );
+            }
+            if (this.imodel.measuredTime !== null && this.imodel.focused === scrollbar) {
+                const measuredStart = Math.min(this.imodel.measuredTime.start, this.imodel.measuredTime.end);
+                const measuredEnd = Math.max(this.imodel.measuredTime.start, this.imodel.measuredTime.end);
+                const measuredStartPos = scrollbar.getPositionOfIndex(measuredStart);
+                const measuredEndPos = scrollbar.getPositionOfIndex(measuredEnd);
+                fill("rgb(34, 200, 34)");
+                rect(
+                    measuredStartPos,
+                    scrollbar.y,
+                    measuredEndPos - measuredStartPos,
+                    scrollbar.height,
+                );
+                const frames = measuredEnd - measuredStart;
+                const time = (frames / 30).toFixed(3);
+                let label = `${time}s`;
+                const timestamps = display.getLayerTimestamps(display.getScrollbarLayerIndex(scrollbarPosition));
+                if (measuredStart >= 0 && measuredEnd < timestamps.length) {
+                    const startDate = Date.parse(timestamps[measuredStart]);
+                    const endDate = Date.parse(timestamps[measuredEnd]);
+                    const difference = endDate - startDate;
+                    const days = Math.floor(difference / (1000 * 60 * 60 * 24)).toLocaleString('en-US', { minimumIntegerDigits: 2 });
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toLocaleString('en-US', { minimumIntegerDigits: 2 });
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)).toLocaleString('en-US', { minimumIntegerDigits: 2 });
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000).toLocaleString('en-US', { minimumIntegerDigits: 2 });
+                    label = `${days}d:${hours}h:${minutes}m:${seconds}s`;
+                }
+                const txtWidth = textWidth(label);
+                textSize(24);
+                fill("rgb(255, 255, 255)");
+                rect(
+                    scrollbar.x + scrollbar.width - txtWidth - 10,
+                    scrollbar.y - 30,
+                    txtWidth + 10,
+                    30,
+                );
+                fill("rgb(0, 0, 0)");
+                text(label, scrollbar.x + scrollbar.width - txtWidth - 5, scrollbar.y - 5);
             }
 
             /* Scrollbar Segments */
@@ -321,13 +359,13 @@ View.prototype.draw = function () {
     let scrollbar = this.model.globalScrollbar;
     if (scrollbar instanceof Scrollbar) {
         let trianglePos = scrollbar.getMainPosition();
-        if (this.imodel.focused === scrollbar) {
+        if (this.imodel.highlightedScrollbars.includes(scrollbar)) stroke("rgb(255, 204, 0)");
+        else stroke("rgb(0, 0, 0)");
+        if (this.imodel.focused === scrollbar && this.imodel.measuredTime === null) {
             fill("rgb(34, 200, 34)");
         } else {
             fill("rgb(34, 154, 34)");
         }
-        if (this.imodel.highlightedScrollbars.includes(scrollbar)) stroke("rgb(255, 204, 0)");
-        else stroke("rgb(0, 0, 0)");
         rect(
             scrollbar.x,
             scrollbar.y,
@@ -335,6 +373,35 @@ View.prototype.draw = function () {
             scrollbar.height
         );
         noStroke();
+
+        /* Global Scrollbar measured time */
+        if (this.imodel.measuredTime !== null && this.imodel.focused === scrollbar) {
+            const measuredStart = Math.min(this.imodel.measuredTime.start, this.imodel.measuredTime.end);
+            const measuredEnd = Math.max(this.imodel.measuredTime.start, this.imodel.measuredTime.end);
+            const measuredStartPos = scrollbar.getPositionOfIndex(measuredStart);
+            const measuredEndPos = scrollbar.getPositionOfIndex(measuredEnd);
+            fill("rgb(34, 200, 34)");
+            rect(
+                measuredStartPos,
+                scrollbar.y,
+                measuredEndPos - measuredStartPos,
+                scrollbar.height,
+            );
+            const frames = measuredEnd - measuredStart;
+            const seconds = (frames / 30).toFixed(3);
+            const label = `${seconds}s`;
+            const txtWidth = textWidth(label);
+            textSize(24);
+            fill("rgb(255, 255, 255)");
+            rect(
+                scrollbar.x + scrollbar.width - txtWidth - 10,
+                scrollbar.y - 30,
+                txtWidth + 10,
+                30,
+                );
+            fill("rgb(0, 0, 0)");
+            text(label, scrollbar.x + scrollbar.width - txtWidth - 5, scrollbar.y - 5);
+        }
 
         /* Scrollbar Annotations */
         scrollbar.annotations.forEach(annotation => {

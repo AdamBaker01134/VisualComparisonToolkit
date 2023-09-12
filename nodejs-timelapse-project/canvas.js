@@ -87,6 +87,7 @@ const STATE = {
     FOCUSED: "focused",
     START_FOCUSED: "startFocused",
     END_FOCUSED: "endFocused",
+    MEASURING_TIME: "measuringTime",
     GHOSTING: "ghosting",
     PREPARE_SELECT: "prepareSelect",
     PREPARE_OVERLAY: "prepareOverlay",
@@ -214,6 +215,9 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
         case STATE.END_FOCUSED:
             model.setEndFromMouse(imodel.focused, mx);
             break;
+        case STATE.MEASURING_TIME:
+            imodel.setMeasuredTime(model.getIndexFromMouse(imodel.focused, mx));
+            break;
         case STATE.PREPARE_SELECT:
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.setGhost(hit);
@@ -291,7 +295,11 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 clearAllPlayingIntervals();
                 let startFocused = !imodel.focused.checkMainPositionHit(mx) && imodel.focused.checkStartHit(mx);
                 let endFocused = !imodel.focused.checkMainPositionHit(mx) && !imodel.focused.checkStartHit(mx) && imodel.focused.checkEndHit(mx);
-                if (startFocused) {
+                if (event.ctrlKey) {
+                    currentState = STATE.MEASURING_TIME;
+                    imodel.setMeasuredTime(model.getIndexFromMouse(hit, mx));
+                    pinoLog("trace", "Measuring time");
+                } else if (startFocused) {
                     currentState = STATE.START_FOCUSED;
                     if (event.which === 3) {
                         model.setStart(imodel.focused, imodel.focused.index);
@@ -388,6 +396,11 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
                 }
             }
             imodel.setFocused(null);
+            currentState = STATE.READY;
+            break;
+        case STATE.MEASURING_TIME:
+            imodel.setFocused(null);
+            imodel.setMeasuredTime(null);
             currentState = STATE.READY;
             break;
         case STATE.PREPARE_SELECT:
