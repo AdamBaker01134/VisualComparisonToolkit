@@ -71,7 +71,7 @@ View.prototype.draw = function () {
                 fill("rgba(70, 130, 180, 0.8)");
                 stroke("rgb(70, 130, 180)");
                 line(sliderPosition, top, sliderPosition, bottom);
-                circle(sliderPosition, top + display.height / 2, display.width / 10);
+                circle(sliderPosition, top + display.height / 2, 32);
             } else if (display.mode === "horizontal") {
                 const sliderPosition = top + display.height * display.comparisonSliderValue;
                 tint(255, parseInt(layer1.opacity));
@@ -82,7 +82,7 @@ View.prototype.draw = function () {
                 fill("rgba(70, 130, 180, 0.8)");
                 stroke("rgb(70, 130, 180)");
                 line(left, sliderPosition, right, sliderPosition);
-                circle(left + display.width / 2, sliderPosition, display.width / 10);
+                circle(left + display.width / 2, sliderPosition, 32);
             } else {
                 const magicLens = !model.unpadded ? display.magicLens : {
                     x: left - (display.x + display.padding - display.magicLens.x),

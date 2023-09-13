@@ -260,7 +260,7 @@ Overlay.prototype.setLocation = function (newX, newY) {
  */
 Overlay.prototype.checkComparisonSliderHit = function (mx = mouseX, my = mouseY) {
     if (this.locked || !(this.mode === "horizontal" || this.mode === "vertical")) return false;
-    const sliderRadius = this.width / 10;
+    const sliderRadius = 16;
     if (this.mode === "vertical") {
         return mx > this.x + this.padding + this.width * this.comparisonSliderValue - sliderRadius &&
             mx < this.x + this.padding + this.width * this.comparisonSliderValue + sliderRadius &&
