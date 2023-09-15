@@ -363,11 +363,11 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
             break;
         case STATE.SHADOW_MARKER:
             if (hit = model.checkImageHit(mx, my)) {
-                imodel.addShadowMarker({
-                    widthRatio: (mx - (hit.x + hit.padding)) / hit.width,
-                    heightRatio: (my - (hit.y + hit.padding)) / hit.height,
-                });
-                pinoLog("trace", `Added a shadow marker at width ratio: ${widthRatio} and height ratio: ${heightRatio}`);
+                imodel.addShadowMarker(
+                    (mx - (hit.x + hit.padding)) / hit.width,
+                    (my - (hit.y + hit.padding)) / hit.height,
+                );
+                pinoLog("trace", `Added a shadow marker`);
             }
             break;
         case STATE.COINCIDENT_POINTING:
@@ -554,13 +554,13 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 }
             } else if (keyCode === 190) {
                 /* Handle period key pressed events */
-                imodel.setCursor("crosshair");
+                model.setMode("shadowMarking");
                 currentState = STATE.SHADOW_MARKER;
                 pinoLog("trace", "Entered shadow marker mode");
                 return false;
             } else if (keyCode === 188) {
                 /* Handle comma key pressed events */
-                imodel.setCursor("pointer");
+                model.setMode("coincidentPointing");
                 currentState = STATE.COINCIDENT_POINTING;
                 pinoLog("trace", "Entered coincident pointing mode");
                 return false;
@@ -643,13 +643,13 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
         case STATE.SHADOW_MARKER:
             if (keyCode === 190) {
                 /* Handle shadow marker period key pressed events */
-                imodel.setCursor("default");
+                model.setMode("normal");
                 currentState = STATE.READY;
                 pinoLog("trace", "Exited shadow marker mode");
                 return false;
             } else if (keyCode === 188) {
                 /* Handle shadow marker comma key pressed events */
-                imodel.setCursor("pointer");
+                model.setMode("coincidentPointing");
                 currentState = STATE.COINCIDENT_POINTING;
                 pinoLog("trace", "Entered coincident pointing mode via shadow marker mode");
                 return false;
@@ -658,19 +658,24 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 imodel.clearShadowMarkers();
                 pinoLog("trace", "Cleared shadow markers");
                 return false;
+            } else if (keyCode === TAB) {
+                /* Handle shadow marker tab key pressed events */
+                imodel.updateShadowMarkerShape();
+                pinoLog("trace", `Set shadow marker shape to ${imodel.shadowMarkerShape}.`);
+                return false;
             }
             break;
         case STATE.COINCIDENT_POINTING:
             if (keyCode === 188) {
                 /* Handle coincident points comma key pressed events */
-                imodel.setCursor("default");
+                model.setMode("normal");
                 imodel.clearCoincidentPoints();
                 currentState = STATE.READY;
                 pinoLog("trace", "Exited coincident pointing mode");
                 return false;
             } else if (keyCode === 190) {
                 /* Handle coincident points period key pressed events */
-                imodel.setCursor("crosshair");
+                model.setMode("shadowMarking");
                 imodel.clearCoincidentPoints();
                 currentState = STATE.SHADOW_MARKER;
                 pinoLog("trace", "Exited shadow marker mode");

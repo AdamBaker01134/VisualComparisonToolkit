@@ -10,6 +10,7 @@ function Model() {
     this.displayScrollbarHeight = 30;
 
     this.layoutType = "static";
+    this.mode = "normal";
 
     this.loader = new Loader(this.maxImages, this.imagePath);
     this.datasets = [];
@@ -157,6 +158,17 @@ Model.prototype.setLayoutType = function (type) {
         this.updateCanvas();
     }
     this.notifySubscribers();
+}
+
+/**
+ * Set the models mode. Must be "normal", "shadowMarking", or "coincidentPointing"
+ * @param {string} mode new model mode
+ */
+Model.prototype.setMode = function (mode) {
+    if ((mode === "normal" || mode === "shadowMarking" || mode === "coincidentPointing") && this.mode !== mode) {
+        this.mode = mode;
+        this.notifySubscribers();
+    }
 }
 
 /**

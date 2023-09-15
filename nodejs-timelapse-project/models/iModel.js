@@ -3,6 +3,7 @@
 function iModel() {
     this.cursor = "default";
     this.shadowMarkers = [];
+    this.shadowMarkerShape = "crosshair";
     this.coincidentPoints = [];
     this.focused = null;
     this.measuredTime = null;
@@ -26,11 +27,40 @@ iModel.prototype.setCursor = function (cursorStyle) {
 }
 
 /**
- * Add a shadow marker object in the interaction model.
- * @param {Object} markerObj shadow marker object containing information about where to draw the marker in each display
+ * Set the shape to be used when creating shadow markers.
  */
-iModel.prototype.addShadowMarker = function (markerObj) {
-    this.shadowMarkers.push(markerObj);
+iModel.prototype.updateShadowMarkerShape = function () {
+    switch (this.shadowMarkerShape) {
+        case "crosshair":
+            this.shadowMarkerShape = "cross";
+            break;
+        case "cross":
+            this.shadowMarkerShape = "dot";
+            break;
+        case "dot":
+            this.shadowMarkerShape = "square";
+            break;
+        case "square":
+            this.shadowMarkerShape = "triangle";
+            break;
+        case "triangle":
+            this.shadowMarkerShape = "crosshair";
+            break;
+    }
+    this.notifySubscribers();
+}
+
+/**
+ * Add a shadow marker object in the interaction model with given width & height ratio and shape.
+ * @param {number} widthRatio x position ratio in the display
+ * @param {number} heightRatio y position ratio in the display
+ */
+iModel.prototype.addShadowMarker = function (widthRatio, heightRatio) {
+    this.shadowMarkers.push({
+        widthRatio: widthRatio,
+        heightRatio: heightRatio,
+        shape: this.shadowMarkerShape,
+    });
     this.notifySubscribers();
 }
 

@@ -21,7 +21,7 @@ View.prototype.draw = function () {
 
     this.model.displays.forEach((display, position) => {
         if (display === null) return;
-        
+
         let left = display.x + display.padding;
         let right = display.x + display.padding + display.width;
         let top = display.y + display.padding;
@@ -153,17 +153,54 @@ View.prototype.draw = function () {
         /* Shadow markers */
         this.imodel.shadowMarkers.forEach(shadowMarker => {
             noStroke();
-            fill("rgb(255, 255, 255)");
             stroke("rgb(0, 0, 0)");
-            const cursorX = left + display.width * shadowMarker.widthRatio;
-            const cursorY = top + display.height * shadowMarker.heightRatio;
-            const maxCursorLength = 24;
-            let cursorLength = Math.min(display.width, display.height) / 12;
-            if (cursorLength > maxCursorLength) cursorLength = maxCursorLength;
-            rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
-            rect(cursorX - cursorLength / 2, cursorY - 1.5, cursorLength, 3);
+            strokeWeight(3);
             noFill();
-            rect(cursorX - 1.5, cursorY - cursorLength / 2, 3, cursorLength);
+            const markerX = left + display.width * shadowMarker.widthRatio;
+            const markerY = top + display.height * shadowMarker.heightRatio;
+            let maxLength = 24;
+            let markerLength = Math.min(display.width, display.height) / 12;
+            if (shadowMarker.shape !== "crosshair") {
+                maxLength = 16;
+                markerLength = Math.min(display.width, display.height) / 16;
+            }
+            if (markerLength > maxLength) markerLength = maxLength;
+            switch (shadowMarker.shape) {
+                case "crosshair":
+                    line (markerX, markerY - markerLength / 2, markerX, markerY + markerLength / 2);
+                    line (markerX + markerLength / 2, markerY, markerX - markerLength / 2, markerY);
+                    stroke("rgb(255, 255, 255)");
+                    strokeWeight(1);
+                    line (markerX, markerY - markerLength / 2, markerX, markerY + markerLength / 2);
+                    line (markerX + markerLength / 2, markerY, markerX - markerLength / 2, markerY);
+                    break;
+                case "cross":
+                    line (markerX - markerLength / 2, markerY - markerLength / 2, markerX + markerLength / 2, markerY + markerLength / 2);
+                    line (markerX + markerLength / 2, markerY - markerLength / 2, markerX - markerLength / 2, markerY + markerLength / 2);
+                    stroke("rgb(255, 255, 255)");
+                    strokeWeight(1);
+                    line (markerX - markerLength / 2, markerY - markerLength / 2, markerX + markerLength / 2, markerY + markerLength / 2);
+                    line (markerX + markerLength / 2, markerY - markerLength / 2, markerX - markerLength / 2, markerY + markerLength / 2);
+                    break;
+                case "dot":
+                    ellipse(markerX, markerY, markerLength, markerLength);
+                    stroke("rgb(255, 255, 255)");
+                    strokeWeight(1);
+                    ellipse(markerX, markerY, markerLength, markerLength);
+                    break;
+                case "square":
+                    square(markerX - markerLength / 2, markerY - markerLength / 2, markerLength);
+                    stroke("rgb(255, 255, 255)");
+                    strokeWeight(1);
+                    square(markerX - markerLength / 2, markerY - markerLength / 2, markerLength);
+                    break;
+                case "triangle":
+                    triangle(markerX - markerLength / 2, markerY + markerLength / 2, markerX, markerY - markerLength / 2, markerX + markerLength / 2, markerY + markerLength / 2);
+                    stroke("rgb(255, 255, 255)");
+                    strokeWeight(1);
+                    triangle(markerX - markerLength / 2, markerY + markerLength / 2, markerX, markerY - markerLength / 2, markerX + markerLength / 2, markerY + markerLength / 2);
+                    break;
+            }
         });
 
         if (this.model.unpadded) {
@@ -398,7 +435,7 @@ View.prototype.draw = function () {
                 scrollbar.y - 30,
                 txtWidth + 10,
                 30,
-                );
+            );
             fill("rgb(0, 0, 0)");
             text(label, scrollbar.x + scrollbar.width - txtWidth - 5, scrollbar.y - 5);
         }
@@ -444,17 +481,69 @@ View.prototype.draw = function () {
         )
     }
 
-    /* Canvas outline for specific events */
-    if (this.imodel.cursor === "crosshair") {
-        /* We're in shadow marker mode, outline canvas with yellow border */
+    /* Shadow marking mode specific draw events */
+    if (this.model.mode === "shadowMarking") {
         stroke("rgb(255, 204, 0)");
-        strokeWeight(3);
+        strokeWeight(5);
         noFill();
         rect(0, 0, this.model.canvasWidth, this.model.canvasHeight);
-    } else if (this.imodel.cursor === "pointer") {
-        /* We're in coincident point mode, outline canvas with blue border */
-        stroke("rgb(32, 78, 207)");
+        const containterLength = 128;
+        const containerX = scrollbar.x + 10;
+        const containerY = scrollbar.y - containterLength - 5;
+        const infographicLength = 100;
+        const infographicX = containerX + containterLength / 2;
+        const infographicY = containerY + containterLength / 2;
+        fill("rgb(255, 255, 255)");
+        stroke("rgb(0, 0, 0)");
+        strokeWeight(5);
+        square(containerX, containerY, containterLength, 10);
+        noFill();
+        stroke("rgb(190, 190, 190)");
         strokeWeight(3);
+        square(containerX, containerY, containterLength, 10);
+        stroke("rgb(0, 0, 0)");
+        switch (imodel.shadowMarkerShape) {
+            case "crosshair":
+                line (infographicX, infographicY - infographicLength / 2, infographicX, infographicY + infographicLength / 2);
+                line (infographicX + infographicLength / 2, infographicY, infographicX - infographicLength / 2, infographicY);
+                stroke("rgb(255, 255, 255)");
+                strokeWeight(1);
+                line (infographicX, infographicY - infographicLength / 2, infographicX, infographicY + infographicLength / 2);
+                line (infographicX + infographicLength / 2, infographicY, infographicX - infographicLength / 2, infographicY);
+                break;
+            case "cross":
+                line (infographicX - infographicLength / 2, infographicY - infographicLength / 2, infographicX + infographicLength / 2, infographicY + infographicLength / 2);
+                line (infographicX + infographicLength / 2, infographicY - infographicLength / 2, infographicX - infographicLength / 2, infographicY + infographicLength / 2);
+                stroke("rgb(255, 255, 255)");
+                strokeWeight(1);
+                line (infographicX - infographicLength / 2, infographicY - infographicLength / 2, infographicX + infographicLength / 2, infographicY + infographicLength / 2);
+                line (infographicX + infographicLength / 2, infographicY - infographicLength / 2, infographicX - infographicLength / 2, infographicY + infographicLength / 2);
+                break;
+            case "dot":
+                ellipse(infographicX, infographicY, infographicLength, infographicLength);
+                stroke("rgb(255, 255, 255)");
+                strokeWeight(1);
+                ellipse(infographicX, infographicY, infographicLength, infographicLength);
+                break;
+            case "square":
+                square(infographicX - infographicLength / 2, infographicY - infographicLength / 2, infographicLength);
+                stroke("rgb(255, 255, 255)");
+                strokeWeight(1);
+                square(infographicX - infographicLength / 2, infographicY - infographicLength / 2, infographicLength);
+                break;
+            case "triangle":
+                triangle(infographicX - infographicLength / 2, infographicY + infographicLength / 2, infographicX, infographicY - infographicLength / 2, infographicX + infographicLength / 2, infographicY + infographicLength / 2);
+                stroke("rgb(255, 255, 255)");
+                strokeWeight(1);
+                triangle(infographicX - infographicLength / 2, infographicY + infographicLength / 2, infographicX, infographicY - infographicLength / 2, infographicX + infographicLength / 2, infographicY + infographicLength / 2);
+                break;
+        }
+    }
+
+    /* Coincident pointing mode specific draw events */
+    if (this.model.mode === "coincidentPointing") {
+        stroke("rgb(32, 78, 207)");
+        strokeWeight(5);
         noFill();
         rect(0, 0, this.model.canvasWidth, this.model.canvasHeight);
     }
