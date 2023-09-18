@@ -632,6 +632,12 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 }
                 pinoLog("trace", `Toggled display padding ${model.unpadded ? "off" : "on"}`);
                 return false;
+            } else if (keyCode === 83) {
+                /* Handle 's' key pressed events */
+                if (imodel.selection instanceof Overlay) {
+                    model.splitOverlay(imodel.selection);
+                    pinoLog("trace", `Split overlay`);
+                }
             }
             break;
         case STATE.UNPADDED:

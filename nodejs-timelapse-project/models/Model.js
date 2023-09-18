@@ -687,6 +687,33 @@ Model.prototype.cycleLayers = function (overlay, direction="up") {
 }
 
 /**
+ * Split an overlay back into its original videos. This will:
+ *  - Remove the overlay.
+ *  - Adjust the layers of each original display to match the overlay configuration (match viewport and filter).
+ * @param {Overlay} overlay overlay to split
+ */
+Model.prototype.splitOverlay = function (overlay) {
+    const overlayIndex = this.displays.findIndex(display => display !== null && display.id === overlay.id);
+    if (overlayIndex < 0) return;
+    const confirmation = confirm("Are you sure you want to split this Overlay?\n(Overlay will disappear and original videos will be reconfigured).");
+    if (confirmation) {
+        overlay.layers.forEach(layer => {
+            const display = this.displays.find(display => display !== null && display.id === layer.id);
+            if (display) {
+                display.layers[0].viewport.x = display.x + display.padding + (layer.viewport.x - overlay.x - overlay.padding);
+                display.layers[0].viewport.y = display.y + display.padding + (layer.viewport.y - overlay.y - overlay.padding);
+                display.layers[0].viewport.width = layer.viewport.width;
+                display.layers[0].viewport.height = layer.viewport.height;
+                display.layers[0].filter = layer.filter;
+                display.layers[0].images = layer.images;
+            }
+        });
+        this.displays.splice(overlayIndex, 1);
+        this.notifySubscribers();
+    }
+}
+
+/**
  * Load in filtered images and set them as the bottom layer of an existing display
  * @param {Display|Overlay} display display to filter
  * @param {string} filter name of the filter
