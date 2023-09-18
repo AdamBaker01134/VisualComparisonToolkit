@@ -152,7 +152,6 @@ View.prototype.draw = function () {
 
         /* Shadow markers */
         this.imodel.shadowMarkers.forEach(shadowMarker => {
-            noStroke();
             stroke("rgb(0, 0, 0)");
             strokeWeight(3);
             noFill();
@@ -200,8 +199,30 @@ View.prototype.draw = function () {
                     strokeWeight(1);
                     triangle(markerX - markerLength / 2, markerY + markerLength / 2, markerX, markerY - markerLength / 2, markerX + markerLength / 2, markerY + markerLength / 2);
                     break;
+                case "freeform":
+                    stroke("rgb(255, 0, 0)");
+                    strokeWeight(2);
+                    for (let i = 0; i < shadowMarker.path.length - 1; i++) {
+                        const x1 = left + display.width * shadowMarker.path[i].widthRatio;
+                        const y1 = top + display.height * shadowMarker.path[i].heightRatio;
+                        const x2 = left + display.width * shadowMarker.path[i + 1].widthRatio;
+                        const y2 = top + display.height * shadowMarker.path[i + 1].heightRatio;
+                        line(x1, y1, x2, y2);
+                    }
             }
         });
+
+        /* Freeform path */
+        stroke("rgb(255, 0, 0)");
+        strokeWeight(2);
+        for (let i = 0; i < this.imodel.freeformPath.length - 1; i++) {
+            const x1 = left + display.width * this.imodel.freeformPath[i].widthRatio;
+            const y1 = top + display.height * this.imodel.freeformPath[i].heightRatio;
+            const x2 = left + display.width * this.imodel.freeformPath[i + 1].widthRatio;
+            const y2 = top + display.height * this.imodel.freeformPath[i + 1].heightRatio;
+            line(x1, y1, x2, y2);
+        }
+        strokeWeight(1);
 
         if (this.model.unpadded) {
             unpaddedX += display.width;
@@ -537,6 +558,16 @@ View.prototype.draw = function () {
                 strokeWeight(1);
                 triangle(infographicX - infographicLength / 2, infographicY + infographicLength / 2, infographicX, infographicY - infographicLength / 2, infographicX + infographicLength / 2, infographicY + infographicLength / 2);
                 break;
+            case "freeform":
+                stroke("rgb(255, 0, 0)");
+                beginShape();
+                curveVertex(containerX, containerY);
+                curveVertex(containerX + 20, containerY + 20);
+                curveVertex(containerX + containterLength / 2 + 20, containerY + containterLength / 2 - 20);
+                curveVertex(containerX + containterLength / 2 - 20, containerY + containterLength / 2 + 20);
+                curveVertex(containerX + containterLength - 20, containerY + containterLength - 20);
+                curveVertex(containerX + containterLength, containerY + containterLength);
+                endShape();
         }
     }
 

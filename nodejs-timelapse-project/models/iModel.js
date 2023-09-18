@@ -4,6 +4,8 @@ function iModel() {
     this.cursor = "default";
     this.shadowMarkers = [];
     this.shadowMarkerShape = "crosshair";
+    this.savedShadowMarkerShape = "crosshair";
+    this.freeformPath = [];
     this.coincidentPoints = [];
     this.focused = null;
     this.measuredTime = null;
@@ -61,6 +63,43 @@ iModel.prototype.addShadowMarker = function (widthRatio, heightRatio) {
         heightRatio: heightRatio,
         shape: this.shadowMarkerShape,
     });
+    this.notifySubscribers();
+}
+
+/**
+ * Add a position to the current freeform path.
+ * @param {number} widthRatio x position ratio in the display
+ * @param {number} heightRatio y position ratio in the display
+ */
+iModel.prototype.addToFreeformPath = function (widthRatio, heightRatio) {
+    if (this.shadowMarkerShape !== "freeform") {
+        this.savedShadowMarkerShape = this.shadowMarkerShape;
+        this.shadowMarkerShape = "freeform";
+    }
+    this.freeformPath.push({
+        widthRatio: widthRatio,
+        heightRatio: heightRatio,
+    });
+    this.notifySubscribers();
+}
+
+/**
+ * Add the constructed freeform path to the shadow markers.
+ */
+iModel.prototype.addFreeformPathToShadowMarkers = function () {
+    this.shadowMarkers.push({
+        path: this.freeformPath,
+        shape: this.shadowMarkerShape,
+    });
+    this.clearFreeformPath();
+}
+
+/**
+ * Clear the current freeform path in the interaction model.
+ */
+iModel.prototype.clearFreeformPath = function () {
+    this.freeformPath = [];
+    this.shadowMarkerShape = this.savedShadowMarkerShape;
     this.notifySubscribers();
 }
 

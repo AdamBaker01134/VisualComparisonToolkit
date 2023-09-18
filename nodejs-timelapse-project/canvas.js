@@ -96,11 +96,13 @@ const STATE = {
     COMPARE_SLIDING: "compareSliding",
     USING_MAGIC: "usingMagic",
     SHADOW_MARKER: "shadowMarker",
+    PREPARE_FREEFORM: "prepareFreeform",
+    FREEFORM: "freeform",
     COINCIDENT_POINTING: "coincidentPointing",
     UNPADDED: "unpadded",
-    NO_RIGHT_CLICK: "noRightClick",
 }
 let currentState = STATE.READY;
+let disableContextMenu = false;
 let moveTimer;
 let cyclingTimers = {};
 let playingTimers = {};
@@ -145,6 +147,7 @@ function startPlayInterval(scrollbar) {
             case STATE.COMPARE_SLIDING:
             case STATE.USING_MAGIC:
             case STATE.UNPADDED:
+            case STATE.SHADOW_MARKER:
             case STATE.OUT_OF_BOUNDS:
                 if (scrollbar.index + 1 === scrollbar.getSize()) {
                     clearInterval(playingTimers[scrollbar.id]);
@@ -279,6 +282,16 @@ function mouseDragged(event, mx = mouseX, my = mouseY) {
                 imodel.setMagicLensLocation(mouseX, mouseY);
             }
             break;
+        case STATE.PREPARE_FREEFORM:
+        case STATE.FREEFORM:
+            if (currentState !== STATE.FREEFORM) currentState = STATE.FREEFORM;
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.addToFreeformPath(
+                    (mx - (hit.x + hit.padding)) / hit.width,
+                    (my - (hit.y + hit.padding)) / hit.height,
+                );
+            }
+            break;
     }
     /* Highlighted objects are unhighlighted on drag */
     imodel.highlightSnapshot(null);
@@ -304,7 +317,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     if (event.which === 3) {
                         model.setStart(imodel.focused, imodel.focused.index);
                         imodel.setFocused(null);
-                        currentState = STATE.NO_RIGHT_CLICK;
+                        disableContextMenu = true;
                         pinoLog("trace", "Snapped start position to video position");
                     } else {
                         model.setStartFromMouse(imodel.focused, mx);
@@ -315,7 +328,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                     if (event.which === 3) {
                         model.setEnd(imodel.focused, imodel.focused.index);
                         imodel.setFocused(null);
-                        currentState = STATE.NO_RIGHT_CLICK;
+                        disableContextMenu = true;
                         pinoLog("trace", "Snapped end position to video position");
                     } else {
                         model.setEndFromMouse(imodel.focused, mx);
@@ -324,7 +337,7 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
                 } else {
                     if (event.which === 3) {
                         imodel.setFocused(null);
-                        currentState = STATE.NO_RIGHT_CLICK;
+                        disableContextMenu = true;
                     } else {
                         currentState = STATE.FOCUSED;
                         model.setIndexFromMouse(imodel.focused, mx);
@@ -362,14 +375,14 @@ function mousePressed(event, mx = mouseX, my = mouseY) {
             }
             break;
         case STATE.SHADOW_MARKER:
-            if (hit = model.checkImageHit(mx, my)) {
-                imodel.addShadowMarker(
-                    (mx - (hit.x + hit.padding)) / hit.width,
-                    (my - (hit.y + hit.padding)) / hit.height,
-                );
-                pinoLog("trace", `Added a shadow marker`);
-            }
+            currentState = STATE.PREPARE_FREEFORM;
             break;
+        case STATE.FREEFORM:
+            if (event.which === 3) {
+                imodel.clearFreeformPath();
+                disableContextMenu = true;
+                return false;
+            }
         case STATE.COINCIDENT_POINTING:
             if (hit = model.checkImageHit(mx, my)) {
                 imodel.addCoincidentPoint(hit, mx, my);
@@ -440,7 +453,23 @@ function mouseReleased(event, mx = mouseX, my = mouseY) {
             currentState = STATE.READY;
             model.setGridActive(false);
             break;
-        case STATE.NO_RIGHT_CLICK:
+        case STATE.PREPARE_FREEFORM:
+            currentState = STATE.SHADOW_MARKER;
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.addShadowMarker(
+                    (mx - (hit.x + hit.padding)) / hit.width,
+                    (my - (hit.y + hit.padding)) / hit.height,
+                );
+                pinoLog("trace", "Added a shadow marker");
+            }
+            break;
+        case STATE.FREEFORM:
+            currentState = STATE.SHADOW_MARKER;
+            if (hit = model.checkImageHit(mx, my)) {
+                imodel.addFreeformPathToShadowMarkers();
+                pinoLog("trace", "Added a freeform path");
+            }
+            break;
         case STATE.SHADOW_MARKER:
         case STATE.COINCIDENT_POINTING:
         case STATE.UNPADDED:
@@ -663,6 +692,31 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
                 imodel.updateShadowMarkerShape();
                 pinoLog("trace", `Set shadow marker shape to ${imodel.shadowMarkerShape}.`);
                 return false;
+            } else if (keyCode === 32) {
+                /* Handle shadow marker spacebar key pressed events */
+                let scrollbar = model.globalScrollbar;
+                let playingIds = Object.keys(playingTimers);
+                if (imodel.selection !== null && !event.ctrlKey && !playingIds.includes(model.globalScrollbar.id)) {
+                    scrollbar = imodel.selection.getMainScrollbar();
+                } else if (!playingIds.includes(scrollbar.id)) {
+                    /* Ensure no other timers are running when the global scrollbar starts playing */
+                    clearAllPlayingIntervals();
+                }
+                if (playingIds.includes(scrollbar.id)) {
+                    clearInterval(playingTimers[scrollbar.id]);
+                    delete playingTimers[scrollbar.id];
+                    pinoLog("trace", `Stopped auto-playing scrollbar with id: ${scrollbar.id}`);
+                } else {
+                    if (scrollbar.index === scrollbar.getSize() - 1) model.setIndex(scrollbar, 0);
+                    startPlayInterval(scrollbar);
+                    pinoLog("trace", `Began new auto-playing interval on scrollbar with id: ${scrollbar.id}`)
+                }
+                return false;
+            } else if (keyCode === 82) {
+                /* Handle shadow marker 'r' key pressed events */
+                clearAllPlayingIntervals();
+                model.setIndex(model.globalScrollbar, 0);
+                model.displays.forEach(display => model.setIndex(display.getMainScrollbar(), 0));
             }
             break;
         case STATE.COINCIDENT_POINTING:
@@ -793,11 +847,9 @@ function _attachHeaderListeners() {
         pinoLog("trace", `${model.tutorialsOpen ? "Opened" : "Closed"} tutorials tab`);
     });
     document.getElementById("defaultCanvas0")?.addEventListener("contextmenu", e => {
-        switch (currentState) {
-            case STATE.NO_RIGHT_CLICK:
-                e.preventDefault();
-                currentState = STATE.READY;
-                break;
+        if (disableContextMenu) {
+            e.preventDefault();
+            disableContextMenu = false;
         }
     });
 }
