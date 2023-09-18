@@ -124,13 +124,13 @@ function startTimedMoveInterval() {
 }
 
 /* Start an interval timer that continually checks if displays  */
-function startAutoCycleInterval(overlay) {
+function startAutoCycleInterval(overlay, direction) {
     clearInterval(cyclingTimers[overlay.id]);
     cyclingTimers[overlay.id] = setInterval(() => {
         switch (currentState) {
             case STATE.READY:
             case STATE.UNPADDED:
-                model.cycleLayers(overlay);
+                model.cycleLayers(overlay, direction);
                 break;
         }
     }, 1000);
@@ -506,20 +506,21 @@ function keyPressed(event, mx = mouseX, my = mouseY) {
     let hit = null;
     switch (currentState) {
         case STATE.READY:
-            if (keyCode === TAB) {
-                /* Handle tab key pressed events */
+            if (keyCode === UP_ARROW || keyCode === DOWN_ARROW) {
+                /* Handle up and down arrow pressed events */
                 if (imodel.selection instanceof Overlay) {
                     const overlay = imodel.selection;
+                    const direction = keyCode === UP_ARROW ? "up" : "down";
                     if (Object.keys(cyclingTimers).includes(overlay.id)) {
                         clearInterval(cyclingTimers[overlay.id]);
                         delete cyclingTimers[overlay.id];
                         pinoLog("trace", "Stopped an auto-cycling interval");
                     } else {
                         if (event.shiftKey) {
-                            startAutoCycleInterval(overlay);
+                            startAutoCycleInterval(overlay, direction);
                             pinoLog("trace", "Began new auto-cycling interval");
                         } else {
-                            model.cycleLayers(overlay);
+                            model.cycleLayers(overlay, direction);
                             pinoLog("trace", "Cycled overlay layers");
                         }
                     }

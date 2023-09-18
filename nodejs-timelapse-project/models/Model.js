@@ -677,10 +677,11 @@ Model.prototype.addLayer = function (overlay, layer) {
 /**
  * Cycle the layers of the selection.
  * @param {Overlay} overlay overlay display to cycle layers
+ * @param {string=} direction direction to cycle layers (up or down)
  */
-Model.prototype.cycleLayers = function (overlay) {
+Model.prototype.cycleLayers = function (overlay, direction="up") {
     if (overlay instanceof Overlay) {
-        overlay.cycleLayers();
+        overlay.cycleLayers(direction);
         this.notifySubscribers();
     }
 }

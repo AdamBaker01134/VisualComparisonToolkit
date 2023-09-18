@@ -146,36 +146,30 @@ Overlay.prototype.addLayer = function (display) {
 
 /**
  * Cycle the layers within the the overlay by one.
+ * @param {string=} direction direction to cycle layers (up or down)
  */
-Overlay.prototype.cycleLayers = function () {
+Overlay.prototype.cycleLayers = function (direction="up") {
     if (this.locked) return;
-    let savedLayer = this.getLayer(0);
-    for (let i = 1; i < this.layers.length; i++) {
-        let tempLayer = this.getLayer(i);
-        this.layers[i] = savedLayer;
-        savedLayer = tempLayer;
+    if (direction === "up") {
+        /* Shift the layers right */
+        let savedLayer = this.getLayer(0);
+        for (let i = 1; i < this.layers.length; i++) {
+            let tempLayer = this.getLayer(i);
+            this.layers[i] = savedLayer;
+            savedLayer = tempLayer;
+        }
+        this.layers[0] = savedLayer;
+    } else if (direction === "down") {
+        /* Shift the layers to the left */
+        let savedLayer = this.getLayer(this.layers.length - 1);
+        for (let i = this.layers.length - 2; i >= 0; i--) {
+            let tempLayer = this.getLayer(i);
+            this.layers[i] = savedLayer;
+            savedLayer = tempLayer;
+        }
+        this.layers[this.layers.length - 1] = savedLayer;
     }
-    this.layers[0] = savedLayer;
-    // this.cycleScrollbars();
 }
-
-// IF YOU UNCOMMENT CYCLING SCROLLBARS, YOU NEED TO REMOVE SCROLLBAR INDICES IN LAYERS
-// /**
-//  * Cycle the scrollbars within the overlay by one, ignoring the main scrollbar.
-//  */
-// Overlay.prototype.cycleScrollbars = function () {
-//     let savedScrollbar = this.scrollbars[0];
-//     const savedX = savedScrollbar.x;
-//     const savedY = savedScrollbar.y;
-//     for (let i = 1; i < this.mainScrollbarIndex; i++) {
-//         let tempScrollbar = this.scrollbars[i];
-//         this.scrollbars[i] = savedScrollbar;
-//         savedScrollbar.setLocation(tempScrollbar.x, tempScrollbar.y);
-//         savedScrollbar = tempScrollbar;
-//     }
-//     this.scrollbars[0] = savedScrollbar;
-//     savedScrollbar.setLocation(savedX, savedY);
-// }
 
 /**
  * Set the overlay mode if the overlay has only 2 layers.
