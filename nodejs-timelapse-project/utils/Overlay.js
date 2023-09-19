@@ -93,11 +93,12 @@ Overlay.prototype.constructor = Overlay;
 /**
  * Set the opacity level for the top layer images
  * @param {string} opacity opacity value of top layer of images
+ * @param {number} index layer index to set opacity
  */
-Overlay.prototype.setOpacity = function (opacity) {
+Overlay.prototype.setOpacity = function (opacity, index) {
     if (this.locked) return;
-    const topLayer = this.getLayer(this.layers.length - 1);
-    topLayer.opacity = opacity;
+    const layer = this.getLayer(index);
+    layer.opacity = opacity;
 }
 
 /**

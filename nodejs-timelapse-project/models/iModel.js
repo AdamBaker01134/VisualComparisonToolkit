@@ -10,6 +10,7 @@ function iModel() {
     this.focused = null;
     this.measuredTime = null;
     this.selection = null;
+    this.savedOpacities = {};
     this.highlightedScrollbars = [];
     this.highlightedAnnotation = null;
     this.highlightedSnapshot = null;
@@ -296,7 +297,21 @@ iModel.prototype.setMagicLensLocation = function (newX, newY) {
  * @param {string} mode overlay, horizontal, vertical, or magic_lens
  */
 iModel.prototype.setMode = function (mode) {
+    if (this.selection.layers.length !== 2) return;
     if (this.selection instanceof Overlay) {
+        const layer1 = this.selection.getLayer(0);
+        const layer2 = this.selection.getLayer(1);
+        if (this.selection.mode === "overlay" && mode !== "overlay") {
+            this.savedOpacities = {};
+            this.savedOpacities[layer1.id] = layer1.opacity;
+            this.savedOpacities[layer2.id] = layer2.opacity;
+            this.selection.setOpacity("255", 0);
+            this.selection.setOpacity("255", 1);
+        } else if (this.selection.mode !== "overlay" && mode === "overlay") {
+            this.selection.setOpacity(this.savedOpacities[layer1.id], 0);
+            this.selection.setOpacity(this.savedOpacities[layer2.id], 1);
+            this.savedOpacities = {};
+        }
         this.selection.setMode(mode);
         this.notifySubscribers();
     }
@@ -308,7 +323,7 @@ iModel.prototype.setMode = function (mode) {
  */
 iModel.prototype.setOpacity = function (opacity) {
     if (this.selection instanceof Overlay) {
-        this.selection.setOpacity(opacity);
+        this.selection.setOpacity(opacity, this.selection.layers.length - 1);
         this.notifySubscribers();
     }
 }
